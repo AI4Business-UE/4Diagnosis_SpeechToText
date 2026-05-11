@@ -1,0 +1,408 @@
+2025-10-26 18:54:38,578 - all_loggs - INFO - [WS] WebSocket connected
+2025-10-26 18:54:38,582 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2025-10-26 18:54:39,807 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:54:39,808 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:42,729 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:54:42,731 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:42,733 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Gg==","metadata":{"organ":"","name":"","age":"","pesel":"","descriptio
+2025-10-26 18:54:42,734 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:42,735 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,033 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Rd+jn0KGgQFC94EBQvKBBELzgQhCgoR3ZWJtQoeBBEKFgQIYU4BnAf////////8VSalmmS
+2025-10-26 18:54:43,034 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,035 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,037 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwH/////////FUmpZp
+2025-10-26 18:54:43,038 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,039 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,330 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggEso7CBAACAWAJlSQW/zYHzwNh2jR/QTcrl+1fFvAmeFmQN8IAl8W
+2025-10-26 18:54:43,331 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,331 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,333 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"sIEA8IBYAmVJBb/NgfPA2HaNH9BNyuX7V8W8CZ4WZA3wgCX2fdXtDKjTNJconbYBwx9Dtn
+2025-10-26 18:54:43,334 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,334 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,581 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2025-10-26 18:54:43,584 - all_loggs - INFO - Turning speech-to-text on...
+2025-10-26 18:54:43,585 - all_loggs - INFO - Text-to-text turned off!'
+2025-10-26 18:54:43,586 - all_loggs - ERROR - Failed to turn on speech-to-text!
+2025-10-26 18:54:43,587 - all_loggs - ERROR - Failed to load the STT model!
+2025-10-26 18:54:43,588 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: 
+2025-10-26 18:54:43,631 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"roEA8IBYAmVbPJa4P4eZzqXALXLdeYzp/r87awD9wZSHkmM4FRSP9e0x2k5f3BAfQ7Z1Af
+2025-10-26 18:54:43,641 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,642 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,643 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggJYo66BAACAWAJlWzyWuD+Hmc6lwC1y3XmM6f6/O2sA/cGUh5JjOB
+2025-10-26 18:54:43,644 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,645 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,929 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggOEo+mBAACAe4MhJwm/uM9ICvkB2Aja+vqHzz5H2Yf4KySJObwPb9
+2025-10-26 18:54:43,930 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,930 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:43,931 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7IEA8IB7gyEnCb+4z0gK+QHYCNr6+ofPPkfZh/grJIk5vA9v2K2svAqNqJBP7YBzz1FIUx
+2025-10-26 18:54:43,932 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:43,933 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:44,236 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggSwo8uBAACAe4MVFAtUuEvKhq4uZgt79GPNYmvi+EpEHgs+BCiWHD
+2025-10-26 18:54:44,237 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:44,238 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:44,239 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"y4EA8IB7gxUUC1S4S8qGri5mC3v0Y81ia+L4SkQeCz4EKJYcP1lTe8trLllkYD2oaFQKkL
+2025-10-26 18:54:44,239 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:44,240 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:44,533 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+4EA8IB7gycnicExReTNEjWIiX96Zi23yeoN1uVy8f2CpIQdMtKvjaEVA25j25v5gdCWL8
+2025-10-26 18:54:44,534 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:44,535 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:44,536 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggXco/aBAACAe4MnJ4ptQOX9CWKC0lNk/FxP2ycVx7ZS9AtrkBEpDo
+2025-10-26 18:54:44,537 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:44,538 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:44,834 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggcIo/yBAACAe4MnJoBW8NS+ahVwCxFPKvEto7fTz8Q9Ov0VtVMeyG
+2025-10-26 18:54:44,835 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:44,836 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:44,838 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"/IEA8IB7gycmgFbw1L5qFXALEU8q8S2jt9PPxD06/RW1Ux7IaON+/gx5enMVRJabgV5OMP
+2025-10-26 18:54:44,839 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:44,840 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:45,137 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+4EA8IB7gycnoTxNDpcpj9eZwArfEddTWfKG5pTeZBeovZMgU5MmV5bWyTKjcvBVn8e9jo
+2025-10-26 18:54:45,138 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:45,139 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:45,141 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggg0o/yBAACAe4MnJ6DciKZudJDTZbB/dzAAmh1rhwwUoOsGlbjv2P
+2025-10-26 18:54:45,141 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:45,142 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:45,435 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngglgo/uBAACAewMqJipP8oGZD0hp12gbBqSdx2aFRRlRiqyQcR4CWo
+2025-10-26 18:54:45,436 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:45,437 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:45,438 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+4EA8IB7AyomKk/ygX0p+py0CRfT/XBkSrsYuZRnUdlVVPG4BP3nRv0FCc2VS4D0nA0gH/
+2025-10-26 18:54:45,439 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:45,439 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:45,737 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggqMo/uBAACAe4MnJYhimeIvffPT6WAKwPfEmGVWVA81AfyA165sfY
+2025-10-26 18:54:45,741 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:45,746 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:45,747 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"9YEA8YB7gyQjiTZmg4himJEqFpKv8bgdkwNDqBw9BwG2dCY/sqD4h3Nsh9FOiZYenuYkQB
+2025-10-26 18:54:45,748 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:45,748 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,031 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7oEA8IB7gxgnDvRsrYNLcyLxILozO0g7yOvso9ODvibngBYVZvBM+90frqNptjUDFZYy1w
+2025-10-26 18:54:46,032 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,033 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,034 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggu4o+6BAACAe4MYJw70bK2DS3Mi8SC6MztIO8jr7KPTg74m54AWFW
+2025-10-26 18:54:46,034 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,035 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,337 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggzko/qBAACAe4MnJLAXFtWOx/0d+PuKaQwDyqdBlMfpJxIRiOjWkb
+2025-10-26 18:54:46,337 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,339 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,340 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+IEA8IB7gyMmsBcW1Y7H/R34/yRh/vyfkxX/Gq8tY3f94Zh3/+/3VeFJ3ImuFovK4+1xM8
+2025-10-26 18:54:46,341 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,341 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,637 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"8oEA8YB7gyEkkePpYkSs68FJTTK+rdQ7sLSAD59tKNu4+g/X/sD+bCrUgyaWkU3x+kcY6r
+2025-10-26 18:54:46,638 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,639 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,640 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngg4Qo/SBAACAe4MiJZHx/KvBFvRG0fWvvNiZ0OEIIhpwDvffkHQR+P
+2025-10-26 18:54:46,641 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,641 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,934 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"9IEA8IB7gx4nGNCB+GoV+UHluKXpM1Ns61eufg0/dLS0r4gQkVhfgohHeVoCINZw/FeEtU
+2025-10-26 18:54:46,936 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,936 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:46,938 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngg88o/aBAACAe4MgJxjQgfhh/LhhpPRvCUHMEQU6dY6IVBFT60VGPv
+2025-10-26 18:54:46,939 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:46,940 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:47,235 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghBoo/uBAACAe4MnJ6hdFmmHvMl7xfn2eWooWsJYb9Wm5ryiBJ0EjB
+2025-10-26 18:54:47,236 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:47,237 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:47,239 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+4EA74B7gycnqWQQu+eqNieTJbyDMMxH5GaPRlWt1aPyYnJV+kk79N2+g7fsOQiwqGAN3h
+2025-10-26 18:54:47,241 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:47,242 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:47,531 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghGUo/WBAACAe4MhJYpQnX9JR6ArttHLKpw8vauzlsmxKqn6cL5WgE
+2025-10-26 18:54:47,532 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:47,533 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:47,534 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"9YEA8YB7gyQiidmNw+V0UQTIJIlouDbqMAlL6VHC1xDESU0NVhLADpaPBqBCK3EvglNApr
+2025-10-26 18:54:47,535 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:47,535 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:47,830 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghLAo/KBAACAe4MiJYSSFrWhKTXeswq5HR72gr6dfIJ8jj8ZhB/RBg
+2025-10-26 18:54:47,831 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:47,832 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:47,832 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+4EA8IB7gyUnhJIWtaEpNeV+JbzA+EBDS/wRp+hI/C9yBC2UnWYAgrGTYKnhlrfYnCJ7VP
+2025-10-26 18:54:47,833 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:47,833 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:48,133 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghPso/qBAACAe4MnJ7+dEjLxKrhf+Z39vTNOmJUYRkUxp1pdumqRJZ
+2025-10-26 18:54:48,134 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:48,135 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:48,136 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+oEA8YB7gycnv50SMvEquF/5mqUOuXrf5jT/P5VZDqoewD3jwAtQMe9xRu+WKx4XtsB6ee
+2025-10-26 18:54:48,137 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:48,138 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:48,434 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghUYo/yBAACAe4MnJ66d6djJjz+LdwHrUakAy46zRCj3i0aXLUWwpY
+2025-10-26 18:54:48,435 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:48,436 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:48,439 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+oEA8YB7gyQnrp3p2MmPP4t3AessK7bWgbdkY8dwiTh9t/VgPNGvqqzEceuKrp0Y/v6/IA
+2025-10-26 18:54:48,440 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:48,441 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:48,589 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2025-10-26 18:54:48,593 - all_loggs - INFO - Turning speech-to-text on...
+2025-10-26 18:54:48,596 - all_loggs - INFO - Text-to-text turned off!'
+2025-10-26 18:54:48,596 - all_loggs - ERROR - Failed to turn on speech-to-text!
+2025-10-26 18:54:48,597 - all_loggs - ERROR - Failed to load the STT model!
+2025-10-26 18:54:48,599 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: 
+2025-10-26 18:54:48,674 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2025-10-26 18:54:48,674 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2025-10-26 18:54:48,675 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2025-10-26 18:54:48,676 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2025-10-26 18:54:53,602 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2025-10-26 18:54:53,603 - all_loggs - ERROR - [FINALIZE] No transcription to correct
+2025-10-26 18:54:53,604 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:54:53,604 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,605 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:54:53,605 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,606 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+4EA8ID7A8E+HLrCjDMVGueVQjCMEjl1M4MFZdKgGAE3o23iLZMv9YY/CWFHWcZ+5/Z3Tr
+2025-10-26 18:54:53,606 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,607 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,607 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghZEo/uBAACA+wPBPhy6wowzFRrnlUIwjBI5dTODBWXSoBgBN6Nt4i
+2025-10-26 18:54:53,608 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,609 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,610 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghdwo/uBAACA+wMNg3uyzlsu/J78lFJ9r0OjjvC1vaGvDtLp2doD/Q
+2025-10-26 18:54:53,610 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,610 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,611 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghico/uBAACA+wNZhcrENVu0Fp5TBdhoZIRiZBkS+uu6V9t9KXhS7n
+2025-10-26 18:54:53,611 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,612 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,613 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghnIo/uBAACA+wNZS2GRg1N0ZsdHhs6xdIhr5BmXaduzeM0mujQ6tO
+2025-10-26 18:54:53,613 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,613 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,614 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghr0o/uBAACA+wNT3EsvGR9LZFW/uE5EnpF2v3SJk4FIXjB0jHTS4y
+2025-10-26 18:54:53,615 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,615 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,616 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nghwgo/uBAACA+wNaV0EuYHdcpB6iXlrTMLXhyK6yNXMNe/ICNG5JVR
+2025-10-26 18:54:53,616 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,617 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,619 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngh1Mo/uBAACA+wPn/xIjaAe2r0z6Eb/emvADuPFbqFrE+uMtHy6bhi
+2025-10-26 18:54:53,620 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,620 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,621 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngh54o/uBAACA+wNekG1HWhbRb5A9N+zoQZxWF6lcE2lPXtzWFF+4Nq
+2025-10-26 18:54:53,621 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,622 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,623 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngh+ko/uBAACA+wNZTLHuz50Wetbl30hwewC+sCrOEzSZ+QDsTCiAYE
+2025-10-26 18:54:53,624 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,624 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,625 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiDQo/uBAACA+wNRdD/HD8o99g9b4T+KCgDkCiRzWEAwnGQvf2AHHQ
+2025-10-26 18:54:53,625 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,626 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,627 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiH8o/uBAACA+wNZqS982/24A+sJu2+c90tstoif81E/ZzC24GKQ69
+2025-10-26 18:54:53,628 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,629 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,629 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiMoo/uBAACA+wNZZoNiC2ZVAr7JaR8puXcWBjEtB3AESKF8h+15Ky
+2025-10-26 18:54:53,630 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,630 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,632 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiRUo/uBAACA+wNZUrhyeW4TVoeEfsA7T5GaWJN/ztTHpBKYu7HMVV
+2025-10-26 18:54:53,632 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,632 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,633 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiWAo/uBAACA+wNRr9kXz/U5ns9YuQ0iFWufaALxm0cEfkt459wXbq
+2025-10-26 18:54:53,633 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,634 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,635 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiaso/uBAACA+wNSGVgLZvViGTo45O5WRAKsj275HkKahKs2/xbjLv
+2025-10-26 18:54:53,635 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,635 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,636 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngifYo/uBAACA+wNP/WDBhlefOFpcp34x27ZK6HsRvdEKnWsy+BRCHK
+2025-10-26 18:54:53,636 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,636 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,637 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngikEo/uBAACA+wO9LPCxMjNxShgQQFvTmt3VHk4KiXdBXCuxuqtD6Z
+2025-10-26 18:54:53,638 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,638 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:53,829 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiowo/uBAACA+wM/2yzLUx1SK80eSNZr14++H48z3Z3BHN//7t9bXL
+2025-10-26 18:54:53,830 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:53,830 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:54,130 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngitco/uBAACA+wNR2A1cXhxj0QSTCHNP7q7M7ePddQxHEIm8DmCjQN
+2025-10-26 18:54:54,131 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:54,131 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:54,433 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngiyIo/uBAACA+wNQjLTOdUKZFhQc6yEnc1KSJeCSXYXWgJzJh3F/YF
+2025-10-26 18:54:54,434 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:54,435 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:54,735 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngi20o/uBAACA+wNRlUf3ybw4pFdQcQ/5Mp8qCzP7iqpFpmWlthCD3C
+2025-10-26 18:54:54,736 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:54,737 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:55,035 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngi7go/uBAACA+wNRyZkFq1aOL0/cUG2gsvlLxA0uMy3XU0pVev866b
+2025-10-26 18:54:55,036 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:55,037 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:55,333 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjAMo/uBAACA+wNAOrjaWGFW3PQGeYOqvayz/97T8O1p80LTDuBb86
+2025-10-26 18:54:55,335 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:55,336 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:55,633 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjE4o/uBAACA+wNRUnjHr2E6H5SHij4mWY/KfNK+pnr7AcZn5O7mVp
+2025-10-26 18:54:55,634 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:55,635 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:55,934 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjJko/uBAACA+wOorkrpRoJBY4PXHhaOV/Jw+CiVjyz3j1hORTJdfG
+2025-10-26 18:54:55,935 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:55,936 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:56,229 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjOQo/uBAACA+wNRxLxJ4zeJfNMuqPuY0n/eVw2HwMBkL8v92RWKak
+2025-10-26 18:54:56,230 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:56,230 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:56,532 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjS8o/uBAACA+wNSFylhW7E6a9hLymGA0p77mQTDMvSQ94UTfDQsFQ
+2025-10-26 18:54:56,533 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:56,535 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:56,831 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjXoo/uBAACA+wNa9go/VvIx5We36VW8Xu+mIiaCwdLxa8cTD4Ei9f
+2025-10-26 18:54:56,832 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:56,833 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:57,131 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjcUo/uBAACA+wNTLrUPB+rGOSf9coSI1rLjNm/drG0EjZAnUy7A5e
+2025-10-26 18:54:57,131 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:57,132 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:57,434 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjhAo/uBAACA+wNRg90VXu+fijFe610dK5TODbgtyLx3gSsNh93JIa
+2025-10-26 18:54:57,434 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:57,435 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:57,731 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjlso/uBAACA+wNSPVCiPtHJFaOqyQYiakJ69w1ly9EN6BhcuFZofg
+2025-10-26 18:54:57,732 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:57,733 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,030 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjqYo/uBAACA+wNQjMYGQUzxMTtTxdKrlFr5MXZoC2AWRg2WGI68/b
+2025-10-26 18:54:58,031 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:58,032 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,038 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:54:58,038 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,331 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjvEo/uBAACA+wNT5xeY7MJ//oN7aJm28kdEpgnk1Ts4+KHJeLZlRq
+2025-10-26 18:54:58,331 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:58,332 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,333 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwH/////////FUmpZp
+2025-10-26 18:54:58,333 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:58,333 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,631 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngjzwo/uBAACA+wNRuoehk1i/tUneRXPkQDES/x+1FYbSZqv9IUv28h
+2025-10-26 18:54:58,631 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:58,632 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,633 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"5IEA74B7gx4fIPg6eFHLPhLxmPv/W8Pd7SUOjHPTuA+fkedl2OteHqL/TfYNhjN5BFwSH6
+2025-10-26 18:54:58,633 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:58,633 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,933 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngj4co/uBAACA+wNafDq0zx7Rd1k6LwGrddLRz6f7Pm+7x2OLIVdxoE
+2025-10-26 18:54:58,934 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:58,934 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:58,936 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"54EA8IB7gx8eG4flqvLjkzJyCY8aD7lsp1ZVgmZEF3IV+5BdbTLtohuH60zueRe1GpFqCk
+2025-10-26 18:54:58,936 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:58,936 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:59,234 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngj9Io/uBAACA+wNRzqY59F0U4BgVdFZBKE/ZvjSAGs0D5XFJQnRYSA
+2025-10-26 18:54:59,235 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:59,236 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:59,239 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"4oEA8IB7gyAdHqzrT2T10iK3rPfnsNIDM+5YctIflmaSU1UWo2vQDdAezHBJz5tBmJRnwm
+2025-10-26 18:54:59,240 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:59,240 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:59,536 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkB0o/uBAACA+wNZfh4aGbQZQYoYd9BogwcIlfewEThFXkqV1gR6Z9
+2025-10-26 18:54:59,537 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:59,538 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:59,539 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"54EA8IB7gyIdG6dvwLAsru43rcKbFwFl5VOC9Z4eMeSwOGaYX2VNvXsE8xt+BGt1H+ZQN2
+2025-10-26 18:54:59,540 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:59,541 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:59,833 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkGgo/uBAACA+wNQaHdkL+ILRlvdsU8M8dRygzz6RBut9dDFx08gx0
+2025-10-26 18:54:59,834 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:59,835 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:54:59,838 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"8oEA8YB7gyMjIPmiTT8aPo6PP0J4PMJYoWcD2lhMfprohJE+KfCviLgOPUQeraftn+HWou
+2025-10-26 18:54:59,838 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:54:59,839 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:00,136 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkLMo/uBAACA+wMMk88R7TeelH94OeVg9V1/C+F60dCgIA8tP7sjoo
+2025-10-26 18:55:00,138 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:00,139 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:00,141 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"/IEA74B7gyYnta37pTFtzYo+976Ad+P7bueDSqstiTJp51l7i2fyT+EUQsQteW+sj9nky9
+2025-10-26 18:55:00,142 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:00,143 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:00,237 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2025-10-26 18:55:00,238 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2025-10-26 18:55:00,239 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2025-10-26 18:55:00,239 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2025-10-26 18:55:00,240 - all_loggs - ERROR - [FINALIZE] No transcription to correct
+2025-10-26 18:55:00,242 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:55:00,242 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:00,244 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:55:00,245 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:00,246 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"8YEA8YB7gyYgh0enlnXn1bUkVShwOfblMkkNXgIcDk4V09zXPk7PXNTU16LIa1QlBPu/DY
+2025-10-26 18:55:00,247 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:00,247 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:00,433 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkP4o/aBAACAe4MnJIdHp5Z159WtPnoHgV436CYqDeFnca7DvrBUiZ
+2025-10-26 18:55:00,434 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:00,435 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:00,735 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkUko+eBAACAe4MgIjYyO8MvPxP/9I9Sd86AbsdhZagldOOPDS06St
+2025-10-26 18:55:00,736 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:00,737 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:01,035 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkZQo+mBAACAe4MiIh3S7SK9KLmtUxfWadsjzzqkzLnMwfYAyWH+YH
+2025-10-26 18:55:01,037 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:01,038 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:01,334 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkd8o+yBAACAe4MkHRuncKeLSLCHh04sqUd2WpfRRKeQL6Qisz07jQ
+2025-10-26 18:55:01,335 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:01,336 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:01,634 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkioo+iBAACAe4MiHhuH6Qyap6AuLnXOYKuqcTw+1b3wqJqh7iCERe
+2025-10-26 18:55:01,635 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:01,636 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:01,936 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngknUo+SBAACAe4MhHxuncKXPE6T3/Pm+IQF0z+EtiOkMNMH2n1bo8Y
+2025-10-26 18:55:01,937 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:01,938 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:02,233 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngksAo+WBAACAe4MhHhuHeruq65zu7qmA7pMDv4CbEhZVAU7TM559f+
+2025-10-26 18:55:02,234 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:02,237 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:02,531 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngkwso+aBAACAe4McIhl93/1AFjhisTzn1BCxYMK5nPjOWrciInQmp+
+2025-10-26 18:55:02,533 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:02,534 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:02,834 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngk1Yo+SBAACAe4McHhuH6tnrdrnpwE6+ugv4UYi1gzSn3R+HMH2qmM
+2025-10-26 18:55:02,835 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:02,836 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:03,132 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngk6Eo+uBAACAe4MjHRunefi2mPhHZ8aybQwzBO+HFSurGw7d9Su6mv
+2025-10-26 18:55:03,134 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:03,134 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:03,430 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngk+wo/KBAACAe4MjJB7MjVpvT5Ob0+Kilso+Vrf1juORiHVUCiNMHe
+2025-10-26 18:55:03,431 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:03,431 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:03,730 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nglDco+mBAACAe4MiIB6jVTXUHV4IEQ8rJsBpy3Rbn64v6B86GgzZha
+2025-10-26 18:55:03,731 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:03,731 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:04,032 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nglIIo+6BAACAe4MhJB6jATKn2dfkAjB65iSFLS3GTi5/CHcDsmaeAm
+2025-10-26 18:55:04,032 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:04,033 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:04,337 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nglM0o+2BAACAe4MgIiHxGknNxZXWFkWW2YRTCecyg2jLUPBguoIraw
+2025-10-26 18:55:04,338 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:04,339 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:04,501 - all_loggs - ERROR - [WS] WebSocket disconnected
+2025-10-26 18:55:06,730 - all_loggs - INFO - [WS] WebSocket connected
+2025-10-26 18:55:06,731 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2025-10-26 18:55:07,859 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:55:07,859 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:08,758 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Gg==","metadata":{"organ":"","name":"","age":"","pesel":"","descriptio
+2025-10-26 18:55:08,759 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:08,760 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:09,057 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Rd+jn0KGgQFC94EBQvKBBELzgQhCgoR3ZWJtQoeBBEKFgQIYU4BnAf////////8VSalmmS
+2025-10-26 18:55:09,057 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:09,058 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:09,359 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggEro62BAACAWAJlSP9pUftE9Gaw/hw3kI6xLJPBbGprbfSnDNyEqt
+2025-10-26 18:55:09,360 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:09,361 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:09,661 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggJYo66BAACAWAJlW5XYtjwjnSzNdSWJMBst1VHN5oBg3PNATFWCU6
+2025-10-26 18:55:09,662 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:09,663 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:09,959 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggOEo+GBAACAe4MlHYBXy2kR8oHwBGI0EMwBn18FjCj5rToj+aJTqX
+2025-10-26 18:55:09,960 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:09,961 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:10,264 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggSvo8qBAACAe4MVFAtgf6eWuMDdpS69FbepT8mN3CngfAtO3VCzd6
+2025-10-26 18:55:10,265 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:10,266 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:10,564 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggXco/uBAACAewOA7AU6FQMNnMfy4DqoSRlvexpth1/reKpsfLT5iT
+2025-10-26 18:55:10,565 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:10,566 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:10,864 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggcIo+6BAACAe4MeIQ0k25VOIMsAZiq4CxfmhWL4tsi6gdh/ENFhXj
+2025-10-26 18:55:10,866 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:10,867 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:11,159 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggg0o/WBAACAe4MhJ4AshuWULFoNBY5DPxFJtfXUXQyyOccFnEZfav
+2025-10-26 18:55:11,160 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:11,162 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:11,458 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////ngglgo/uBAACAewObp01hq26kxZwoe8rqafcvrVNiXT9qwn5/g0AEAa
+2025-10-26 18:55:11,460 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:11,460 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:11,732 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2025-10-26 18:55:11,735 - all_loggs - INFO - Turning speech-to-text on...
+2025-10-26 18:55:11,737 - all_loggs - INFO - Text-to-text turned off!'
+2025-10-26 18:55:11,738 - all_loggs - ERROR - Failed to turn on speech-to-text!
+2025-10-26 18:55:11,739 - all_loggs - ERROR - Failed to load the STT model!
+2025-10-26 18:55:11,740 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: 
+2025-10-26 18:55:11,757 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggqMo/uBAACAewOcfzFjSHVRjAakgfw0DSoI4bPmVIrXD7ZlhQg4Hd
+2025-10-26 18:55:11,758 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:11,759 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:12,058 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggu3o96BAACAe4McHRgDZQ0j9VW6AnkrkMfPee8XtAFnGatq8lV+wl
+2025-10-26 18:55:12,059 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:12,060 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:12,117 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2025-10-26 18:55:12,118 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2025-10-26 18:55:12,118 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2025-10-26 18:55:12,118 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2025-10-26 18:55:16,742 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2025-10-26 18:55:16,744 - all_loggs - INFO - Turning speech-to-text on...
+2025-10-26 18:55:16,744 - all_loggs - INFO - Text-to-text turned off!'
+2025-10-26 18:55:16,745 - all_loggs - ERROR - Failed to turn on speech-to-text!
+2025-10-26 18:55:16,745 - all_loggs - ERROR - Failed to load the STT model!
+2025-10-26 18:55:16,745 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: 
+2025-10-26 18:55:21,748 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2025-10-26 18:55:21,750 - all_loggs - ERROR - [FINALIZE] No transcription to correct
+2025-10-26 18:55:21,752 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:55:21,754 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:21,756 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2025-10-26 18:55:21,757 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2025-10-26 18:55:21,759 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q7Z1Af/////////nggzko9KBAACAe4MWGAw8im1Z0M9uBsVgmltX3Tx5BaSxkTkMPIMerv
+2025-10-26 18:55:21,760 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2025-10-26 18:55:21,761 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}

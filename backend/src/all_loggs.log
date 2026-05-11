@@ -1,0 +1,1088 @@
+2026-05-11 10:20:25,416 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 10:20:25,420 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 10:20:29,896 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:20:29,898 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:30,133 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 10:20:30,134 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:30,134 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:30,137 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:30,308 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"VqbAux2GorsSp1C7tuMMu7CTfbmZZZg6bvm5Ov/ANDvEbXU7hfmDO9ahfDsmkRY7zYOPOs
+2026-05-11 10:20:30,309 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:30,309 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:30,312 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:30,431 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2026-05-11 10:20:30,445 - all_loggs - INFO - [AUDIO] Created WAV file from chunks
+2026-05-11 10:20:37,229 - all_loggs - ERROR - [ERROR] Error transcription
+2026-05-11 10:20:37,470 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"qAdVOX7+07ru4U67NsSju2/f0bvzb/S7/kf3uwzX5buMj8W7sqiZuz/WfruMvUy7jCI+u8
+2026-05-11 10:20:37,471 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,472 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,474 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,476 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"70yKN1y2CTk+T0i6bS6RulelELklwii7QrL0OYi0cTr+/6U6wIEoOqL5tboiZfy4QmjLuV
+2026-05-11 10:20:37,477 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,477 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,479 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,480 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"LCAcPAEqSTzEpmY8cNz3O/b4rDsXuus7N8y/O/1RuTuCVJ87IwitOw5eJzztW4c8VJSkPI
+2026-05-11 10:20:37,482 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,482 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,484 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,485 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Uz+hOmrZiLpwxkC6j0f5OaKQqzuXnDU8Kq1KPCP+Djwz64M7IY+AOncAZbq71/q6hmAKu6
+2026-05-11 10:20:37,486 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,486 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,489 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,491 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"R6aTO/gnpjsjLK47oY20O+xOujsJyKE7KCZZO+YD7Drtb4M63OyGuWuqELtnP4y7PjfCu3
+2026-05-11 10:20:37,492 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,492 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,495 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,496 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"iUeSu4ncn7vOT4e7TvREu4zAIbtVV/q6xH/DuuUReLoDNVm6Vhl8uihld7qGjsO6dBTrut
+2026-05-11 10:20:37,497 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,497 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,498 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,499 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Rh4euzbnA7tQB8+6+S6Zul6jRLpQFz+5eSPaOAy+OTqcIZI635a0Ol2SATtHaw47/JTsOj
+2026-05-11 10:20:37,501 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,501 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,503 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,504 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"19kmPMy3MjzFRkw8cCE/PCzNZDyxKnQ8Eo2BPES1WjyX25E8QPyAPDKwiTy2Qog8EqKEPL
+2026-05-11 10:20:37,505 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,505 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,508 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,510 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"psKau+pytToZTvQ7hdpdPNRcmjwwy7g8XZrKPBGBvzyKpqg8zR59PLf+DzxdEYg6Lt3lu8
+2026-05-11 10:20:37,510 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,511 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,513 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,514 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"grMbO/nEVzsfnpQ7nGjNO53fAjwQRR88bVguPMfMLjzqxSI8I/D1O3zVpDuxPV07EZQPOy
+2026-05-11 10:20:37,514 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,515 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,518 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,519 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"P6Enu+g5e7t+qZG7sgqnuwP70Lu7RP67TAQZvO4MJ7zo+xe8idLfu1C0l7uFSES7XYCDuj
+2026-05-11 10:20:37,520 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,520 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,523 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,524 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"rRzyvI6M+LxtJvG8q5vnvPeozryrxae8BTqBvIIaPbwsxAq8jUmoux5w+7lNSrI7OKxCPD
+2026-05-11 10:20:37,524 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,525 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,527 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,529 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"wBbpO3SIezzvWsA8sxz/PJpDGz1Y1ys9HZY1PTHAKz0wWAw9FjS2PFjdIDyc/fi52cUJvP
+2026-05-11 10:20:37,529 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,530 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,533 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,535 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"wOzRO+Y23zvCBzI8kpOIPEVqrjx31LM8qMGOPAuLCDyzCEU6k+qxu0j1DrxsAui7GRgvuw
+2026-05-11 10:20:37,535 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,536 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,539 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,540 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"s0FEvezyTr2hYTq9uncZva/xBb01QAu9kwc2veVjZb2ekn69vKx/vW9Zbr0V4ka9Q8QGvY
+2026-05-11 10:20:37,541 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:37,541 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:37,545 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:20:37,546 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 10:20:37,546 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 10:20:37,547 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 10:20:37,547 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 10:20:37,787 - all_loggs - ERROR - [FINALIZE] Error processing final chunk: Error code: 400 - {'error': {'message': 'No number after minus sign in JSON at position 1 (line 1 column 2)', 'code': 400}}
+2026-05-11 10:20:37,788 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 10:20:42,347 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 10:20:42,347 - all_loggs - ERROR - [FINALIZE] No transcription to correct
+2026-05-11 10:20:42,349 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:20:42,349 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:42,350 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"252uPHPe3jxDJRI9g98ePdZpET3J2Ns8+WyaPAF6KDxl1BM7EKehuypJirrhU8w7JNAxPN
+2026-05-11 10:20:42,352 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:20:42,352 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:20:42,353 - all_loggs - INFO - [AUDIO] Added chunk with 1365 samples
+2026-05-11 10:25:23,102 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 10:25:23,104 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 10:25:28,962 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:25:28,962 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:29,202 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 10:25:29,203 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:29,204 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:29,207 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:29,372 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"zYH0uqqdybpCRwy6bhXTOv5dNju9Miw7JOnsOiDLnDqQoFo53g/LOLzZozkNrP45jXrFuF
+2026-05-11 10:25:29,372 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:29,373 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:29,375 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:29,539 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"kWoFu0Ydtrrb4oC6XUgVONClMDql64Q6rcOaOsTfTjrECa460T+eOkN/jDqa5486/ZuBOr
+2026-05-11 10:25:29,540 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:29,540 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:29,544 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:29,713 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"/5XOumYsm7p6mYW6REgJup1Ba7hF7VQ6J8vdOZFzjzltON02XtBKOTXxLrjcBtG42qu8OW
+2026-05-11 10:25:29,714 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:29,714 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:29,717 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:29,879 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"I1oRujrS2rkovpu5BPCmtwbL9rhAPwC4GYqgOEokATmCR6g54ROROWyZQjmKl1o4ryIbOa
+2026-05-11 10:25:29,880 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:29,880 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:29,882 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:30,052 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"jiSJvb4gq73G2MG9yHHIvVb1xb3ymMK99WO9vSXysr0D0aG9iZuJvRM9Xb2leCW9m4ndvL
+2026-05-11 10:25:30,053 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:30,053 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:30,056 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:30,220 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"fQRbvQBsXL3Dtz69UCsXvRii8bwNP+G88X/5vI0rC72IvQi9UjrlvBGsrLxz0m+8qKghvP
+2026-05-11 10:25:30,223 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:30,224 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:30,227 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:30,397 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"rKjJOr8ICztrASs7MySAO5VgnztGX7I7nwTAO7Cb5jtiCNc77u18O8S79rld1ka7m7xsu4
+2026-05-11 10:25:30,397 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:30,398 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:30,400 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:30,563 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"r/EbuFE9QboO8he752eIuxLY07smxAK8s9MWvChKIbxAxye8vzUdvDSfAbxvB9a7SZa0u+
+2026-05-11 10:25:30,564 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:30,564 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:30,566 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:30,739 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"CrBMvAcaR7xA/T68EzgqvJALD7zYvvG7oC7Yu51kqruxFnu7nWojuwPNKrqLK6E68tttO0
+2026-05-11 10:25:30,740 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:30,740 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:30,743 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:30,903 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"JYCCOg0yfjrPYMQ6JabqOjX4ADux0gQ7qUS+OjvwnDqM6m46sY8xOoQ4ODpi5bM6tRgWOq
+2026-05-11 10:25:30,903 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:30,905 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:30,907 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:31,076 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"l+UXOvnLgTngBRE5X71DOW0lMjiPwAY6qJ01OkLuaDrWlis6I2ctOgyQAzq5W046bZFDOo
+2026-05-11 10:25:31,077 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:31,077 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:31,080 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:31,244 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7aEOueqRcjetpRm5t/VRObbeZzlKyDw5B9sSuRcdgrnT06O55e7OuRI5pbn5Zsy5KnAhuR
+2026-05-11 10:25:31,244 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:31,245 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:31,247 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:31,465 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"cZGyPgE8qj73FZ0+UfCMPpJ3dj7StE0+5BQjPojE9D3k/7A9fMlHPS2fIzzyxJK8NG4svU
+2026-05-11 10:25:31,466 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:31,466 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:31,470 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:31,587 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"cZGyPgE8qj73FZ0+UfCMPpJ3dj7StE0+5BQjPojE9D3k/7A9fMlHPS2fIzzyxJK8NG4svU
+2026-05-11 10:25:31,588 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:31,588 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:31,591 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:31,763 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"lmVwvSIPiL1ac5u96KaivcAmkb2UEGK9l6IXvct50rw1G4q8uwgBvAtiVLs3JJm780QqvB
+2026-05-11 10:25:31,764 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:31,764 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:31,767 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:31,929 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"CcF5PXJ9bD0u51094a1bPRr4Rz0Z2x89wAqpPLNkSLv7jO+8s9Izvf+oP73OJR29t13UvG
+2026-05-11 10:25:31,929 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:31,930 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:31,932 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:32,101 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"t6kMPSej7zy5tKY8Y0EuPAJxXTt75kO73qAZvHU4eryaFpe81ueYvFvIq7y2Au68QKgSvY
+2026-05-11 10:25:32,101 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:32,102 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:32,105 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:32,272 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Q5aqvAGdhbwk0C68VL/PuzNePbvpVTO8Y5AcvIqGoLyGtpa8JVcsvEu6a7zNoMe85hOIvJ
+2026-05-11 10:25:32,272 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:32,273 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:32,276 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:32,439 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"3e8PuwIhBbu0RBo6WVaDOhKO+Tr+SZo6A7jqOqtGCzt9XZY7msduO2gMkDuS64o7vuiKO5
+2026-05-11 10:25:32,442 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:32,442 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:32,444 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:25:32,627 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 10:25:32,628 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 10:25:32,629 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 10:25:32,629 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 10:25:34,595 - all_loggs - ERROR - [FINALIZE] Error processing final chunk: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c202. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}
+2026-05-11 10:25:34,596 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 10:25:34,596 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 10:25:34,596 - all_loggs - ERROR - [FINALIZE] No transcription to correct
+2026-05-11 10:25:34,598 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:25:34,600 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:34,600 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7xtRuhXRzblfMg24cpedOB7iuzmEmUQ6LSk3Ol0O7znKRrA52dPFuVNvRrrDNoS6Uxcrus
+2026-05-11 10:25:34,601 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:25:34,601 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:25:34,603 - all_loggs - INFO - [AUDIO] Added chunk with 1365 samples
+2026-05-11 10:36:21,999 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 10:36:22,002 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 10:36:24,819 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:36:24,820 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:25,077 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 10:36:25,078 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:25,078 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:25,081 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:25,250 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"KP9rPI7hqDxVsb485UWWPLbgDzxUYCC7uKJGvCZgm7zbkJi8B6tyvDLvO7z5wxm8lfoVvP
+2026-05-11 10:36:25,251 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:25,252 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:25,255 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:25,420 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"6kqbu4Yj2rvsbha8HktTvM2RhLzd2o+8fNqGvKb8Vryqix68mqDSu+d5Zrt9eKK6Dx+KOv
+2026-05-11 10:36:25,421 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:25,421 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:25,422 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:25,593 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"K/W+ORQ9jjpREd46qfX5OvlH0DppjnE6H6MuN+iUV7pOMK2619H9uoVVW7uunJq7dMjGu/
+2026-05-11 10:36:25,594 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:25,594 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:25,598 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:25,760 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"cjjNu/aarLudOpa7y9uGu2DahLsqcXy7riN/u4E6gLsAsH+7X6+AuxZ2SLs+8wG7eb6uul
+2026-05-11 10:36:25,760 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:25,760 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:25,763 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:25,932 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"BeyBvCkufLwrvFK8xWoTvOi12bvNDNm7mx3quxkEqLtwe4k6lVf0O64qMjxWlS88UpgaPM
+2026-05-11 10:36:25,932 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:25,934 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:25,935 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:26,103 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"PKuMOe17mzq8naM5Vr6iufdIgzpWHH46ERS4ObVVkDpHvLE6CckzO6mTHDtA9NU6hYnJOg
+2026-05-11 10:36:26,104 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:26,104 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:26,106 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:26,276 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"1T18vED/TrwueR68Wlftu47snrtWWf26XsW8OiMcrzuWPRQ8g5pOPJHcXjwsu1s843Y9PC
+2026-05-11 10:36:26,276 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:26,277 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:26,279 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:26,443 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"LBlxuvlIqLvpffi7PskIvL1Bc7s/kQ67IkEruBg8pDvDjZc7bl0SPIpm1zu3GQE8norEO8
+2026-05-11 10:36:26,444 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:26,445 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:26,447 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:26,614 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"0kmXu7WCBLtmR4G6tgBYOS2ILTvafY87JGCaO+ctzzucseg7HC7PO4PegjvEeYM7am+XO3
+2026-05-11 10:36:26,615 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:26,615 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:26,618 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:26,786 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"N61euzFojbtIdpW7g2I7u3AOJLtwuAi7SngGu+lB+7qfyPG6rbL0usuzKLse6WS7ipqUuw
+2026-05-11 10:36:26,787 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:36:26,787 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:36:26,790 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:36:26,792 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 10:36:26,793 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 10:36:26,795 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 10:36:26,795 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 10:36:27,962 - all_loggs - INFO - The chunk transcribed: 
+2026-05-11 10:36:27,963 - all_loggs - INFO - [FINALIZE] Final transcription chunk: 
+2026-05-11 10:36:27,964 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 10:36:27,964 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 10:36:27,965 - all_loggs - ERROR - [FINALIZE] No transcription to correct
+2026-05-11 10:36:27,967 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:36:27,967 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:16,638 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 10:45:16,640 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 10:45:18,939 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:45:18,941 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:19,194 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 10:45:19,194 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:19,195 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:19,197 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:19,363 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"xq6sPNaGAj0AGus8udXSPNDS4Tyk6rQ8dFGdPGYcyTy7nM48r6GIPKHhKTykXDM8shlUPM
+2026-05-11 10:45:19,363 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:19,365 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:19,367 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:19,531 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"3HJuPIZWbzxepW88vosqPCGp9TvIty08HGc2PN2/ODyp93s8tYpqPERmbzwNfyg8ocNfPE
+2026-05-11 10:45:19,533 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:19,533 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:19,535 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:19,706 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"BDFHPPCZADzJcZE7k1KjOruWKbvngNK7HccmvN9maLxLl4i8+mydvOfeybxGsfS89+4EvX
+2026-05-11 10:45:19,707 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:19,707 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:19,710 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:19,873 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"004APHD1dDxoTL072Ce1u+fTv7uLlNi5KpXmOtPVBDv4FKQ7nqYJPKXByDv/yg27+mw5vP
+2026-05-11 10:45:19,873 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:19,874 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:19,877 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:20,042 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"pnluu7R4TrtBRxq7w0neugSxyLqH1gC7ml0Nu7X+6Lq+mVs5GEYNOzurejv65a07L/aiO2
+2026-05-11 10:45:20,044 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:20,044 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:20,046 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:20,214 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AQEOPNbyVjxiMpo8dRDNPJPp9jzAmAs9VdQePWRyMz0w50I9igpLPYobSz1dEEw9xk1LPc
+2026-05-11 10:45:20,215 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:20,215 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:20,218 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:20,574 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"iLGZvIchk7wCAny8XzEUvGjdWjpNGh88Z2h0PI/0jTxoV5E8B1V/PKT+DjzPNnu5zXsRvD
+2026-05-11 10:45:20,575 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:20,575 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:20,576 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:20,578 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"WmQgOnuEiDuBqHM8UN/ePGaXBj3PZvQ8XfCEPDRHJ7uFy4u84sC0vFGkebwQ7Tc60GKSPH
+2026-05-11 10:45:20,578 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:20,578 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:20,581 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:20,729 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"3y2KvYKQcb0TRza9vpzVvCDN+LtLwls8HUL/PPjVOT3j+2Y9g3R+PX1beT1aAlg9up8SPR
+2026-05-11 10:45:20,729 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:20,730 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:20,734 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:20,910 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"kpqku+srGLy80GS8Cw2PvDHKr7woddS8vKPuvOHQ+7zlfAW96s0EvdrZ/bz+t+a8h7vPvL
+2026-05-11 10:45:20,911 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:20,911 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:20,914 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:21,069 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"y6K/PJxSsDzOs4s8XSWCPOIomzxWdqQ8juBMPM8NIDtUWpG7zeUKvLn5R7xh/Ze8BoTovE
+2026-05-11 10:45:21,070 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:21,070 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:21,073 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:21,238 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"joiPO8NlkTtDq7A7N9mzO1S1mDvSj0A7pNEJO/kVAzvoi606DZlhOmDfKTk9fQ65FQIjum
+2026-05-11 10:45:21,246 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:21,247 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:21,250 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:21,408 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"n80YvGvvQbyuJnu8UwW1vHaR1LySNd28VAHwvFoMEb3RCjO93hJEvVqCQr1W00C9mitPvR
+2026-05-11 10:45:21,409 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:21,409 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:21,411 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:21,578 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"BR0VvDhis7wTNfa8Ov4MvfzADL1Dzfq8oAiivDqX+rsaoWE7dTH9O9NiiDs3o6W6C+iZu/
+2026-05-11 10:45:21,578 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:21,579 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:21,581 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:21,658 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2026-05-11 10:45:21,825 - all_loggs - INFO - [AUDIO] Created WAV file from chunks
+2026-05-11 10:45:25,831 - all_loggs - INFO - The chunk transcribed: 
+2026-05-11 10:45:25,832 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: 
+2026-05-11 10:45:25,969 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"P2LzvBGy47xhgdO8E922vHadobz6Eo28Q+livFMdHryJYea7+hucu4Lkd7v4BhC7pTqiuv
+2026-05-11 10:45:25,969 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:25,970 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:25,972 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:25,973 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"H7SlvL0J+7yqGiW9qp06vRJsPL1rDym9iIkFvbx+sbx3H++7r/R9Ox+lPDyFlok8JR6tPK
+2026-05-11 10:45:25,974 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:25,975 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:25,978 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:25,979 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"WEa9vP7y7bz2hvC8HG3YvD+InLwHoSi8GNNkuq6fzDuoMGI8NMK2PMsiAj3G2yI9P40tPf
+2026-05-11 10:45:25,979 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:25,979 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:25,982 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:25,983 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"BRVGvDSAZb3NabK933jHvY0Jq70KaWi9cpTlvOY8LLzDmA28y0CWvLIU27z3FuG8NiSpvA
+2026-05-11 10:45:25,984 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:25,984 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:25,986 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:25,987 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Sy+0PW3Ytj2dXrE9DJamPfAhmD2D+YE9IBBPPeyGFT2rg808/6+LPPwUSDzTRjE83+dWPL
+2026-05-11 10:45:25,988 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:25,988 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:25,991 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:25,992 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"anWYPdkbZT0KqSE985PIPItAPTzDA5O55uchvLc7mbw2pe+8G90pvX6VVr2KCYG9R3OTvX
+2026-05-11 10:45:25,993 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:25,993 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:25,995 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:25,997 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"TcW5O9kT1juHRvk7QjESPIegCzzCuhc8ESYFPNA0GTxCPBA8bAQAPDx09TtGLtE7PPPSO/
+2026-05-11 10:45:25,997 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:25,997 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:26,000 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:26,001 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"RrorvEIvELxYztu7Vkf4uwgEDbx8Rxu8pFvbu/6ss7vKer+7wxWXug/R4DsR0h081A3fO8
+2026-05-11 10:45:26,001 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:26,002 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:26,003 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:26,005 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"FumYPJsZmzyEHYc8bEFXPEz5GzxFppk7tPmNupo5vLtOogS8Rt4XvJfuGbwmOMe7ZmYeu4
+2026-05-11 10:45:26,005 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:26,006 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:26,008 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:26,010 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"T3ZsvJjXGbxQgHi7WX4JOytxtjv758Q72V+ZO97ODjvYpzA6wzjrOrItujsDfjE8xeRaPP
+2026-05-11 10:45:26,010 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:26,010 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:26,012 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:45:26,013 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 10:45:26,013 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 10:45:26,014 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 10:45:26,014 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 10:45:28,037 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 10:45:30,851 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 10:45:30,862 - all_loggs - INFO - Turning text-to-text on...
+2026-05-11 10:45:30,863 - all_loggs - INFO - Speech-to-text turned off!
+2026-05-11 10:45:30,867 - all_loggs - INFO - Text-to-text turned on
+2026-05-11 10:45:30,867 - all_loggs - ERROR - Model TTT failed to load - I return original text
+2026-05-11 10:45:30,867 - all_loggs - INFO - Turning speech-to-text on...
+2026-05-11 10:45:30,867 - all_loggs - INFO - Text-to-text turned off!'
+2026-05-11 10:45:30,871 - all_loggs - INFO - Speech-to-text turned on!
+2026-05-11 10:45:30,872 - all_loggs - INFO - [AUDIO] Decoding raw base64 audio chunk
+2026-05-11 10:45:30,873 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:45:30,874 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:30,875 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"IwEFveq9kbwA1LS5YIafPLWLMz2ehoU9ps2cPcPJoD0Fs4w9wxM+PVwKVDxd5q+8QCZHvW
+2026-05-11 10:45:30,875 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:45:30,876 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:45:30,877 - all_loggs - INFO - [AUDIO] Added chunk with 1365 samples
+2026-05-11 10:51:16,490 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 10:51:51,383 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 10:51:51,385 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 10:51:53,874 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:51:53,876 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:54,118 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 10:51:54,120 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:54,120 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:54,123 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:54,291 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"c8EpNt3Rgjbnb/E2DPaiNnfTO7cJBWC3GVi5tbY1Abc+wLI3kyFVOOuFZDdlUqg3ie0kOO
+2026-05-11 10:51:54,291 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:54,292 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:54,295 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:54,460 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"kcqyPAG48DzrZh097og9PXDiTj1NLWA9+mhsPcf4cz1vYns9JduFPXfNjj2pB5c9K3eiPT
+2026-05-11 10:51:54,461 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:54,461 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:54,463 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:54,689 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"99IhvMSy5rzngBu9sYsevaDyCL3yVtq8IjysvJ35irxQlGC8hqthvEhCmbyUVNS8/+T4vB
+2026-05-11 10:51:54,691 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:54,691 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:54,694 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:54,805 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"REPvO7ICLTxuBCU85aPCO5zBMzj2RVa7uvEsu9mJnrnQnPQ6fCNbO5GhgzuVZpw6UIGeuz
+2026-05-11 10:51:54,806 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:54,806 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:54,808 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:54,981 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"8jmNPLeehzzCLXY8Gm5JPDLBEDwweLM75ovkOvisirp4u2y7J07Eu5nUCLxw6Dm8xcJmvB
+2026-05-11 10:51:54,982 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:54,982 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:54,985 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:55,150 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"4yAqvI8fbrybA5+8ZYu7vGSP37xjdfm86/UKvQvlFb3xWBu9dlghvQJ8JL0SpSK98gciva
+2026-05-11 10:51:55,152 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:55,152 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:55,153 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:55,312 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"tlwLO45CozjJL4C7BjMJvCGYRbzHXGO8E/JNvEp4CbylLva6iFW6O96SVDwnSpg8e0ivPL
+2026-05-11 10:51:55,312 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:55,314 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:55,316 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:55,483 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"rVSZOLHGXzoWimS6wnHiOvrYlDrjhwo70waXOqvw+jkNtp87vKdwuWFWNTvkwmg7cUshOi
+2026-05-11 10:51:55,483 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:55,485 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:55,487 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:55,655 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"MQTjPIfTDT0Ghuk8glugPGTbgjytDlI8LPi/O5ItEbrz8pW6XbfIOmUXSzqbbJO7+561ux
+2026-05-11 10:51:55,656 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:55,656 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:55,658 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:55,825 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7xQwO51rbTvpFSQ7FUCnOrNUZrpk3jq7v+9Nuwf6Ybuo9ZK7qwfKu4g+/LtuRx+8WUEkvM
+2026-05-11 10:51:55,826 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:55,826 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:55,829 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:55,996 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"ThjDO0+V0jsubeA7vvLGOzYHrzsN+4I75ldlOyUSWTu78007TtdUO6omczuUoLQ7oe3XO9
+2026-05-11 10:51:55,997 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:55,997 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:55,999 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:56,166 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"MIwVutkuLzu1sgo8vSAiPGnFAjyNLAg8F/U8PGopbTzpOHs8yT5rPHtRgjyup5w8OjqsPJ
+2026-05-11 10:51:56,168 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:56,168 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:56,170 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:56,338 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"fIqEO1nDervsujG8q1ZzvJnim7web8+8VP4AvaFSGL0zri298jdAvcjMTr2WXF29pH9tva
+2026-05-11 10:51:56,338 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:56,340 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:56,341 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:56,393 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2026-05-11 10:51:56,537 - all_loggs - INFO - [AUDIO] Created WAV file from chunks
+2026-05-11 10:51:56,538 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 10:51:58,714 - all_loggs - INFO - Audio processed!
+2026-05-11 10:51:58,718 - all_loggs - INFO - The chunk transcribed: Była najlepszą nauką w szkole dla towarzyszyni.
+2026-05-11 10:51:58,718 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: Była najlepszą nauką w szkole dla towarzyszyni.
+2026-05-11 10:51:58,742 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"dg2yu8mByrsekLa7uuuBu1G5p7p3/Ps4EYouuU8TrLnXQxY6O9yXOhJ5/zogRS87W9AwOy
+2026-05-11 10:51:58,742 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:58,744 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:58,745 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:58,747 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7ElZPWEpdj1P6ok9NRKTPQE3lj1uKZg9SEeZPegpnT2CKKM9buinPdLyqj1n1q4980KzPf
+2026-05-11 10:51:58,747 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:51:58,747 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:51:58,750 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 10:51:58,753 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 10:51:58,753 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 10:51:58,754 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 10:51:58,754 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 10:51:58,770 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 10:52:01,609 - all_loggs - INFO - Audio processed!
+2026-05-11 10:52:01,611 - all_loggs - INFO - The chunk transcribed: 
+2026-05-11 10:52:01,613 - all_loggs - INFO - [FINALIZE] Final transcription chunk: 
+2026-05-11 10:52:01,613 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 10:52:03,742 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 10:52:03,744 - all_loggs - INFO - [FINALIZE] Running correction on: Była najlepszą nauką w szkole dla towarzyszyni.
+2026-05-11 10:52:03,747 - all_loggs - INFO - Turning text-to-text on...
+2026-05-11 10:52:03,747 - all_loggs - INFO - Speech-to-text turned off!
+2026-05-11 10:52:03,749 - all_loggs - INFO - Text-to-text turned on
+2026-05-11 10:52:03,750 - all_loggs - ERROR - Model TTT failed to load - I return original text
+2026-05-11 10:52:03,750 - all_loggs - INFO - Turning speech-to-text on...
+2026-05-11 10:52:03,750 - all_loggs - INFO - Text-to-text turned off!'
+2026-05-11 10:52:03,750 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 10:52:03,753 - all_loggs - INFO - Speech-to-text turned on!
+2026-05-11 10:52:03,753 - all_loggs - INFO - [AUDIO] Decoding raw base64 audio chunk
+2026-05-11 10:52:03,754 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 10:52:03,755 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:52:03,756 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"vP88vZc46LzAaTa8Y8SGO7/daDzRnYo8yw03PGrtGLu8GaC8PgkfvV8fZL3VBY69k8OjvX
+2026-05-11 10:52:03,756 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 10:52:03,756 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 10:52:03,757 - all_loggs - INFO - [AUDIO] Added chunk with 1365 samples
+2026-05-11 10:52:03,759 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 10:52:03,760 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 10:59:52,405 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 11:00:05,649 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 11:00:05,650 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 11:00:07,889 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":"Była n
+2026-05-11 11:00:07,890 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:08,135 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 11:00:08,136 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:08,137 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:08,140 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:08,301 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"kHRotJ5EdzbaNwA3pkMXN/QwkDd99BI38/Y9N0DNQzctqYy26VCdN+NV77a8O6i24/LBN9
+2026-05-11 11:00:08,302 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:08,303 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:08,305 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:08,473 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AmAHPTo9QT0ZSmM91YSKPRyUqD2Zd749ZajDPW7nvD0rOLg9FeOxPd10qT1Sh509qDeLPW
+2026-05-11 11:00:08,473 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:08,475 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:08,477 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:08,644 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"GRnUPMv41jwbAhI9hhwTPVv66Dw0dbE8z+O4PN8+xDyaiqg8J/SZPDwtYTwWM+E7z2bnOq
+2026-05-11 11:00:08,644 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:08,645 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:08,647 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:08,814 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"zsTMOzom1Ls/g4q7Ws/Au3edX7v0f5q7Cooeu7pLJLxnUlK8uyMcvINad7v3O0q7AgE7vP
+2026-05-11 11:00:08,816 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:08,816 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:08,818 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:08,985 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"cxH5Op7yYTongcW6BkEOu6aX6TqTIHM6Ui5XOkotMromRam4ztJpOqFLhrqsM2C6KYMjOv
+2026-05-11 11:00:08,986 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:08,986 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:08,988 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:09,155 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"szSvOAJXCjmr4ZK47L91uVX+0rk5LKq5T0MIOdkA6zkRMW05XxWxOf36bjkPN9g5YxgjOW
+2026-05-11 11:00:09,155 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:09,155 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:09,161 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:09,326 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"1NmiPGGlszyE6cE8ddXLPH430TwjgAI9APnrPFae2zy+erw8Ai2aPAPxSTxKPGw81qroO/
+2026-05-11 11:00:09,328 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:09,328 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:09,330 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:09,624 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"VIsNu8KgsbuBKDi7Ix7iuzibabwUKwC8G2HSu0GZm7tZ3KK67dABO8mWoTsMDR48xlHMO7
+2026-05-11 11:00:09,625 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:09,625 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:09,627 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:09,671 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"ObFPPKzlkjzUVp481I+KPPb+SDxo6eM7MWK9OhyVPbvOUai7e5XDu+EVxLs1usi7Py+3u4
+2026-05-11 11:00:09,672 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:09,672 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:09,676 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:09,844 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"JUIhO1OrGTos9rq66MS1u5c6rLutT5e7LRQiOhDJyTstaBo8WlA9PP/BHzygC7M72CuHus
+2026-05-11 11:00:09,844 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:09,845 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:09,849 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:10,016 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"86dSvHqtFLyb5367W0H6OiBJDzxKrIM8OY3KPL36Cz0maS49wCNFPVKRSD3TMjY9eCcSPV
+2026-05-11 11:00:10,017 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:10,017 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:10,018 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:10,179 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"lNGOPSsekT31AZE9YTuOPX6eiT1oE4M9NPR2PV6dZT1AZVE9YJE7PQCTIz2GxQk9spHWPB
+2026-05-11 11:00:10,180 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:10,181 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:10,183 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:10,350 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+x1FO2EZRztWsVg7tKxnO2lJfDt5p187KzVEO2IhSTutGT87hU8kOzxqATtwRKg6dAAgOp
+2026-05-11 11:00:10,350 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:10,350 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:10,353 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:10,524 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"PpG3PWmNiT2biCY9W0ByPPNoBbw5vte8xwUavdG3JL1DARu9aQcDvXB3vLzyQ0C8wXBzOh
+2026-05-11 11:00:10,524 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:10,525 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:10,527 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:10,663 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2026-05-11 11:00:10,811 - all_loggs - INFO - [AUDIO] Created WAV file from chunks
+2026-05-11 11:00:10,812 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 11:00:17,885 - all_loggs - INFO - Audio processed!
+2026-05-11 11:00:17,888 - all_loggs - INFO - The chunk transcribed: To dziś, jeszcze na następnym wykładzie.
+2026-05-11 11:00:17,889 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: To dziś, jeszcze na następnym wykładzie.
+2026-05-11 11:00:17,919 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"dgoCvRzhCb24wAq9Wt8LvVwoAL3sksa8Ns95vKRpirvEAq47N26JPI5duDxFsss8BUvhPE
+2026-05-11 11:00:17,919 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:17,920 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:17,922 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:17,924 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"CJQFPWWtsDwrXjQ8doQhOj2YA7zOwG+8+fesvFsQ17y9pfO8cwEFvT1zFL3TnRu9JigYvf
+2026-05-11 11:00:17,924 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:17,925 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:17,927 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:17,928 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"cY/WutMEI7npA/g6QUFHO5UhsDvaweQ7T60VPMGPHjxF/Ss8a7w/PBuvNjx3Lwc8/y4MPH
+2026-05-11 11:00:17,929 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:17,929 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:17,931 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:17,932 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"MtoVPSS4kjwiVhO8qV4ZvUG9Zr18mIm9FXuRvXvthL1WllK9GOQDvTHt67sfkYo8jEANPQ
+2026-05-11 11:00:17,933 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 11:00:17,934 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:17,936 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 11:00:17,937 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 11:00:17,937 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 11:00:17,938 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 11:00:17,938 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 11:00:17,959 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 11:00:19,229 - all_loggs - INFO - Audio processed!
+2026-05-11 11:00:19,233 - all_loggs - INFO - The chunk transcribed: Spokojnie, spokojnie.
+2026-05-11 11:00:19,234 - all_loggs - INFO - [FINALIZE] Final transcription chunk: Spokojnie, spokojnie.
+2026-05-11 11:00:19,234 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 11:00:22,913 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 11:00:22,914 - all_loggs - INFO - [FINALIZE] Running correction on: To dziś, jeszcze na następnym wykładzie. Spokojnie, spokojnie.
+2026-05-11 11:00:22,916 - all_loggs - INFO - Turning text-to-text on...
+2026-05-11 11:00:22,916 - all_loggs - INFO - Speech-to-text turned off!
+2026-05-11 11:00:22,918 - all_loggs - INFO - Text-to-text turned on
+2026-05-11 11:00:26,044 - all_loggs - INFO - Turning speech-to-text on...
+2026-05-11 11:00:26,045 - all_loggs - INFO - Text-to-text turned off!'
+2026-05-11 11:00:26,046 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 11:00:26,049 - all_loggs - INFO - Speech-to-text turned on!
+2026-05-11 11:00:26,050 - all_loggs - INFO - [FINALIZE] Corrected transcription: {'analyzed_organ': '', 'name': '', 'surname': '', 'pesel': '', 'description': ''}
+2026-05-11 11:00:26,050 - all_loggs - INFO - [FINALIZE] Sending form data: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 11:00:26,051 - all_loggs - INFO - [FINALIZE] Successfully sent form data to frontend
+2026-05-11 11:00:26,052 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":"Była naj
+2026-05-11 11:00:26,053 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Była najlepszą nauką w szkole dla towarzyszyni.'}
+2026-05-11 11:00:26,055 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,059 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,059 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,060 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,062 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,063 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,065 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,066 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,067 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,068 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Była najle
+2026-05-11 11:00:26,070 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 11:00:26,071 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 11:01:09,767 - all_loggs - ERROR - [WS] WebSocket disconnected
+2026-05-11 12:13:10,455 - all_loggs - INFO - Loading Whisper process...
+2026-05-11 12:13:13,300 - all_loggs - INFO - Whisper process loaded successfully.
+2026-05-11 12:13:13,301 - all_loggs - INFO - Loading Whisper model...
+2026-05-11 12:13:14,857 - all_loggs - INFO - Whisper model loaded successfully.
+2026-05-11 12:13:25,335 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 12:13:25,336 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 12:13:27,839 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 12:13:27,840 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:28,333 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 12:13:28,333 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:28,334 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:28,337 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:28,498 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"J07sukJ/mbqBwmK63o8YurbeYjpUd186cLWAOhCejjmoNby6KNdCu9PeMLt7ZZq7yGujuz
+2026-05-11 12:13:28,498 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:28,498 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:28,502 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:28,670 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"CJYgPLBvOjzjhD88fz5CPE3FKjyvmBA8MlzjO7kktDuWnF47t4QMOzPJSDrSHVU4Cn9Iuo
+2026-05-11 12:13:28,671 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:28,671 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:28,674 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:28,842 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"8IkpupWmErq/m925R4OSuDdvMTni+pm5ZlKsuvIwG7uqdhm7zxzAujNwr7olGxq7z0F0uz
+2026-05-11 12:13:28,843 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:28,843 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:28,845 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:29,011 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"2h2LOt19Qjp8mo86FEBxOn8QobkN/wC6vAXbuZeHG7qojtW64VgJuw2F9bpmCBW7xuQEu/
+2026-05-11 12:13:29,012 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:29,012 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:29,016 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:29,184 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"BR8hOzDzjjtFkrw7XKXmO0BGBTzmow88G2AmPIXNKzxIWzA8vZ0nPGeaGzwi/BQ8FaQNPD
+2026-05-11 12:13:29,184 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:29,184 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:29,187 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:29,356 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"diMSO7XEQbtcy4W8aKYcvXu7Wr3NMXC9DzxNvcjWC72FF5+8MTUFvNueCLpetC88Zwj6PH
+2026-05-11 12:13:29,356 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:29,356 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:29,358 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:29,522 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"MIzxPXYasD07GVI9JdqWPD7/jLuJyTG91Eigvdr7370baQW+H9MVvpALGr5MMiK+390vvp
+2026-05-11 12:13:29,523 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:29,523 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:29,526 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:29,695 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"kxIEPXb9GTy+DJO89hbdvACsJr0RhI+8jjFuOy2imjxfF888T8UpPLboiDwlg8U8V2aPPK
+2026-05-11 12:13:29,696 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:29,696 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:29,699 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:29,867 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"US/GvXcvA76xFBi+0McXvvZB/r2xMKu9rXDyvKoR5zzAZ6U94yP/PcvxGD6HDR4+XMgePt
+2026-05-11 12:13:29,867 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:29,868 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:29,869 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:30,034 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"8Fk5vQiIGr3D0RK9NA/evAmp07zXrwC9QQjYvOLD/rzF3Oe8rkzUvIgv6bw7bsy8doT4vN
+2026-05-11 12:13:30,035 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:30,035 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:30,038 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:30,207 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"SfJmvevSP73zygi9fEDFvEt1ErxxFjw8qo/VPI1WCD07nb48/zvYO7XWE7yMKcy8Vwi5vN
+2026-05-11 12:13:30,208 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:13:30,208 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:13:30,212 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:13:30,342 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2026-05-11 12:13:30,479 - all_loggs - INFO - [AUDIO] Created WAV file from chunks
+2026-05-11 12:13:30,480 - all_loggs - INFO - Audio processing
+2026-05-11 12:14:26,666 - all_loggs - INFO - Success: Audio processed!
+2026-05-11 12:14:26,671 - all_loggs - INFO - The chunk transcribed:  W tym momencie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie,
+2026-05-11 12:14:26,672 - all_loggs - INFO - [TRANSCRIBE] Raw transcription:  W tym momencie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie,
+2026-05-11 12:14:26,729 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"PHXWvGZJr7yWVGm8D+QsvNggKbt546c7k304PHe7nTzaDck8+rr9PD5BCz3UUQk9QIr6PK
+2026-05-11 12:14:26,730 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:26,730 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:26,733 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:14:26,735 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"/iRFPVgfVT0RVGo9DA+DPSueiz0HFo09PuyJPf/Baj30kSw96/L5PKF2zTzfo8k8HJTCPI
+2026-05-11 12:14:26,735 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:26,736 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:26,737 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:14:26,739 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"z8F8PVEZZT3puU097T4tPYvWDD28LM48HxpcPEd9tjvt8t67+UdOvJzHorxX5bS8d9rkvO
+2026-05-11 12:14:26,739 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:26,739 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:26,741 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:14:26,743 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"hD0TvFlEIDvO8Rg8bhghPIH0LDydCwQ8SCC1Oxk6qTucxNs7yW4bPAhPeTzB0MY840IGPS
+2026-05-11 12:14:26,743 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:26,743 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:26,745 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:14:26,747 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"KNKDPQi6Pz0rj8g8jZtJPBdPsDrW6BK8pY1KvFeMnLz1waG8jIjZvAW1+rz8CuS88+2jvJ
+2026-05-11 12:14:26,747 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:26,748 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:26,749 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:14:26,751 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"yU4Jvga5A77OSLC9m3XhvH+OAz08i7E97foBPhHqDT7hXeA9csw5PaK+Hb0Fvf29XPc5vp
+2026-05-11 12:14:26,751 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:26,751 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:26,753 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:14:26,754 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"4EqmPePswT2lcbI96SJ5PQQJoDw78728jPSMvREyw71RRcC9SyWVvbJqA73kez48ympJPW
+2026-05-11 12:14:26,755 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:26,755 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:26,757 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:14:26,758 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 12:14:26,758 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 12:14:26,758 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 12:14:26,759 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 12:14:26,806 - all_loggs - INFO - Audio processing
+2026-05-11 12:14:30,567 - all_loggs - INFO - Success: Audio processed!
+2026-05-11 12:14:30,567 - all_loggs - INFO - The chunk transcribed:  i teraz możemy się zauważyć
+2026-05-11 12:14:30,567 - all_loggs - INFO - [FINALIZE] Final transcription chunk:  i teraz możemy się zauważyć
+2026-05-11 12:14:30,567 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 12:14:31,677 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 12:14:31,678 - all_loggs - INFO - [FINALIZE] Running correction on: W tym momencie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, w tym filmie, i teraz możemy się zauważyć
+2026-05-11 12:14:31,682 - all_loggs - INFO - Turning text-to-text on...
+2026-05-11 12:14:31,925 - all_loggs - INFO - Speech-to-text turned off!
+2026-05-11 12:14:31,950 - all_loggs - INFO - Text-to-text turned on
+2026-05-11 12:14:35,331 - all_loggs - INFO - Turning speech-to-text on...
+2026-05-11 12:14:35,332 - all_loggs - INFO - Text-to-text turned off!'
+2026-05-11 12:14:35,332 - all_loggs - INFO - Loading Whisper process...
+2026-05-11 12:14:37,635 - all_loggs - INFO - Whisper process loaded successfully.
+2026-05-11 12:14:37,636 - all_loggs - INFO - Loading Whisper model...
+2026-05-11 12:14:38,691 - all_loggs - INFO - Whisper model loaded successfully.
+2026-05-11 12:14:38,693 - all_loggs - INFO - Speech-to-text turned on!
+2026-05-11 12:14:38,694 - all_loggs - INFO - [FINALIZE] Corrected transcription: {'analyzed_organ': 'nerka', 'name': '', 'surname': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:14:38,695 - all_loggs - INFO - [FINALIZE] Sending form data: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:14:38,696 - all_loggs - INFO - [FINALIZE] Successfully sent form data to frontend
+2026-05-11 12:14:38,698 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 12:14:38,699 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:38,700 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+PnVO/CzKTtxNbQ4g57rutKD8Djp0JQ6hBqhOyOV8TvL5D08tcs6PLR6RjxC5zU8vFMpPI
+2026-05-11 12:14:38,702 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:14:38,702 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:14:38,703 - all_loggs - INFO - [AUDIO] Added chunk with 1365 samples
+2026-05-11 12:14:38,711 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"W tym mome
+2026-05-11 12:14:38,711 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"W tym mome
+2026-05-11 12:14:38,713 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,715 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,716 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,718 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,718 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,719 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,721 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,722 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"W tym
+2026-05-11 12:14:38,724 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:14:38,724 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:20:58,725 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 12:21:10,123 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 12:21:10,124 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 12:21:12,233 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"nerka","name":"","age":"","pesel":"","description":"N
+2026-05-11 12:21:12,233 - all_loggs - INFO - [START] Recording started with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:12,444 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 12:21:12,444 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:12,445 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:12,446 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:12,603 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"qyKXMYEzpy+Qp3swisyOMEYWEzCMnZ4vuUb5sS8dzDDWl44wssSZsRXZETEKW7qw8hc1MS
+2026-05-11 12:21:12,603 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:12,603 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:12,605 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:12,770 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"bOSvPCVKLTybn/k61ZEWvGCYH7r5zSq81lhQvA4/pbwC0YW8YFtnvJ/zgrxNeca8aNeqvJ
+2026-05-11 12:21:12,770 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:12,770 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:12,772 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:12,944 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"P0yJvEN1Sbxse2K8Bc3lu/LTvLsphI27HPpLu/+Wg7sYEES7oPznuZGO8TscMlk8qh8IPI
+2026-05-11 12:21:12,944 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:12,944 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:12,945 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:13,114 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"tjqAOoP4zDn6iFk5Hn2hOfq4FjqjpVc6E+mlOnLFpjrOLY06eaTGOlm0MTse80Y7+AmLO+
+2026-05-11 12:21:13,114 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:13,114 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:13,116 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:13,285 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"XOPyu2pgGLxkhDG8QOvqu+zUa7uD3x+741NCu3GnzLuHj+m7TAMLvH3IG7w2ixm82gfru3
+2026-05-11 12:21:13,286 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:13,286 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:13,287 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:13,456 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"EwsTux4pAru012e7iF20u5yH4bsZiui7kEapu9dWEbvUKN+5QHxbuMakDbsRqZq7/3pAu8
+2026-05-11 12:21:13,457 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:13,457 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:13,458 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:13,624 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"QUSIuUdJFTtJlfo6ZkJbOt3KKzs3ebU7VZfCO7DiZTu5Oic6sexOurMDnbrVkWq7rU67u2
+2026-05-11 12:21:13,624 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:13,624 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:13,625 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:13,797 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"91o9uyMyGbuHvUm7qO0ju5udB7qO12Q6+p/sOTsQibpnw7O6QhFeusETcLosN2u6ZsrVur
+2026-05-11 12:21:13,797 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:13,797 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:13,798 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:13,968 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"RJ6puX1+NTlcfoQ6OLcXOl2oqbldBZ66SxZaunkfajkdfY46YvXQOpzKkzmW35Y5jt+AON
+2026-05-11 12:21:13,968 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:13,968 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:13,969 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:14,138 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"IrgYuziKELvAnp66p2uduVBchrnZTva5viIouTyhj7po5A+7xCyAu63ZQ7vgVx67Lp4fu7
+2026-05-11 12:21:14,138 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:14,139 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:14,139 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:14,308 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"MTQNudDfiDncAL065GvDOjSB8DoRcTS48shSuhrH+rr6HRS7JaDVuuYKM7rOyF+4KXQKu8
+2026-05-11 12:21:14,309 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:14,309 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:14,310 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:14,479 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"6CbAvcjVe72mO0K9BURRvRwkdr2fe5S9ameJvXXjJr13YFS8duFgu/05nLwIKwO9wJT2vE
+2026-05-11 12:21:14,479 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:14,479 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:14,481 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:14,649 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"t1SMvasVjLyrC8g8551hPdp9tz1Q1vU95hkYPsoVMD6U+j4+6MM/Pq3lNT68mSI+lfsHPl
+2026-05-11 12:21:14,650 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:14,650 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:14,651 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:14,820 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"taRgvp3MCL7IMDK9jZiNPIZGQj2sTYA9VqGFPQJAOD3DSdY8Z5O+O/aZC70TDrS9XKIQvi
+2026-05-11 12:21:14,820 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:14,821 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:14,822 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:14,992 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"PVPzPC8sKz2m3n89dJefPU1Gpj1VIY89JOJ3PeRPhj3E/7E9honwPX6oCz7xGAg+Y1vwPY
+2026-05-11 12:21:14,992 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:14,993 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:14,993 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:15,146 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2026-05-11 12:21:15,239 - all_loggs - INFO - [AUDIO] Created WAV file from chunks
+2026-05-11 12:21:15,239 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 12:21:17,927 - all_loggs - INFO - Audio processed!
+2026-05-11 12:21:17,929 - all_loggs - INFO - The chunk transcribed: Napisy stworzone przez społeczność Amara.org
+2026-05-11 12:21:17,929 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: Napisy stworzone przez społeczność Amara.org
+2026-05-11 12:21:17,991 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Kb+SPSmlkz395YA9CdM5PYDp4DyLA1U8G+L3Odd9CLrWAPu5rXKnO5SeOjuEewW8sUTdvF
+2026-05-11 12:21:17,991 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:17,991 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:17,993 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:17,993 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"vPs5vdXcVb3cYIO8BiXnvAZRN70depS9HiAxvf9fi70uhL69UumgvNIPZDyekAE9CQYGPX
+2026-05-11 12:21:17,994 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:17,994 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:17,995 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:17,995 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"kdyYvS/Uor2/dZu9ebyRvbi7dr2HwkO9vCIivc6Z9bxRlgi8Dgnout59hTvh2Zc89PciPb
+2026-05-11 12:21:17,996 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:17,996 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:17,997 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:17,997 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7uZUvXQsQr18AhW9lW6ovPq0yTnuzL084iIyPQAhWj0Jmlo9oO44Pff3Dz2d/9c8mSJUPM
+2026-05-11 12:21:17,997 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:17,997 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:17,999 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,000 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"y6oivY4ZRb1bFmW9uiFgvcqvNL2bmSS9aH8RvYWB6rxRoba8H4YFvH6wTDpthko7GLA1uv
+2026-05-11 12:21:18,000 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,000 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,001 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,002 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"+GPLPf3nyz2tx8Y9OCi5PaxnqT0ExJU9EzeHPfljdT3nb2k9TPVoPdyMcD3a34A9YhmKPX
+2026-05-11 12:21:18,002 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,002 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,003 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,004 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"xbcxvRkLk73UJJO9QgBBvcZmo7uSNh09+MeUPYv3xD1t7M893uSzPS04fD1WUgs9x0uXO4
+2026-05-11 12:21:18,004 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,004 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,005 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,005 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"IqsRPYENFD3lVR89gB9SPeQYlj206LI9TAG5PSXLuj07y8U9ieGrPfNnjD37e1k9PngrPT
+2026-05-11 12:21:18,006 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,006 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,006 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,007 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"HgYZPeH0Gj1tCsw8bs25O9ogS7wZbNK8gK0cvSiYT73o/Gq9oAlXvUu8FL0hKdW8pZewvM
+2026-05-11 12:21:18,007 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,007 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,008 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,009 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"/AQbvF4CQryIjRm8B3Ghu5SFQboJqr+6750NPPjEWTyGz3U8PH9WPIn5GTyMZhk8HrAgPK
+2026-05-11 12:21:18,009 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,009 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,010 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,011 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"aRKkvFDYirxWFX+8LpC9vE56/bzRyhO9BeAQvZMj/byyMMi8pZGNvEcRQLytyBm86R83vK
+2026-05-11 12:21:18,011 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,011 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,012 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,012 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"5sd6vFwNy7yZ8SO9yLNXvQk6Xr1cD069X90vvZHkG70GCRC9ZQXVvDBbobshKq088bElPb
+2026-05-11 12:21:18,013 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,013 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,013 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,014 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"EVVEvWb1hb0YdRq9aNv9vDakhbykWZ28d0eSvBU4Z7vcxOc7+hI7Pa3xwT2tU+09GdfvPV
+2026-05-11 12:21:18,014 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,014 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,015 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,016 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"SSk+vdGn1DrBTV49BTbUPfDpET6TtS4+KOFCPmyPSD5OG0E+7MUpPgQRCz4EsM496WKFPU
+2026-05-11 12:21:18,016 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:18,016 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:18,017 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:21:18,018 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 12:21:18,018 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 12:21:18,018 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 12:21:18,018 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 12:21:18,095 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 12:21:21,613 - all_loggs - INFO - Audio processed!
+2026-05-11 12:21:21,615 - all_loggs - INFO - The chunk transcribed: Może się robi gowalno, plejno.
+2026-05-11 12:21:21,615 - all_loggs - INFO - [FINALIZE] Final transcription chunk: Może się robi gowalno, plejno.
+2026-05-11 12:21:21,615 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 12:21:22,929 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 12:21:22,929 - all_loggs - INFO - [FINALIZE] Running correction on: Napisy stworzone przez społeczność Amara.org Może się robi gowalno, plejno.
+2026-05-11 12:21:22,930 - all_loggs - INFO - Turning text-to-text on...
+2026-05-11 12:21:22,930 - all_loggs - INFO - Speech-to-text turned off!
+2026-05-11 12:21:22,932 - all_loggs - INFO - Text-to-text turned on
+2026-05-11 12:21:24,946 - all_loggs - INFO - Turning speech-to-text on...
+2026-05-11 12:21:24,947 - all_loggs - INFO - Text-to-text turned off!'
+2026-05-11 12:21:24,947 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 12:21:24,948 - all_loggs - INFO - Speech-to-text turned on!
+2026-05-11 12:21:24,948 - all_loggs - INFO - [FINALIZE] Corrected transcription: {'analyzed_organ': '', 'name': '', 'surname': '', 'pesel': '', 'description': ''}
+2026-05-11 12:21:24,948 - all_loggs - INFO - [FINALIZE] Sending form data: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:21:24,949 - all_loggs - INFO - [FINALIZE] Successfully sent form data to frontend
+2026-05-11 12:21:24,949 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"nerka","name":"","age":"","pesel":"","description":"Ner
+2026-05-11 12:21:24,949 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:24,951 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"RRXuO87YL7vuN+S7B3+AOv2asbsvJ7+7JJScu1G8nbwtjDG8gZzEulgRDDxHgLy7iySru5
+2026-05-11 12:21:24,951 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:21:24,951 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': 'nerka', 'name': '', 'age': '', 'pesel': '', 'description': 'Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą.'}
+2026-05-11 12:21:24,951 - all_loggs - INFO - [AUDIO] Added chunk with 1365 samples
+2026-05-11 12:21:24,952 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,952 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,952 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,953 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,953 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,953 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,954 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,954 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,955 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,955 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":"Nerka
+2026-05-11 12:21:24,955 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":""}}
+2026-05-11 12:21:24,956 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"nerka","name":"","age":"","pesel":"","description":""}}
+2026-05-11 12:22:16,450 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 12:22:32,168 - all_loggs - INFO - [WS] WebSocket connected
+2026-05-11 12:22:32,169 - all_loggs - INFO - [TRANSCRIBE] Starting buffer processing loop
+2026-05-11 12:22:34,056 - all_loggs - INFO - [WS] Received data: {"type":"recording_start","metadata":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 12:22:34,056 - all_loggs - INFO - [START] Recording started with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:34,251 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+2026-05-11 12:22:34,251 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:34,251 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:34,252 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:34,420 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"QCbOscf+N7HUfQqxWClDsDx2TDHU/IExh/dBL75aSTGeZEWxX11xsfRp1DG31eAx6+nesL
+2026-05-11 12:22:34,420 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:34,420 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:34,421 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:34,590 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"OkXpPKmprTzcnmI8x4O+PISJrTwiGZM8hcEGO0LHl7wyPl68a3mIu2IpArxdDii8hgLXvG
+2026-05-11 12:22:34,591 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:34,591 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:34,592 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:34,760 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"girbPOsvGD3N2gA9EWw1PGhEFTwvH4Y8VQXkPIQH4TxvBqw8ZfRvPKm7ADt5a4A7ZpnEOs
+2026-05-11 12:22:34,761 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:34,761 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:34,762 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:34,931 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"YP1BPeBxRz2NYyo9SzIAPQnf1zyA3Jk8jKpjPJZv9DuCirk7txG3O4obhzvQv7Q7vVK6O2
+2026-05-11 12:22:34,932 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:34,932 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:34,933 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:35,101 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"EYK0PPWWvDzKedg8X6AQPY2HRz3LZmw9kwJ8PdNNdj2/Uks91IPoPKrl+DqN96283awZve
+2026-05-11 12:22:35,101 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:35,101 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:35,103 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:35,272 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"0esJvFLDAbxnuwO8GGwEvD+G1ruT2267VcvZuox7YLqgPag5PZPhOpNznjm3cyI6fsjCuV
+2026-05-11 12:22:35,273 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:35,273 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:35,274 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:35,443 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"/swkO4xynToZXKY425HaugL9Pbsot9i7M7kTvKeaGbw8xgq8mbrqu1881bs279S7iwOsuy
+2026-05-11 12:22:35,443 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:35,443 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:35,444 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:35,613 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"pJ3VumStj7rnFqo5FAMsuov2K7r+jBS7QDXGuqttKLsvWzC7xpEHu7TBN7olyoG6GJWCOk
+2026-05-11 12:22:35,613 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:35,614 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:35,615 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:35,785 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"k7QDvU/PMr2oCl69+kp5vYRehr2tG469sciTvckul705ypS9fwePvZWuhL13aXG9XAFbvT
+2026-05-11 12:22:35,785 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:35,785 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:35,786 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:35,958 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"4ToyOpdXEzq5SxI3k6xFuoESDLvXLTS7sLQ2u2HDSrtniwe7XNAmu4aDIrvdewK7laZour
+2026-05-11 12:22:35,958 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:35,959 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:35,959 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:36,126 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"LiTYOuzM1zo6ONw6HkBMOi0OiDr0P7U65d3uOi88mDrT07E6nIicOi/0sTpykYw5Frntub
+2026-05-11 12:22:36,127 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:36,127 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:36,128 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:36,296 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"PdkDu3lWQrvyp2u7EscWu4InQbtcKEa7yAwBu7kN+brCi/+6OfQOu7kGHrtLM/q6ffSQui
+2026-05-11 12:22:36,297 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:36,297 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:36,298 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:36,468 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"FuoQuuSUfblbgRq6wUDEOcB0DjltGKq5goK6ugc7ybr6AVm65nyyupVQ0LpVRQ+76PPtui
+2026-05-11 12:22:36,468 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:36,468 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:36,469 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:36,637 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"OJsdOYjyvDlX+925hkiEOXWySzrjeDk6eN8dOji9mzlCER86s37NOcigRzqSNqm5W7ZUup
+2026-05-11 12:22:36,637 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:36,638 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:36,638 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:36,809 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"UBtQtyReGTqjrW05RmGZuJne8TgmWwE6uSm7OZLKUTpETk46Eba/OnjY7jqAzxM7x+RAO4
+2026-05-11 12:22:36,810 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:36,810 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:36,811 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:36,980 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"640oum+ITbo/WvC46Yk+N3TahThyMSS6LxyluRjHU7mkri05k3pnOjcqSzqtBUg6Ii0/On
+2026-05-11 12:22:36,980 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:36,981 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:36,981 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:37,151 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"enc6PFshHjyAqOc7aC5SOwmZJbvqggq8wuOrvHtKHL0RsGy9ZS6YvXugsb1gh8a9XLHPvT
+2026-05-11 12:22:37,151 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:37,151 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:37,152 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:37,172 - all_loggs - INFO - [TRANSCRIBE] Processing audio buffer
+2026-05-11 12:22:37,273 - all_loggs - INFO - [AUDIO] Created WAV file from chunks
+2026-05-11 12:22:37,273 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 12:22:39,281 - all_loggs - INFO - Audio processed!
+2026-05-11 12:22:39,283 - all_loggs - INFO - The chunk transcribed: Dziękuje za uwagę.
+2026-05-11 12:22:39,284 - all_loggs - INFO - [TRANSCRIBE] Raw transcription: Dziękuje za uwagę.
+2026-05-11 12:22:39,349 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Wb++PeVlwD3qrsI9Lsu3Pa5aoD3ZH4w9tuFuPa4YPT2BKww9K8q6POTQLjx9dKW76pKSvC
+2026-05-11 12:22:39,350 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,350 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,351 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,351 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"a0FyPpC6Sj5KQQU+uYFiPQakXry67mu9gX6PvSOibL08eNu8l4wsPMfkDz3AWTM9HDn4PC
+2026-05-11 12:22:39,351 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,351 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,352 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,353 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"PbizPP0jWj0MdKE9d0ykPb7Dcj2FqQQ9NcQbPKdabbvuAxq8O0fFu1As9jsjws08xFhgPS
+2026-05-11 12:22:39,353 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,353 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,354 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,355 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"AxdTvSBfOb36t/G8FHRWvLkiTTwDaes8LDPUPCrb7DyuMqU8qQKDORPEgbrzhUW7PPayOe
+2026-05-11 12:22:39,355 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,355 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,356 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,356 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"m5LJPRFQ3D393eQ9rRTwPUhu9T3ouu49blrXPVhsvD22ELM9cPW4PR3wuz3O2bM9kEycPQ
+2026-05-11 12:22:39,356 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,357 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,358 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,358 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"LzGovCOry7zoube6Rfc5O3WV4jsAdI87kAS4PGNGGD0hZQE9hAwKPTQnGj0FCjo91G9iPU
+2026-05-11 12:22:39,358 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,358 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,360 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,361 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"zxtcPfxHOz3rTOE8DQy0OyKBnby/TCe9J5qAvfZDo72wV7y9sbbMvcFD1L1yq9W9qEjMvf
+2026-05-11 12:22:39,361 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,361 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,362 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,363 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"NGIMvRWBOr1O+2+9tXSXvXb2rr2IdNW9xUHdvazN471ewd+9/qS/vVINur3iIJm9hZs9vS
+2026-05-11 12:22:39,363 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,363 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,365 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,371 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"Axg7PMAeGT24x1Y9M/JjPWNeUz3Z5Bg9YxC8PEhLNzx6RDA8oAW4PCnSND3Sgok93RG7PZ
+2026-05-11 12:22:39,371 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,371 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,372 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,373 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"7K25PW2owD0l08I9rTDGPa2gwz1vLbc9WOCjPXKnlj2yyJs9mP6jPcOyrz2twbM9qEm3Pb
+2026-05-11 12:22:39,373 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,373 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,374 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,374 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"vd+cvAyNtbz9ENK8i6LnvCwHAb2XRQO9G9kFvfOQB73m4AK9zRv+vIgS2LylKqa8gFCFvH
+2026-05-11 12:22:39,374 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,376 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,377 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,377 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"BMSFPW3lKj2tnLU8WKrQPKQhwDupsr66q/R/vGGdDr14HQ29hhF9vYwHh73Oi0m9fLhjvQ
+2026-05-11 12:22:39,377 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,377 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,378 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,379 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:39,380 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:39,380 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"cOAGvQ7aKbywvBg88PmSPLdmoTz4gMc8K6McPb2cTj1Lr0k9xZ4dPREsDD02eQE9VZC2PA
+2026-05-11 12:22:39,380 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,380 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,381 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,539 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"I35JPbKIeT2lCW89aAk+PRZgBj0W7i08HpuwvLmBbb1JLZ69trKTvYoecr2tyV+9pWpcve
+2026-05-11 12:22:39,539 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,539 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,540 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,711 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"d3a/uuOMNjzalNM8rHsDPYRq4TwLs6U83pJCPPLHHDt9ikC7xXX2uwiKg7wbkpq8xgVvvI
+2026-05-11 12:22:39,711 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,711 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,712 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:39,879 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"2aaivX1YlL3EV1W9UlfrvNyuqrsIFBU8BiRxPDYGRjy6soo7LeWwOwaN9jvsdJY7CEH5OB
+2026-05-11 12:22:39,880 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:39,880 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:39,881 - all_loggs - INFO - [AUDIO] Added chunk with 2730 samples
+2026-05-11 12:22:40,033 - all_loggs - INFO - [WS] Received data: {"control":"stop_recording"}
+2026-05-11 12:22:40,033 - all_loggs - INFO - [CTRL] Stop recording signal received!
+2026-05-11 12:22:40,035 - all_loggs - INFO - [FINALIZE] Finalizing transcription
+2026-05-11 12:22:40,035 - all_loggs - INFO - [FINALIZE] Processing remaining audio buffer
+2026-05-11 12:22:40,147 - all_loggs - INFO - Audio processing via OpenRouter...
+2026-05-11 12:22:41,331 - all_loggs - INFO - Audio processed!
+2026-05-11 12:22:41,333 - all_loggs - INFO - The chunk transcribed: No i oczywiście można na wykresie akrylaskiego...
+2026-05-11 12:22:41,333 - all_loggs - INFO - [FINALIZE] Final transcription chunk: No i oczywiście można na wykresie akrylaskiego...
+2026-05-11 12:22:41,333 - all_loggs - INFO - [FINALIZE] Awaiting transcription task
+2026-05-11 12:22:44,292 - all_loggs - ERROR - [TRANSCRIBE] Exiting loop (recording stopped and buffer empty)
+2026-05-11 12:22:44,292 - all_loggs - INFO - [FINALIZE] Running correction on: Dziękuje za uwagę. No i oczywiście można na wykresie akrylaskiego...
+2026-05-11 12:22:44,293 - all_loggs - INFO - Turning text-to-text on...
+2026-05-11 12:22:44,293 - all_loggs - INFO - Speech-to-text turned off!
+2026-05-11 12:22:44,294 - all_loggs - INFO - Text-to-text turned on
+2026-05-11 12:22:46,037 - all_loggs - INFO - Turning speech-to-text on...
+2026-05-11 12:22:46,037 - all_loggs - INFO - Text-to-text turned off!'
+2026-05-11 12:22:46,037 - all_loggs - INFO - 🔌 Laczenie z API OpenRouter...
+2026-05-11 12:22:46,039 - all_loggs - INFO - Speech-to-text turned on!
+2026-05-11 12:22:46,039 - all_loggs - INFO - [FINALIZE] Corrected transcription: {'analyzed_organ': '', 'name': '', 'surname': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:46,039 - all_loggs - INFO - [FINALIZE] Sending form data: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:46,039 - all_loggs - INFO - [FINALIZE] Successfully sent form data to frontend
+2026-05-11 12:22:46,040 - all_loggs - INFO - [WS] Received data: {"type":"recording_end","metadata":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje
+2026-05-11 12:22:46,040 - all_loggs - INFO - [END] Recording ended with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': 'Dziękuje za uwagę.'}
+2026-05-11 12:22:46,041 - all_loggs - INFO - [WS] Received data: {"type":"audio_chunk","data":"5W/Gu64LGrx8pTa8orVHu2lqmjv6Vqg6p+nnOWmHvrtVLZ2695PqOmfbsbvNyxK8eCU/vM
+2026-05-11 12:22:46,041 - all_loggs - INFO - [AUDIO] Appending audio chunk
+2026-05-11 12:22:46,041 - all_loggs - INFO - [AUDIO] Audio chunk with metadata: {'organ': '', 'name': '', 'age': '', 'pesel': '', 'description': ''}
+2026-05-11 12:22:46,042 - all_loggs - INFO - [AUDIO] Added chunk with 1365 samples
+2026-05-11 12:22:46,042 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,044 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,045 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,045 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,045 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,046 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,046 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,047 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":"Dziękuje z
+2026-05-11 12:22:46,047 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":""}}
+2026-05-11 12:22:46,047 - all_loggs - INFO - [WS] Received data: {"type":"metadata_update","data":{"organ":"","name":"","age":"","pesel":"","description":""}}
