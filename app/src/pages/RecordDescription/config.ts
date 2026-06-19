@@ -1,6 +1,6 @@
 import { AudioConfig } from "./types";
 
-export const WEBSOCKET_URL = "ws://localhost:8010/ws/audio/";
+export const WEBSOCKET_URL = "ws://localhost:8000/ws/audio/";
 
 export const AUDIO_CONFIG: AudioConfig = {
   sampleRate: 16000,
