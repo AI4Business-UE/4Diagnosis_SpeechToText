@@ -4,7 +4,6 @@ from .models_loaders.stt.mloader_base import SpeechToTextModel
 from .models_loaders.ttt.mloader_base import TextToTextModel
 
 from .models_loaders.stt.mloader_whisper_local import WhisperLocal
-# from .models_loaders.stt.mloader_eleven_labs import ElevenLabsModel
 from .models_loaders.stt.mloader_openai_whisper import OpenAIWhisper
 from .models_loaders.stt.mloader_openrouter_whisper import OpenRouterWhisper
 
@@ -23,8 +22,6 @@ class STTFactory:
                 return OpenAIWhisper()
             elif STT_MODEL == "OpenRouter/whisper":
                 return OpenRouterWhisper()
-            # elif STT_MODEL == 'ElevenLabs':
-            #     return ElevenLabsModel()
             else:
                 raise ValueError(f"Nieznany typ modelu: {STT_MODEL}")
         except Exception as e:

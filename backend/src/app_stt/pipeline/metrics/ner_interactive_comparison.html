@@ -1,0 +1,106 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>NER Pipeline Comparison Matrix</title>
+        <script src="https://cdn.jsdelivr.net/gh/caldwell/renderjson@master/renderjson.js"></script>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 20px; background: #edf2f7; color: #2d3748; }
+            h2 { color: #1a202c; }
+            table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; margin-top: 20px; table-layout: fixed; }
+            th { background: #2d3748; color: white; padding: 16px; text-align: left; font-size: 14px; letter-spacing: 0.05em; }
+            td { padding: 16px; vertical-align: top; border-right: 1px solid #e2e8f0; word-wrap: break-word; }
+            td:last-child { border-right: none; }
+            
+            /* Structural Grouping */
+            .transcription-row td { background-color: #f7fafc; border-top: 4px solid #cbd5e0; border-bottom: 1px solid #e2e8f0; }
+            .metrics-row td { padding-bottom: 24px; }
+            
+            /* Text & Badges */
+            .sample-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 16px; }
+            .transcription-text { color: #4a5568; font-style: italic; line-height: 1.5; font-size: 15px; border-left: 4px solid #a0aec0; padding-left: 12px; margin-top: 8px; }
+            .metrics-badge { display: inline-block; font-size: 12px; font-weight: 600; color: #4a5568; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #cbd5e0; }
+            
+            .status-warn { color: #c05621; font-weight: bold; background: #feebc8; padding: 4px 10px; border-radius: 4px; font-size: 13px; }
+            .status-ok { color: #2f855a; font-weight: bold; background: #c6f6d5; padding: 4px 10px; border-radius: 4px; font-size: 13px; }
+            
+            /* Renderjson styling overrides */
+            .renderjson a { text-decoration: none; color: #3182ce; font-weight: bold; cursor: pointer; }
+            .renderjson .disclosure { color: #e53e3e; font-size: 14px; margin-right: 4px; }
+            .renderjson .syntax { color: #a0aec0; }
+            .renderjson .string { color: #38a169; white-space: pre-wrap; }
+            .renderjson .number { color: #d69e2e; }
+            .renderjson .boolean { color: #319795; }
+            .renderjson .key { color: #805ad5; font-weight: 500; }
+        </style>
+    </head>
+    <body>
+        <h2>🔍 NER Pipeline Evaluation Dashboard</h2>
+        <p>Click on the object icons <b>▶</b> to expand or collapse nested JSON layers interactively.</p>
+        <table>
+<thead>
+<tr>
+<th>SPLIT APPROACH</th>
+<th>CHAINED APPROACH</th>
+<th>UNIFIED APPROACH</th>
+</tr>
+</thead>
+<tbody>
+
+        <tr class="transcription-row">
+            <td colspan="3">
+                <div class="sample-header">
+                    <strong>📄 039.m4a</strong>
+                    <span class="status-warn">⚠️ Key Mismatch</span>
+                </div>
+                <div class="transcription-text">
+                     W porządku pacjentka Justyna Nowacka, numer PESEL 82050298239, lat 31, materiał o wymiarach 5,5 x 4,5 x 3 cm, a w tym tutaj guz o wymiarach 5,5 x 4,5 x 3 cm a w tym tutaj guz o wymiarach 3,5 x 3 x 3,5 cm barwy żółtej z centrennymi budowami krwawymi margines oznaczono tuszem czarnym
+                </div>
+            </td>
+        </tr>
+        <tr class="metrics-row">
+
+            <td>
+                <h3>Split</h3>
+                <div class="metrics-badge">⏱️ 7.13s &nbsp;|&nbsp; 9753 tokens</div>
+                <div class="json-cell">{"Patient": {"patient": {"first_name": "Justyna", "last_name": "Nowacka", "pesel": "82050298239", "age": 31}}, "Components": {"components": [{"name": "materiał", "dim_x": 5.5, "dim_y": 4.5, "dim_z": 3.0, "unit": "cm"}]}, "Lesion": {"lesions": [{"type": "guz", "dim_x": 3.5, "dim_y": 3.0, "dim_z": 3.5, "color": "żółtej", "features": ["wylewy_krwawe"]}]}, "Fluid sample": {}, "Validation errors": []}</div>
+            </td>
+            
+            <td>
+                <h3>Chained</h3>
+                <div class="metrics-badge">⏱️ 4.32s &nbsp;|&nbsp; 10193 tokens</div>
+                <div class="json-cell">{"Patient": {"patient": {"first_name": "Justyna", "last_name": "Nowacka", "pesel": "82050298239", "age": 31}}, "Components": {"components": [{"name": "materiał", "dim_x": 5.5, "dim_y": 4.5, "dim_z": 3.0, "unit": "cm"}]}, "Lesion": {"lesions": [{"type": "guz", "dim_x": 5.5, "dim_y": 4.5, "dim_z": 3.0, "component_index": 0}, {"type": "guz", "dim_x": 3.5, "dim_y": 3.0, "dim_z": 3.5, "color": "żółtej", "features": ["wylewy_krwawe"], "component_index": 0}]}, "Fluid sample": {}, "Validation errors": []}</div>
+            </td>
+            
+            <td>
+                <h3>Unified</h3>
+                <div class="metrics-badge">⏱️ 2.44s &nbsp;|&nbsp; 8120 tokens</div>
+                <div class="json-cell">{"Patient": {"patient": {"first_name": "Justyna", "last_name": "Nowacka", "pesel": "82050298239", "age": 31}}, "Components": {"components": [{"name": "materiał", "dim_x": 5.5, "dim_y": 4.5, "dim_z": 3.0, "unit": "cm"}]}, "Lesion": {"lesions": [{"type": "guz", "dim_x": 5.5, "dim_y": 4.5, "dim_z": 3.0, "component_index": 0}, {"type": "guz", "dim_x": 3.5, "dim_y": 3.0, "dim_z": 3.5, "color": "żółtej", "features": ["wylewy_krwawe"], "component_index": 0}]}, "Fluid sample": {"fluid_samples": []}, "Validation errors": []}</div>
+            </td>
+            </tr>
+</tbody>
+</table>
+
+        <script>
+            renderjson.set_show_to_level(0); 
+            renderjson.set_icons('▶ ', '▼ ');
+
+            // Find all cells meant to hold JSON
+            document.querySelectorAll(".json-cell").forEach(div => {
+                let text = div.textContent.trim();
+                
+                if (text.startsWith("{") && text.endsWith("}")) {
+                    try {
+                        let jsonObject = JSON.parse(text);
+                        div.innerHTML = ""; 
+                        div.appendChild(renderjson(jsonObject));
+                    } catch(e) {
+                        console.error("Failed to parse row JSON:", e);
+                    }
+                }
+            });
+        </script>
+    </body>
+    </html>
+    

@@ -1,0 +1,80 @@
+{
+    "Type": "chained",
+    "Sample": "039.m4a",
+    "Transcription": " W porządku pacjentka Justyna Nowacka, numer PESEL 82050298239, lat 31, materiał o wymiarach 5,5 x 4,5 x 3 cm, a w tym tutaj guz o wymiarach 5,5 x 4,5 x 3 cm a w tym tutaj guz o wymiarach 3,5 x 3 x 3,5 cm barwy żółtej z centrennymi budowami krwawymi margines oznaczono tuszem czarnym",
+    "Patient": {
+        "ner": {
+            "patient": {
+                "first_name": "Justyna",
+                "last_name": "Nowacka",
+                "pesel": "82050298239",
+                "age": 31
+            }
+        },
+        "duration": 0.7593216980001216,
+        "tokens": {
+            "prompt_tokens": 1158,
+            "completion_tokens": 36,
+            "total_tokens": 1194
+        }
+    },
+    "Components": {
+        "ner": {
+            "components": [
+                {
+                    "name": "materiał",
+                    "dim_x": 5.5,
+                    "dim_y": 4.5,
+                    "dim_z": 3.0,
+                    "unit": "cm"
+                }
+            ]
+        },
+        "duration": 0.8931806790001247,
+        "tokens": {
+            "prompt_tokens": 2694,
+            "completion_tokens": 83,
+            "total_tokens": 2777
+        }
+    },
+    "Lesion": {
+        "ner": {
+            "lesions": [
+                {
+                    "type": "guz",
+                    "dim_x": 5.5,
+                    "dim_y": 4.5,
+                    "dim_z": 3.0,
+                    "component_index": 0
+                },
+                {
+                    "type": "guz",
+                    "dim_x": 3.5,
+                    "dim_y": 3.0,
+                    "dim_z": 3.5,
+                    "color": "żółtej",
+                    "features": [
+                        "wylewy_krwawe"
+                    ],
+                    "component_index": 0
+                }
+            ]
+        },
+        "duration": 1.8991641130000971,
+        "tokens": {
+            "prompt_tokens": 3752,
+            "completion_tokens": 265,
+            "total_tokens": 4017
+        }
+    },
+    "Fluid sample": {
+        "ner": {},
+        "duration": 0.766977493000013,
+        "tokens": {
+            "prompt_tokens": 2198,
+            "completion_tokens": 7,
+            "total_tokens": 2205
+        }
+    },
+    "Validation errors": []
+}
