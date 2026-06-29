@@ -79,7 +79,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.transcription_lock = asyncio.Lock()
 
     async def connect(self):
-        logger.info("[WS] WebSocket connected")
+        logger.info("[WS] Client connected")
         await self.accept()
         self.transcription_task = asyncio.create_task(self.process_buffer())
 
@@ -92,50 +92,42 @@ class AudioConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         try:
-            logger.info(f"[WS] Received data: {text_data[:100]}")
             msg = json.loads(text_data)
 
             if "control" in msg and msg["control"] == "stop_recording":
-                logger.info("[CTRL] Stop recording signal received!")
+                logger.info("[CTRL] Stop recording")
                 self.is_recording = False
                 await self.finalize_transcription()
                 return
 
             if "control" in msg and msg["control"] == "rewind":
                 seconds = msg.get("seconds", 5)
-                logger.info(f"[CTRL] Rewinding buffer by {seconds} seconds")
                 await self.rewind_buffer(seconds)
                 return
 
-            # Handle metadata updates
-            if msg.get("type") == "metadata" or msg.get("type") == "metadata_update":
+            if msg.get("type") in ("metadata", "metadata_update"):
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
-                    logger.info(f"[METADATA] Updated patient metadata: {self.patient_metadata}")
                 return
 
-            # Handle recording start/end with metadata
             if msg.get("type") == "recording_start":
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
-                    logger.info(f"[START] Recording started with metadata: {self.patient_metadata}")
+                logger.info("[WS] Recording started")
                 return
-                
+
             if msg.get("type") == "recording_end":
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
-                    logger.info(f"[END] Recording ended with metadata: {self.patient_metadata}")
                 return
 
             if msg.get("type") == "audio_chunk" and msg.get("data"):
-                logger.info("[AUDIO] Appending audio chunk")
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
-                    logger.info(f"[AUDIO] Audio chunk with metadata: {self.patient_metadata}")
 
                 audio_data = msg["data"]
                 if isinstance(audio_data, dict) and 'data' in audio_data:
@@ -148,26 +140,22 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 try:
                     audio_bytes = base64.b64decode(audio_b64)
                     num_samples = len(audio_bytes) // 4
-                    audio_chunk = []
-                    for i in range(num_samples):
-                        sample_bytes = audio_bytes[i*4:(i+1)*4]
-                        sample = struct.unpack('<f', sample_bytes)[0]  # little-endian float32
-                        audio_chunk.append(sample)
-
+                    audio_chunk = [
+                        struct.unpack('<f', audio_bytes[i*4:(i+1)*4])[0]
+                        for i in range(num_samples)
+                    ]
                     self.audio_buffer.append(audio_chunk)
-                    logger.info(f"[AUDIO] Added chunk with {len(audio_chunk)} samples")
                 except Exception as e:
                     logger.error(f"[ERROR] Failed to decode audio chunk: {e}")
                     return
         except json.JSONDecodeError:
             if text_data:
                 try:
-                    logger.info("[AUDIO] Decoding raw base64 audio chunk")
                     audio_chunk = base64.b64decode(text_data)
                     self.audio_buffer.extend(audio_chunk)
                     self.audio_file.write(audio_chunk)
                 except Exception:
-                    print("[ERROR] Failed to decode raw base64 audio chunk")
+                    logger.error("[ERROR] Failed to decode raw base64 audio chunk")
         except Exception as e:
             logger.error(f"[ERROR] Exception in receive: {e}")
             await self.send(text_data=json.dumps({

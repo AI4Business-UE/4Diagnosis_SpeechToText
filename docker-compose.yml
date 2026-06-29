@@ -1,22 +1,25 @@
-version: "3.9"
-
 services:
   backend:
     build: ./backend
-    container_name: stt-backend
+    container_name: stt-b
     ports:
-      - "8010:8010"
+      - "8000:8010"
     volumes:
       - ./backend:/app
+    env_file:
+      - ./backend/.env
     environment:
       - PYTHONUNBUFFERED=1
 
   frontend:
     build: ./app
-    container_name: stt-frontend
+    container_name: stt-f
     ports:
       - "3010:3010"
     volumes:
       - ./app:/app
+      - /app/node_modules
+    depends_on:
+      - backend
     stdin_open: true
     tty: true
