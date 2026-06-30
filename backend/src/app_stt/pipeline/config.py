@@ -1,4 +1,13 @@
 from dataclasses import dataclass, field
+from typing import ClassVar
+
+
+WHISPER_MODELS: dict[str, str] = {
+    "whisper-small": "openai/whisper-small",
+    "whisper-medium": "openai/whisper-medium",
+    "whisper-medical-pl": "msxksm/whisper-medium-medical-pl",
+    "whisper-large-v3": "openai/whisper-large-v3",
+}
 
 
 @dataclass
@@ -6,6 +15,16 @@ class PipelineConfig:
     # ── STT ──────────────────────────────────────────────────────────────────
     # whisper_local | openai_whisper | openrouter_whisper
     stt_model: str = "whisper_local"
+
+    # HuggingFace model ID for local whisper
+    # choices: whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3
+    whisper_model: str = "whisper-small"
+
+    WHISPER_MODELS: ClassVar[dict[str, str]] = WHISPER_MODELS
+
+    @property
+    def whisper_hf_id(self) -> str:
+        return WHISPER_MODELS[self.whisper_model]
 
     # ── NER ──────────────────────────────────────────────────────────────────
     # chained: Patient → Component → Lesion (z kontekstem komponentów) → FluidSample

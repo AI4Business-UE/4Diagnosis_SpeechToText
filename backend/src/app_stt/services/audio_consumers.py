@@ -71,6 +71,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.full_transcription = ""  # Przechowuje pełną transkrypcję
         self.is_recording = True  # Flaga określająca czy nagrywanie trwa
         self.patient_metadata = {} # Przechowuje metadane pacjenta
+        self.whisper_model = None  # Wybrany model Whisper
 
         tmp_dir = os.path.join(os.getcwd(), "app_stt", "data", "tmp_audio")
         os.makedirs(tmp_dir, exist_ok=True)
@@ -111,11 +112,18 @@ class AudioConsumer(AsyncWebsocketConsumer):
                     self.patient_metadata.update(metadata)
                 return
 
+            if msg.get("type") == "set_model":
+                self.whisper_model = msg.get("model")
+                logger.info(f"[WS] Whisper model set to: {self.whisper_model}")
+                return
+
             if msg.get("type") == "recording_start":
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
-                logger.info("[WS] Recording started")
+                if msg.get("whisper_model"):
+                    self.whisper_model = msg["whisper_model"]
+                logger.info(f"[WS] Recording started (model: {self.whisper_model})")
                 return
 
             if msg.get("type") == "recording_end":
@@ -190,7 +198,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
 
                 async with self.transcription_lock:
                     try:
-                        text = transcribe_audio_chunk(audio_path)
+                        text = transcribe_audio_chunk(audio_path, whisper_model=self.whisper_model)
                         logger.info(f"[TRANSCRIBE] Raw transcription: {text}")
 
                         if text.strip():
@@ -237,7 +245,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
             audio_path = self.audio_file.name
 
             try:
-                text = transcribe_audio_chunk(audio_path)
+                text = transcribe_audio_chunk(audio_path, whisper_model=self.whisper_model)
                 logger.info(f"[FINALIZE] Final transcription chunk: {text}")
 
                 if text.strip():

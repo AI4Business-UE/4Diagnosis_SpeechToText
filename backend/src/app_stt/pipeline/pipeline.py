@@ -4,7 +4,7 @@ import os
 
 from .config import PipelineConfig
 from .stages.preprocessing import AudioPreprocessor
-from .stages.stt.whisper_local import WhisperSmall
+from .stages.stt.whisper_local import WhisperLocal
 from .stages.ner.base import NERStrategy
 from .stages.ner.split import SplitNERStrategy
 from .stages.ner.chained import ChainedNERStrategy
@@ -81,7 +81,7 @@ class Pipeline:
     def _build_stt(self):
         model = self.config.stt_model
         if model == "whisper_local":
-            return WhisperSmall()
+            return WhisperLocal(model_id=self.config.whisper_hf_id)
         raise ValueError(
             f"Unknown STT model '{model}'. "
             "Supported: 'whisper_local'. "

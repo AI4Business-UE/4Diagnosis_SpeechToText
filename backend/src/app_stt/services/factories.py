@@ -1,13 +1,14 @@
-from ..config import STT_MODEL, TTT_MODEL
+from ..config import STT_MODEL, TTT_MODEL, WHISPER_MODELS, DEFAULT_WHISPER_MODEL
 
 
 class STTFactory:
     @staticmethod
-    def get_model_loader():
+    def get_model_loader(whisper_model_key: str = DEFAULT_WHISPER_MODEL):
         try:
             if STT_MODEL == "local/whisper":
                 from .models_loaders.stt.mloader_whisper_local import WhisperLocal
-                return WhisperLocal()
+                model_id = WHISPER_MODELS.get(whisper_model_key, WHISPER_MODELS[DEFAULT_WHISPER_MODEL])
+                return WhisperLocal(model_id=model_id)
             elif STT_MODEL == "OpenAI/whisper":
                 from .models_loaders.stt.mloader_openai_whisper import OpenAIWhisper
                 return OpenAIWhisper()
