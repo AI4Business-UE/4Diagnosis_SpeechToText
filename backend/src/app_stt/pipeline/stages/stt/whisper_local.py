@@ -5,7 +5,7 @@ import librosa
 from transformers import WhisperForConditionalGeneration, WhisperProcessor, pipeline
 
 
-class WhisperSmall:
+class WhisperLocal:
     """
     Local Whisper STT model via HuggingFace Transformers.
 
@@ -13,10 +13,10 @@ class WhisperSmall:
     are handled correctly without manual chunking.
     """
 
-    MODEL_NAME = "openai/whisper-small"
     LANGUAGE = "pl"
 
-    def __init__(self):
+    def __init__(self, model_id: str = "openai/whisper-small"):
+        self.model_id = model_id
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.processor = self._load_processor()
         self.model = self._load_model()
@@ -31,12 +31,6 @@ class WhisperSmall:
         self.model.eval()
 
     def transcribe(self, audio_path: str) -> dict:
-        """
-        Transcribe audio file.
-
-        Returns dict with at least a 'text' key containing the full transcription,
-        and optionally 'chunks' with timestamps when return_timestamps=True.
-        """
         audio, sr = librosa.load(audio_path, sr=16000)
         result = self.pipe(
             {"array": audio, "sampling_rate": sr},
@@ -46,9 +40,13 @@ class WhisperSmall:
         return result
 
     def _load_model(self) -> WhisperForConditionalGeneration:
-        print(f"Loading Whisper model ({self.MODEL_NAME})...")
-        return WhisperForConditionalGeneration.from_pretrained(self.MODEL_NAME)
+        print(f"Loading Whisper model ({self.model_id})...")
+        return WhisperForConditionalGeneration.from_pretrained(self.model_id)
 
     def _load_processor(self) -> WhisperProcessor:
-        print(f"Loading Whisper processor ({self.MODEL_NAME})...")
-        return WhisperProcessor.from_pretrained(self.MODEL_NAME)
+        print(f"Loading Whisper processor ({self.model_id})...")
+        return WhisperProcessor.from_pretrained(self.model_id)
+
+
+# backward compat alias
+WhisperSmall = WhisperLocal

@@ -1,8 +1,17 @@
 from .data.macro_descriptions import MACRO_DESCS
 from .data.macro_dictionary import MEDICAL_NOMENCLATURE_DICTIONARY
 
-STT_MODEL = 'OpenRouter/whisper'
+STT_MODEL = 'local/whisper'
 TTT_MODEL = "OpenRouter/GPT"  # "disabled" to turn off TTT
+
+WHISPER_MODELS = {
+    "whisper-small":      "openai/whisper-small",
+    "whisper-medium":     "openai/whisper-medium",
+    "whisper-medical-pl": "msxksm/whisper-medium-medical-pl",
+    "whisper-large-v3":   "openai/whisper-large-v3",
+}
+
+DEFAULT_WHISPER_MODEL = "whisper-small"
 
 SYSTEM_TESTING_MODE = True
 

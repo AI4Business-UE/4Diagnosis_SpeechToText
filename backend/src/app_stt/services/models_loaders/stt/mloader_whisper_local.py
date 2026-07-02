@@ -4,10 +4,9 @@ from logging_config import logger
 
 
 class WhisperLocal(SpeechToTextModel):
-    def __init__(self):
-        self.model_name: str = "openai/whisper-small"
+    def __init__(self, model_id: str = "openai/whisper-small"):
+        self.model_name: str = model_id
         self.language: str = "pl"
-        # Heavy imports + model loading deferred to first transcribe() call
         self._processor = None
         self._model = None
         self._forced_ids = None
@@ -16,15 +15,22 @@ class WhisperLocal(SpeechToTextModel):
         if self._model is not None:
             return
         from transformers import WhisperForConditionalGeneration, WhisperProcessor
-        logger.info("Loading Whisper model...")
+        logger.info(f"Loading Whisper model ({self.model_name})...")
         self._processor = WhisperProcessor.from_pretrained(self.model_name)
         self._model = WhisperForConditionalGeneration.from_pretrained(self.model_name)
         self._forced_ids = self._processor.get_decoder_prompt_ids(
             language=self.language, task="transcribe"
         )
         self._model.eval()
-        logger.info("Whisper model loaded.")
+        logger.info(f"Whisper model ({self.model_name}) loaded.")
 
+    def load_model(self):
+        self._ensure_loaded()
+        return self._model
+
+    def load_processor(self):
+        self._ensure_loaded()
+        return self._processor
 
     def transcribe(self, audio_path) -> dict:
         import torch

@@ -1,18 +1,27 @@
 from .factories import STTFactory, TTTFactory
+from ..config import DEFAULT_WHISPER_MODEL
 from pathlib import Path
 from logging_config import logger
 
 
 class Transcriber:
     def __init__(self):
-        self.model_loader_stt = STTFactory.get_model_loader()
+        self.whisper_model_key = DEFAULT_WHISPER_MODEL
+        self.model_loader_stt = STTFactory.get_model_loader(self.whisper_model_key)
         self.model_loader_ttt = None
+
+    def set_whisper_model(self, model_key: str):
+        if model_key != self.whisper_model_key:
+            logger.info(f"[Transcriber] Switching whisper model: {self.whisper_model_key} -> {model_key}")
+            self.whisper_model_key = model_key
+            self.model_loader_stt = None
+            self.turn_stt_on()
 
     def turn_stt_on(self):
         logger.info("[Transcriber] Loading STT model...")
         try:
             self.turn_ttt_off()
-            self.model_loader_stt = STTFactory.get_model_loader()
+            self.model_loader_stt = STTFactory.get_model_loader(self.whisper_model_key)
             if self.model_loader_stt:
                 logger.info("[Transcriber] STT ready")
             else:
@@ -37,7 +46,10 @@ class Transcriber:
 transcriber = Transcriber()
 
 
-def transcribe_audio_chunk(audio_path: str) -> str:
+def transcribe_audio_chunk(audio_path: str, whisper_model: str | None = None) -> str:
+    if whisper_model:
+        transcriber.set_whisper_model(whisper_model)
+
     if not transcriber.model_loader_stt:
         transcriber.turn_stt_on()
 
