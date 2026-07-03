@@ -9,6 +9,11 @@ WHISPER_MODELS: dict[str, str] = {
     "whisper-large-v3": "openai/whisper-large-v3",
 }
 
+import qdrant_client.models as qdrant_models
+
+from .stages.rag.qdrant.client import QdrantClientMode
+from .stages.rag.encoder_models.base import SentenceEncoder
+from .stages.rag.encoder_models.encoders import E5Large, FastEmbedSparse
 
 @dataclass
 class PipelineConfig:
@@ -34,10 +39,16 @@ class PipelineConfig:
     # model przekazywany do OpenRouter (lub OpenAI)
     llm_model: str = "openai/gpt-4o"
 
-    # ── RAG (in progress) ────────────────────────────────────────────────────
-    # none | bm25 | faiss
-    rag_variant: str = "none"
-
+    # ── RAG ────────────────────────────────────────────────────
+    vector_db_provider: str = "qdrant"
+    dense_encoder_model: type[SentenceEncoder] = E5Large
+    sparse_encoder_model: type[SentenceEncoder] = FastEmbedSparse    
+    weight_reranking: bool = False
+    top_k_results: int = 5
+    qdrant_fusion_type: qdrant_models.Fusion = qdrant_models.Fusion.DBSF
+    qdrant_distance_metric: qdrant_models.Distance = qdrant_models.Distance.COSINE
+    qdrant_client_mode: QdrantClientMode = QdrantClientMode.IN_MEMORY
+    
     # ── Preprocessing ────────────────────────────────────────────────────────
     target_sr: int = 16000
     use_volume_normalization: bool = True

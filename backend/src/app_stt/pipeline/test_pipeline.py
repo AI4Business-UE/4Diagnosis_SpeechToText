@@ -87,6 +87,7 @@ def test_full_pipeline(audio_path: str):
 
     print("Transcript:", result["transcript"][:200], "...")
     print("Entities:", json.dumps(result["entities"], indent=2, ensure_ascii=False))
+    print("Retrieved Templates (max 5):", result["retrieved_templates"][:5])
     print("✓ Full pipeline passed")
     return result
 

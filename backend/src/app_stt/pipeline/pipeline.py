@@ -8,6 +8,8 @@ from .stages.stt.whisper_local import WhisperLocal
 from .stages.ner.base import NERStrategy
 from .stages.ner.split import SplitNERStrategy
 from .stages.ner.chained import ChainedNERStrategy
+from .stages.rag.rag_retriever import RAGRetriever
+from .stages.rag.qdrant.retriever import QdrantRetriever
 
 
 class Pipeline:
@@ -40,6 +42,7 @@ class Pipeline:
         self.preprocessor = AudioPreprocessor(self.config)
         self.stt = self._build_stt()
         self.ner = self._build_ner()
+        self.rag = self._build_rag()
 
     @classmethod
     def from_config(cls, **overrides) -> Pipeline:
@@ -69,11 +72,20 @@ class Pipeline:
         transcript = self._get_text(stt_result)
 
         entities = self.ner.extract(transcript)
+        templates = self.rag.retrieve_fusion(
+            components=entities.components,
+            lesions=entities.lesions,
+            fluids=entities.fluid_samples,
+            top_k=self.config.top_k_results,
+            fusion_type=self.config.qdrant_fusion_type,
+            weights_on=self.config.weight_reranking
+        )
 
         return {
             "transcript": transcript,
             "entities": entities.model_dump(),
             "preprocessing": preprocessing_meta,
+            "retrieved_templates": templates
         }
 
     # ── private ───────────────────────────────────────────────────────────────
@@ -105,7 +117,18 @@ class Pipeline:
         raise ValueError(
             f"Unknown NER strategy '{strategy}'. Supported: 'chained', 'split'."
         )
+        
+    def _build_rag(self) -> RAGRetriever:
+        provider = self.config.vector_db_provider
+        if provider == 'qdrant':
+            return QdrantRetriever(self.config.dense_encoder_model(), 
+                                   self.config.sparse_encoder_model(), 
+                                   self.config.qdrant_client_mode)
 
+        raise ValueError(
+            f"Unknown vector db provider '{provider}'. Supported: 'qdrant'."
+        )
+        
     @staticmethod
     def _get_text(stt_result: dict | str) -> str:
         if isinstance(stt_result, str):
