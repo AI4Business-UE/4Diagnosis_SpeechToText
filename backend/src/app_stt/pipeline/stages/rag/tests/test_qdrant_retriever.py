@@ -120,3 +120,9 @@ def test_retrieval(db_index, test_db_config, component_extraction, lesion_extrac
     results = retriever.retrieve_fusion(component_extraction, lesion_extraction, fluid_extraction, 5, models.Fusion.DBSF)
     
     assert len(results) > 0
+
+def test_empty_retrieval(db_index, test_db_config):
+    retriever = QdrantRetriever(test_db_config)
+    results = retriever.retrieve_fusion([], [], [], 5, models.Fusion.DBSF)
+    
+    assert len(results) == 0

@@ -23,6 +23,9 @@ class QdrantRetriever(RAGRetriever):
         queries = build_queries(components, lesions, fluids)
         prefetches = self._build_prefetch(queries, top_k)
         
+        if not prefetches:
+            return []
+        
         results = self._client.query_points(
             MACRO_DESCS_COLLECTION,
             prefetch=prefetches,

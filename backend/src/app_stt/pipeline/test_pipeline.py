@@ -86,7 +86,7 @@ def test_rag(ner_extraction_path: str):
     with open(ner_extraction_path, 'r') as f:
         ner_extraction = ExtractionResult(**json.load(f))
      
-    cfg = PipelineConfig(qdrant_client_mode=QdrantClientMode.IN_MEMORY)
+    cfg = PipelineConfig(qdrant_client_mode=QdrantClientMode.CONNECTION)
     
     index_database(cfg)
     retriever = QdrantRetriever(cfg)
@@ -108,14 +108,14 @@ def test_full_pipeline(audio_path: str):
     from app_stt.pipeline.stages.rag.qdrant import QdrantClientMode
     from app_stt.pipeline.stages.rag.qdrant import index_database
 
-    cfg = PipelineConfig(ner_strategy="chained", use_vad=False, qdrant_client_mode=QdrantClientMode.IN_MEMORY)
+    cfg = PipelineConfig(ner_strategy="chained", use_vad=False, qdrant_client_mode=QdrantClientMode.CONNECTION, top_k_results=10)
     index_database(cfg)
     pipeline = Pipeline(cfg)
     result = pipeline.run(audio_path)
 
     print("Transcript:", result["transcript"][:200], "...")
     print("Entities:", json.dumps(result["entities"], indent=2, ensure_ascii=False))
-    print("Retrieved Templates (max 5):", result["retrieved_templates"][:5])
+    print("Retrieved Templates (max 5):", result["retrieved_templates"])
     print("✓ Full pipeline passed")
     return result
 

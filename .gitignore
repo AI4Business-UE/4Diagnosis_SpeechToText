@@ -46,3 +46,4 @@ backend/app_stt/data/tmp_audio/*.wav
 backend/app_stt/data/tmp_audio/*.converted.wav
 backend/src/app_stt/data/tmp_audio
 
+qdrant_data/*
