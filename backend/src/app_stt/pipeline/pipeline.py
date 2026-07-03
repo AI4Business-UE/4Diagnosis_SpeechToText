@@ -9,7 +9,7 @@ from .stages.ner.base import NERStrategy
 from .stages.ner.split import SplitNERStrategy
 from .stages.ner.chained import ChainedNERStrategy
 from .stages.rag.rag_retriever import RAGRetriever
-from .stages.rag.qdrant.retriever import QdrantRetriever
+from .stages.rag.qdrant import QdrantRetriever
 
 
 class Pipeline:
@@ -18,7 +18,7 @@ class Pipeline:
       1. Preprocessing  — normalise, filter, denoise, VAD
       2. STT            — Whisper (local or API)
       3. NER            — extract Patient, Components, Lesions, FluidSamples
-      4. RAG            — (in progress)
+      4. RAG            — build queries from Components, Lesions, FluidSamples and query the templates db
       5. Template fill  — (in progress)
 
     Usage
@@ -65,6 +65,7 @@ class Pipeline:
             transcript   – raw STT output string
             entities     – ExtractionResult as dict
             preprocessing – metadata dict from AudioPreprocessor
+            retrieved_templates - templates retrieved from vector database
         """
         preprocessing_meta = self.preprocessor.process(audio_path)
 
@@ -78,7 +79,6 @@ class Pipeline:
             fluids=entities.fluid_samples,
             top_k=self.config.top_k_results,
             fusion_type=self.config.qdrant_fusion_type,
-            weights_on=self.config.weight_reranking
         )
 
         return {
@@ -121,9 +121,7 @@ class Pipeline:
     def _build_rag(self) -> RAGRetriever:
         provider = self.config.vector_db_provider
         if provider == 'qdrant':
-            return QdrantRetriever(self.config.dense_encoder_model(), 
-                                   self.config.sparse_encoder_model(), 
-                                   self.config.qdrant_client_mode)
+            return QdrantRetriever(self.config)
 
         raise ValueError(
             f"Unknown vector db provider '{provider}'. Supported: 'qdrant'."

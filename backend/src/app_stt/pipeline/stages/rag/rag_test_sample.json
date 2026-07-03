@@ -1,0 +1,38 @@
+{
+    "patient": {
+        "first_name": "Justyna",
+        "last_name": "Nowacka",
+        "pesel": "82050298239",
+        "age": 31
+    },
+    "components": [
+        {
+            "name": "materiał",
+            "dim_x": 5.5,
+            "dim_y": 4.5,
+            "dim_z": 3.0,
+            "unit": "cm"
+        }
+    ],
+    "lesions": [
+        {
+            "type": "guz",
+            "dim_x": 5.5,
+            "dim_y": 4.5,
+            "dim_z": 3.0,
+            "component_index": 0
+        },
+        {
+            "type": "guz",
+            "dim_x": 3.5,
+            "dim_y": 3.0,
+            "dim_z": 3.5,
+            "color": "żółtej",
+            "features": [
+                "wylewy_krwawe"
+            ],
+            "component_index": 0
+        }
+    ],
+    "fluid_samples": []
+}

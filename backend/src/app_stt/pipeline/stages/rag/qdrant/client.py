@@ -13,8 +13,9 @@ class QdrantClientMode(enum.Enum):
     CONNECTION = 'connection'
 
 def get_qdrant_client(mode: QdrantClientMode) -> QdrantClient:
-    global _client 
-    if _client:
+    global _client
+    
+    if _client is not None:
         return _client
     
     if mode == QdrantClientMode.IN_MEMORY:

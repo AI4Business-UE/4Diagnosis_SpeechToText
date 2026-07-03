@@ -1,22 +1,26 @@
-import qdrant_client.models as models
-from typing import List
+from __future__ import annotations
 
-from .client import get_qdrant_client, QdrantClientMode 
-from .queries import detect_specimen_type, build_queries, SearchQuery
+import qdrant_client.models as models
+from typing import List, TYPE_CHECKING
+
+from .client import get_qdrant_client 
+from .queries import build_queries, SearchQuery
 from .config import MACRO_DESCS_COLLECTION
+from ..encoder_models import get_sparse_encoder, get_dense_encoder
 from ..fts import prepare_fts_text
-from ..encoder_models.base import SentenceEncoder
 from ..rag_retriever import RAGRetriever
 
+if TYPE_CHECKING:
+    from app_stt.pipeline.config import PipelineConfig
+
 class QdrantRetriever(RAGRetriever):
-    def __init__(self, dense_encoder: SentenceEncoder, sparse_encoder: SentenceEncoder, client_mode: QdrantClientMode):
-        self._client = get_qdrant_client(client_mode)
-        self._dense_encoder = dense_encoder
-        self._sparse_encoder = sparse_encoder
+    def __init__(self, config: PipelineConfig):
+        self._client = get_qdrant_client(config.qdrant_client_mode)
+        self._dense_encoder = get_dense_encoder(config.dense_encoder_model)
+        self._sparse_encoder = get_sparse_encoder(config.sparse_encoder_model)
     
-    def retrieve_fusion(self, components, lesions, fluids, top_k: int, fusion_type: models.Fusion, weights_on: bool):
-        s_type = detect_specimen_type(components, lesions, fluids) 
-        queries = build_queries(components, lesions, fluids, s_type)
+    def retrieve_fusion(self, components, lesions, fluids, top_k: int, fusion_type: models.Fusion):
+        queries = build_queries(components, lesions, fluids)
         prefetches = self._build_prefetch(queries, top_k)
         
         results = self._client.query_points(
@@ -26,9 +30,9 @@ class QdrantRetriever(RAGRetriever):
             query=models.FusionQuery(fusion=fusion_type),
             with_payload=True
         )
-        
+         
         return self._extract_templates_from_points(results.points)
-             
+     
     def _extract_templates_from_points(self, points: List[models.ScoredPoint]):
         return [p.payload.get('text') for p in points]
     

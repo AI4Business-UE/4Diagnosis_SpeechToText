@@ -7,7 +7,7 @@ Lub z backend/src/:
 
 Wymagania:
     - OPENROUTER_API_KEY w pliku .env (lub zmiennej środowiskowej)
-    - pip install openai python-dotenv pydantic
+    - pip install openai python-dotenv pydantic qdrant_client morfeusz2
 
 Opcjonalnie (do pełnego testu z audio):
     - pip install torch transformers librosa soundfile
@@ -77,11 +77,39 @@ def test_preprocessing(audio_path: str):
     return result
 
 
+def test_rag(ner_extraction_path: str):
+    print(f"\n=== TEST: RAG ({ner_extraction_path}) ===")
+    from app_stt.pipeline import PipelineConfig
+    from app_stt.pipeline.stages.ner import ExtractionResult
+    from app_stt.pipeline.stages.rag.qdrant import QdrantClientMode, QdrantRetriever, index_database
+    
+    with open(ner_extraction_path, 'r') as f:
+        ner_extraction = ExtractionResult(**json.load(f))
+     
+    cfg = PipelineConfig(qdrant_client_mode=QdrantClientMode.IN_MEMORY)
+    
+    index_database(cfg)
+    retriever = QdrantRetriever(cfg)
+    results = retriever.retrieve_fusion(components=ner_extraction.components, 
+                                        lesions=ner_extraction.lesions,
+                                        fluids=ner_extraction.fluid_samples,
+                                        top_k=cfg.top_k_results,
+                                        fusion_type=cfg.qdrant_fusion_type)
+    assert len(results) > 0, "No results returned from RAG"
+    print("Results:", results)
+    print("✓ RAG passed")
+    
+    return results
+
+
 def test_full_pipeline(audio_path: str):
     print(f"\n=== TEST: Full Pipeline ({audio_path}) ===")
     from app_stt.pipeline import Pipeline, PipelineConfig
+    from app_stt.pipeline.stages.rag.qdrant import QdrantClientMode
+    from app_stt.pipeline.stages.rag.qdrant import index_database
 
-    cfg = PipelineConfig(ner_strategy="chained", use_vad=False)
+    cfg = PipelineConfig(ner_strategy="chained", use_vad=False, qdrant_client_mode=QdrantClientMode.IN_MEMORY)
+    index_database(cfg)
     pipeline = Pipeline(cfg)
     result = pipeline.run(audio_path)
 
@@ -97,7 +125,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Pipeline test runner")
     parser.add_argument("--audio", type=str, default=None, help="Path to audio file for full pipeline test")
-    parser.add_argument("--test", choices=["ner", "split", "chained", "preprocessing", "full", "all"], default="ner")
+    parser.add_argument("--ner_extraction_path", type=str, default=None, help="Path to sample NER extraction JSON")
+    parser.add_argument("--test", choices=["ner", "split", "chained", "preprocessing", "rag", "full", "all"], default="ner")
     args = parser.parse_args()
 
     if args.test in ("ner", "split", "all"):
@@ -108,6 +137,9 @@ if __name__ == "__main__":
 
     if args.test in ("preprocessing", "all") and args.audio:
         test_preprocessing(args.audio)
+        
+    if args.test in ("rag", "all") and args.ner_extraction_path:
+        test_rag(args.ner_extraction_path)
 
     if args.test == "full":
         if not args.audio:

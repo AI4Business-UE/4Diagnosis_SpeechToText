@@ -3,7 +3,7 @@ from typing import List, Any, Generator, Literal
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel 
 
 from app_stt.pipeline.stages.ner.entities import Component, ComponentExtraction, Lesion, LesionExtraction, FluidSample, FluidSampleExtraction
 
@@ -11,32 +11,10 @@ class ComponentWithLesion(BaseModel):
   component: Component
   lesions: List[Lesion]
 
-class SpecimenType(Enum):
-  FLUID = "fluid"
-  SMALL_EXCISION = "excision"
-  ORGAN = "organ_only"
-
 class SearchQuery(BaseModel):
   text: str
   weight: float = 1.0
   using: Literal["dense", "sparse", "both"] = "both"
-
-def detect_specimen_type(
-    components: ComponentExtraction,
-    lesions:    LesionExtraction,
-    fluids:     FluidSampleExtraction,
-) -> SpecimenType:
-    components = components.components
-    lesions = lesions.lesions
-    has_lesion = bool(lesions)
-
-    if not components:
-      if fluids.fluid_samples:
-        return SpecimenType.FLUID
-      if has_lesion:
-        return SpecimenType.SMALL_EXCISION
-
-    return SpecimenType.ORGAN
 
 def _describe_lesion_structure(l: Lesion) -> str | None:
     ltype = l.type or "zmiana"
@@ -108,55 +86,21 @@ def _get_query_from_organ_context(cl: ComponentWithLesion) -> List[SearchQuery]:
     return queries
 
 class BaseQueryBuilder(ABC):
-    def __init__(self, components: ComponentExtraction, lesions: LesionExtraction, fluids: FluidSampleExtraction, specimen_type: SpecimenType):
+    def __init__(self, components: List[Component], lesions: List[Lesion], fluids: List[FluidSample]):
         self.components = components
         self.lesions = lesions
         self.fluids = fluids
-        self.specimen_type = specimen_type
         
     @abstractmethod
     def build(self) -> List[SearchQuery]:
         pass
 
-class FluidQueryBuilder(BaseQueryBuilder):
-    def build(self) -> List[SearchQuery]:
-        queries = []
-        dense_parts = []
-        sparse_parts = []
-
-        for fs in self.fluids.fluid_samples:
-          dense_desc, sparse_desc = _describe_fluid_structure(fs)
-          if dense_desc:
-            dense_parts.append(dense_desc)
-          if sparse_desc:
-            sparse_parts.append(sparse_desc)
-
-        if dense_parts:
-          queries.append(SearchQuery(text=", ".join(dense_parts), weight=1.0, using="dense"))
-        if sparse_parts:
-          queries.append(SearchQuery(text=" ".join(sparse_parts), weight=1.0, using="sparse"))
-
-        return queries
-    
-class SmallExcisionQueryBuilder(BaseQueryBuilder):
-    def build(self) -> List[SearchQuery]:
-        queries = []
-            
-        dense_lesion_parts, sparse_lesion_parts = _describe_all_lesions(self.lesions.lesions)
-
-        if dense_lesion_parts:
-          queries.append(SearchQuery(text=", ".join(dense_lesion_parts), weight=1.0, using="dense"))
-        if sparse_lesion_parts:
-          queries.append(SearchQuery(text=" ".join(sparse_lesion_parts), weight=1.0, using="sparse"))  
-
-        return queries
-
 class OrganQueryBuilder(BaseQueryBuilder):
     def build(self) -> List[SearchQuery]:
         queries = []
-        components = self.components.components
-        lesions = self.lesions.lesions
-        fluids = self.fluids.fluid_samples
+        components = self.components
+        lesions = self.lesions
+        fluids = self.fluids
         
         dense_struct_parts = []
         sparse_struct_parts = []
@@ -224,7 +168,6 @@ def build_queries(
     components: ComponentExtraction,
     lesions: LesionExtraction,
     fluids: FluidSampleExtraction,
-    specimen_type: SpecimenType,
 ) -> list[SearchQuery]: 
-    builder = OrganQueryBuilder(components, lesions, fluids, specimen_type)
+    builder = OrganQueryBuilder(components, lesions, fluids)
     return builder.build()

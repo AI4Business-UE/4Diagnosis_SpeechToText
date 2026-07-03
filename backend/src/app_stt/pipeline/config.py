@@ -41,13 +41,13 @@ class PipelineConfig:
 
     # ── RAG ────────────────────────────────────────────────────
     vector_db_provider: str = "qdrant"
-    dense_encoder_model: type[SentenceEncoder] = E5Large
-    sparse_encoder_model: type[SentenceEncoder] = FastEmbedSparse    
-    weight_reranking: bool = False
+    dense_encoder_model: str = "intfloat/multilingual-e5-large"
+    sparse_encoder_model: str = "Qdrant/bm25"
     top_k_results: int = 5
     qdrant_fusion_type: qdrant_models.Fusion = qdrant_models.Fusion.DBSF
     qdrant_distance_metric: qdrant_models.Distance = qdrant_models.Distance.COSINE
     qdrant_client_mode: QdrantClientMode = QdrantClientMode.IN_MEMORY
+    qdrant_sparse_modifier: qdrant_models.Modifier = qdrant_models.Modifier.IDF
     
     # ── Preprocessing ────────────────────────────────────────────────────────
     target_sr: int = 16000
