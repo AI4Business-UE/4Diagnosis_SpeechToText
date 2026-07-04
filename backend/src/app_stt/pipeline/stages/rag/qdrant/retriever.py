@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-import qdrant_client.models as models
+import logging
 from typing import List, TYPE_CHECKING
+
+import qdrant_client.models as models
 
 from .client import get_qdrant_client 
 from .queries import build_queries, SearchQuery
@@ -13,6 +15,8 @@ from ..rag_retriever import RAGRetriever
 if TYPE_CHECKING:
     from app_stt.pipeline.config import PipelineConfig
 
+logger = logging.getLogger(__name__)
+
 class QdrantRetriever(RAGRetriever):
     def __init__(self, config: PipelineConfig):
         self._client = get_qdrant_client(config.qdrant_client_mode)
@@ -20,12 +24,16 @@ class QdrantRetriever(RAGRetriever):
         self._sparse_encoder = get_sparse_encoder(config.sparse_encoder_model)
     
     def retrieve_fusion(self, components, lesions, fluids, top_k: int, fusion_type: models.Fusion):
+        logger.info(f"RAG: Starting the retrieval stage! Building queries...")
+        
         queries = build_queries(components, lesions, fluids)
         prefetches = self._build_prefetch(queries, top_k)
         
         if not prefetches:
+            logger.info("RAG: Query list is empty! Skipping retrieval.")
             return []
         
+        logger.info(f"RAG: Queries built successfuly! Proceeding with retrieval...") 
         results = self._client.query_points(
             MACRO_DESCS_COLLECTION,
             prefetch=prefetches,
@@ -33,7 +41,8 @@ class QdrantRetriever(RAGRetriever):
             query=models.FusionQuery(fusion=fusion_type),
             with_payload=True
         )
-         
+        
+        logger.info(f"RAG: Retrieval complete! Successfully retrieved {len(results.points)} results.")
         return self._extract_templates_from_points(results.points)
      
     def _extract_templates_from_points(self, points: List[models.ScoredPoint]):

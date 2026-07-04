@@ -7,16 +7,18 @@ Lub z backend/src/:
 
 Wymagania:
     - OPENROUTER_API_KEY w pliku .env (lub zmiennej środowiskowej)
-    - pip install openai python-dotenv pydantic qdrant_client morfeusz2
+    - pip install openai python-dotenv pydantic qdrant_client morfeusz2 transformers
 
 Opcjonalnie (do pełnego testu z audio):
-    - pip install torch transformers librosa soundfile
+    - pip install torch librosa soundfile
     - pip install noisereduce  (jeśli use_noise_reduction=True)
 """
 
 import json
 import sys
+import logging
 from pathlib import Path
+
 
 # ── dodaj pakiet do ścieżki jeśli uruchamiamy bezpośrednio ──────────────────
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -28,6 +30,10 @@ SAMPLE_TRANSCRIPT = (
     "W tym guz o wymiarach 3,5 x 3,0 x 3,5 cm barwy żółtej z centralnymi wylewami krwawymi. "
     "Margines oznaczono tuszem czarnym."
 )
+
+
+def _setup_logging(): 
+    logging.basicConfig(handlers=[logging.StreamHandler()], level=logging.INFO)
 
 
 def test_ner_split():
@@ -79,6 +85,8 @@ def test_preprocessing(audio_path: str):
 
 def test_rag(ner_extraction_path: str):
     print(f"\n=== TEST: RAG ({ner_extraction_path}) ===")
+    _setup_logging()
+    
     from app_stt.pipeline import PipelineConfig
     from app_stt.pipeline.stages.ner import ExtractionResult
     from app_stt.pipeline.stages.rag.qdrant import QdrantClientMode, QdrantRetriever, index_database
@@ -104,18 +112,22 @@ def test_rag(ner_extraction_path: str):
 
 def test_full_pipeline(audio_path: str):
     print(f"\n=== TEST: Full Pipeline ({audio_path}) ===")
+    _setup_logging()
+    import pprint
+    
     from app_stt.pipeline import Pipeline, PipelineConfig
     from app_stt.pipeline.stages.rag.qdrant import QdrantClientMode
     from app_stt.pipeline.stages.rag.qdrant import index_database
 
-    cfg = PipelineConfig(ner_strategy="chained", use_vad=False, qdrant_client_mode=QdrantClientMode.IN_MEMORY, top_k_results=10)
+    cfg = PipelineConfig(ner_strategy="chained", use_vad=False, qdrant_client_mode=QdrantClientMode.IN_MEMORY, top_k_results=5)
     index_database(cfg)
     pipeline = Pipeline(cfg)
     result = pipeline.run(audio_path)
 
     print("Transcript:", result["transcript"][:200], "...")
     print("Entities:", json.dumps(result["entities"], indent=2, ensure_ascii=False))
-    print("Retrieved Templates (max 5):", result["retrieved_templates"])
+    print("Retrieved Templates:")
+    pprint.pp(result["retrieved_templates"], width=120)
     print("✓ Full pipeline passed")
     return result
 
