@@ -308,6 +308,12 @@ def _build_result_row(
 ) -> dict[str, Any]:
     issues = result.get("issues", [])
     issue_codes = sorted({str(issue.get("code", "")) for issue in issues if issue.get("code")})
+    issue_fields = sorted({str(issue.get("field", "")) for issue in issues if issue.get("field")})
+    missing_fields = sorted({
+        str(issue.get("field", ""))
+        for issue in issues
+        if issue.get("code") == "missing_required_field" and issue.get("field")
+    })
     counts = _issue_counts(issues)
 
     return {
@@ -326,6 +332,8 @@ def _build_result_row(
         "score": result.get("score", ""),
         "issue_count": len(issues),
         "issue_codes": "|".join(issue_codes),
+        "issue_fields": "|".join(issue_fields),
+        "missing_fields": "|".join(missing_fields),
         **counts,
         "description_length": result.get("metrics", {}).get("description_length", ""),
         "transcript_length": result.get("metrics", {}).get("transcript_length", ""),
@@ -446,6 +454,8 @@ def write_results(rows: list[dict[str, Any]], output_path: Path) -> None:
         "score",
         "issue_count",
         "issue_codes",
+        "issue_fields",
+        "missing_fields",
         "warning_count",
         "error_count",
         "rules_issue_count",
