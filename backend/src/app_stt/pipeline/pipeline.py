@@ -10,6 +10,7 @@ from .stages.ner.split import SplitNERStrategy
 from .stages.ner.chained import ChainedNERStrategy
 from .stages.rag.rag_retriever import RAGRetriever
 from .stages.rag.qdrant import QdrantRetriever
+from .stages.answerer import Answerer, NoFillAnswerer
 
 
 class Pipeline:
@@ -43,6 +44,7 @@ class Pipeline:
         self.stt = self._build_stt()
         self.ner = self._build_ner()
         self.rag = self._build_rag()
+        self.answerer = self._build_answerer()
 
     @classmethod
     def from_config(cls, **overrides) -> Pipeline:
@@ -81,11 +83,18 @@ class Pipeline:
             fusion_type=self.config.qdrant_fusion_type,
         )
 
+        corrected_transcript = self.answerer.correct_transcription(
+            transcript,
+            templates,
+            entities
+        )
+
         return {
             "transcript": transcript,
             "entities": entities.model_dump(),
             "preprocessing": preprocessing_meta,
-            "retrieved_templates": templates
+            "retrieved_templates": templates,
+            "corrected_transcript": corrected_transcript
         }
 
     # ── private ───────────────────────────────────────────────────────────────
@@ -111,9 +120,9 @@ class Pipeline:
 
         strategy = self.config.ner_strategy
         if strategy == "chained":
-            return ChainedNERStrategy(self.config.llm_model)
+            return ChainedNERStrategy(self.config.ner_llm_model)
         if strategy == "split":
-            return SplitNERStrategy(self.config.llm_model)
+            return SplitNERStrategy(self.config.ner_llm_model)
         raise ValueError(
             f"Unknown NER strategy '{strategy}'. Supported: 'chained', 'split'."
         )
@@ -125,6 +134,15 @@ class Pipeline:
 
         raise ValueError(
             f"Unknown vector db provider '{provider}'. Supported: 'qdrant'."
+        )
+    
+    def _build_answerer(self) -> Answerer:
+        strategy = self.config.answerer_strategy
+        if strategy == 'no-fill':
+            return NoFillAnswerer(self.config.answerer_llm_model)
+        
+        raise ValueError(
+            f"Unknown answerer strategy '{strategy}'. Supported: 'no-fill'."
         )
         
     @staticmethod

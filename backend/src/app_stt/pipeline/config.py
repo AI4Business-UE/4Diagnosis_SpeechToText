@@ -37,7 +37,11 @@ class PipelineConfig:
     ner_strategy: str = "chained"
 
     # model przekazywany do OpenRouter (lub OpenAI)
-    llm_model: str = "openai/gpt-4o"
+    ner_llm_model: str = "openai/gpt-4o"
+
+    # ── Answerer ────────────────────────────────────────────────────
+    answerer_strategy: str = "no-fill"
+    answerer_llm_model: str = "openai/gpt-4o"
 
     # ── RAG ────────────────────────────────────────────────────
     vector_db_provider: str = "qdrant"
