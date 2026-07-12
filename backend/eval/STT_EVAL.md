@@ -76,13 +76,13 @@ Ten folder jest roboczy i nie powinien iść do commita.
 Eval najlepiej odpalać przez backendowy venv:
 
 ```bash
-backend/venv/bin/python backend/eval/build_stt_manifest.py
+backend/venv/bin/python backend/eval/stt/build_manifest.py
 ```
 
 Mały smoke eval:
 
 ```bash
-backend/venv/bin/python backend/eval/run_stt_eval.py \
+backend/venv/bin/python backend/eval/stt/run_eval.py \
   --limit 1 \
   --models whisper-small \
   --preprocessing baseline
@@ -91,7 +91,7 @@ backend/venv/bin/python backend/eval/run_stt_eval.py \
 Większy run na wybranych modelach i konfiguracjach:
 
 ```bash
-backend/venv/bin/python backend/eval/run_stt_eval.py \
+backend/venv/bin/python backend/eval/stt/run_eval.py \
   --models whisper-small whisper-medical-pl \
   --preprocessing baseline vad noise_reduction
 ```
@@ -99,7 +99,7 @@ backend/venv/bin/python backend/eval/run_stt_eval.py \
 Podsumowanie wyników:
 
 ```bash
-backend/venv/bin/python backend/eval/summarize_stt_results.py \
+backend/venv/bin/python backend/eval/stt/summarize_results.py \
   --input backend/eval/results/stt_eval_results.csv \
   --output backend/eval/results/stt_eval_summary.csv
 ```
@@ -107,7 +107,7 @@ backend/venv/bin/python backend/eval/summarize_stt_results.py \
 Porównanie aktualnego runu z baseline:
 
 ```bash
-backend/venv/bin/python backend/eval/compare_stt_baseline.py \
+backend/venv/bin/python backend/eval/stt/compare_baseline.py \
   --current backend/eval/results/stt_eval_results.csv \
   --baseline backend/eval/baselines/stt/whisper_comparison_results.csv \
   --output backend/eval/results/stt_baseline_comparison.csv
@@ -116,7 +116,7 @@ backend/venv/bin/python backend/eval/compare_stt_baseline.py \
 NER eval na referencyjnych transkryptach:
 
 ```bash
-backend/venv/bin/python backend/eval/run_ner_eval.py \
+backend/venv/bin/python backend/eval/ner/run_eval.py \
   --input backend/eval/data/ner/ner_eval_samples.jsonl \
   --strategies chained split \
   --output backend/eval/results/ner_eval_results.csv
@@ -125,7 +125,7 @@ backend/venv/bin/python backend/eval/run_ner_eval.py \
 Podsumowanie NER:
 
 ```bash
-backend/venv/bin/python backend/eval/summarize_ner_results.py \
+backend/venv/bin/python backend/eval/ner/summarize_results.py \
   --input backend/eval/results/ner_eval_results.csv \
   --output backend/eval/results/ner_eval_summary.csv
 ```
@@ -133,7 +133,7 @@ backend/venv/bin/python backend/eval/summarize_ner_results.py \
 End-to-end eval, czyli audio -> STT -> NER, odpalać tylko na małym limicie:
 
 ```bash
-backend/venv/bin/python backend/eval/run_end_to_end_eval.py \
+backend/venv/bin/python backend/eval/end_to_end/run_eval.py \
   --limit 1 \
   --models whisper-small \
   --preprocessing baseline \
@@ -144,7 +144,7 @@ backend/venv/bin/python backend/eval/run_end_to_end_eval.py \
 Prosty raport markdown z dostępnych wyników:
 
 ```bash
-backend/venv/bin/python backend/eval/generate_eval_report.py \
+backend/venv/bin/python backend/eval/reporting/generate_report.py \
   --output backend/eval/results/eval_report.md
 ```
 

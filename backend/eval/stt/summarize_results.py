@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_INPUT = REPO_ROOT / "backend/eval/results/stt_eval_results.csv"
 DEFAULT_OUTPUT = REPO_ROOT / "backend/eval/results/stt_eval_summary.csv"
 
@@ -126,7 +126,7 @@ def main() -> None:
     if not args.input.exists():
         raise SystemExit(
             f"Input file does not exist: {args.input}\n"
-            "Run backend/eval/run_stt_eval.py first to generate raw STT evaluation results."
+            "Run backend/eval/stt/run_eval.py first to generate raw STT evaluation results."
         )
 
     results = pd.read_csv(args.input)

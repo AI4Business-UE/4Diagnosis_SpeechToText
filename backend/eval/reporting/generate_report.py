@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_STT_SUMMARY = REPO_ROOT / "backend/eval/results/stt_eval_summary.csv"
 DEFAULT_STT_BASELINE_COMPARISON = REPO_ROOT / "backend/eval/results/stt_baseline_comparison.csv"
 DEFAULT_NER_SUMMARY = REPO_ROOT / "backend/eval/results/ner_eval_summary.csv"

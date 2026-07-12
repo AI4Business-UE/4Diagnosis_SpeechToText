@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_METADATA = REPO_ROOT / "backend/eval/data/stt/metadata/samples_metadata.xlsx"
 DEFAULT_AUDIO_DIR = REPO_ROOT / "backend/eval/data/stt/audio_samples"
 DEFAULT_OUTPUT = REPO_ROOT / "backend/eval/results/stt_manifest.csv"

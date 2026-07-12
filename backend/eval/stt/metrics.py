@@ -18,7 +18,7 @@ DIMENSION_PATTERN = re.compile(
     r"\d+(?:[,.]\d+)?\s*(?:mm|cm|m)"
 )
 PESEL_PATTERN = re.compile(r"\b\d{11}\b")
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _load_medical_terms() -> list[str]:

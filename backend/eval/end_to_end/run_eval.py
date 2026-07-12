@@ -9,11 +9,14 @@ from pathlib import Path
 
 import pandas as pd
 
-from ner_metrics import compare_entities, flatten_metrics, parse_entities
-from stt_metrics import compute_stt_metrics
+EVAL_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(EVAL_ROOT))
+
+from ner.metrics import compare_entities, flatten_metrics, parse_entities
+from stt.metrics import compute_stt_metrics
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_ROOT = REPO_ROOT / "backend/src"
 DEFAULT_INPUT = REPO_ROOT / "backend/eval/results/stt_manifest.csv"
 DEFAULT_OUTPUT = REPO_ROOT / "backend/eval/results/end_to_end_eval_results.csv"

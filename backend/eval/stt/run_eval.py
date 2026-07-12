@@ -10,10 +10,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from stt_metrics import compute_stt_metrics
+from metrics import compute_stt_metrics
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 DEFAULT_MANIFEST = REPO_ROOT / "backend/eval/results/stt_manifest.csv"

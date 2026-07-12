@@ -9,10 +9,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from ner_metrics import compare_entities, flatten_metrics, parse_entities
+from metrics import compare_entities, flatten_metrics, parse_entities
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_ROOT = REPO_ROOT / "backend/src"
 DEFAULT_INPUT = REPO_ROOT / "backend/eval/data/ner/ner_eval_samples.jsonl"
 DEFAULT_OUTPUT = REPO_ROOT / "backend/eval/results/ner_eval_results.csv"
