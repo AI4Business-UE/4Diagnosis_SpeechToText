@@ -64,3 +64,11 @@ python3 backend/eval/run_stt_eval.py \
   --models whisper-small whisper-medical-pl \
   --preprocessing baseline vad noise_reduction
 ```
+
+Summarize evaluation results:
+
+```bash
+python3 backend/eval/summarize_stt_results.py \
+  --input backend/eval/results/stt_eval_results.csv \
+  --output backend/eval/results/stt_eval_summary.csv
+```
