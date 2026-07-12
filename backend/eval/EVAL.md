@@ -219,22 +219,51 @@ backend/venv/bin/python backend/eval/end_to_end/run_eval.py \
 
 Jeśli użyjemy `backend/eval/results/stt_manifest.csv` jako inputu, policzą się metryki STT, ale metryki NER nie pojawią się, dopóki manifest nie ma kolumny `expected_entities`.
 
-Sanity eval na lokalnych plikach audio, czyli audio -> STT -> NER -> sanity check, też odpalać najpierw na małym limicie:
+### Sanity eval na realnym audio (pełny przepływ)
+
+Sanity eval na lokalnych plikach audio to pełny przepływ `audio -> STT -> NER -> sanity check`,
+czyli sanity check jest liczony na realnym fillu, a nie na syntetycznej rekonstrukcji. Wymaga
+modeli STT (whisper) i klucza do NER, więc odpalać najpierw na małym limicie.
+
+**1. Zbuduj manifest** z metadanych (potrzebny `samples_metadata.xlsx` i pliki audio lokalnie):
+
+```bash
+backend/venv/bin/python backend/eval/stt/build_manifest.py
+```
+
+**2. Wczytaj klucz** — NER (i LLM-review) chodzi przez OpenRouter, więc bez klucza NER przejdzie
+fallbackiem, a tryby `rules_and_llm`/`llm_only` nie dołożą issue z LLM:
+
+```bash
+set -a
+source backend/env
+set +a
+```
+
+**3. Odpal `--mode all`** (trzy warianty obok siebie) na małym limicie, np. 10 nagrań:
 
 ```bash
 backend/venv/bin/python backend/eval/sanity/run_eval.py \
   --input backend/eval/results/stt_manifest.csv \
   --input-format audio_manifest \
-  --limit 1 \
+  --limit 10 \
   --models whisper-small \
   --preprocessing baseline \
   --ner-strategies chained \
-  --mode rules \
+  --mode all \
   --output backend/eval/results/sanity_eval_audio_results.csv
 ```
 
-Porównanie wariantów `rules` / `rules_and_llm` / `llm_only` na tych samych danych daje `--mode all`,
-a podsumowanie per tryb (rozkład statusów, średni score, ile dokłada LLM) liczy `summarize_results.py`:
+**4. Podsumowanie per tryb** (rozkład statusów, średni score, ile dokłada LLM, `llm_ran_count`):
+
+```bash
+backend/venv/bin/python backend/eval/sanity/summarize_results.py \
+  --input backend/eval/results/sanity_eval_audio_results.csv \
+  --output backend/eval/results/sanity_eval_audio_summary.csv
+```
+
+Ten sam `--mode all` można odpalić na próbkach NER (`jsonl`) — lekki wariant bez STT i bez
+pobierania audio (formularz jest wtedy rekonstrukcją z gold-encji, nie realnym fillem):
 
 ```bash
 backend/venv/bin/python backend/eval/sanity/run_eval.py \
