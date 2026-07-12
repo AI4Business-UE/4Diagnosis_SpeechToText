@@ -110,6 +110,22 @@ def recall(reference_values: list[str], hypothesis_values: list[str]) -> float |
     return matched / len(reference_values)
 
 
+def precision(reference_values: list[str], hypothesis_values: list[str]) -> float | None:
+    """Lustro `recall`: jaka część wartości z hipotezy ma pokrycie w referencji.
+    Wychwytuje wartości halucynowane (dorzucone przez model), których recall nie karze."""
+    if not hypothesis_values:
+        return None
+
+    remaining = list(reference_values)
+    matched = 0
+    for value in hypothesis_values:
+        if value in remaining:
+            matched += 1
+            remaining.remove(value)
+
+    return matched / len(hypothesis_values)
+
+
 def _phrase_present(phrase: str, text: str) -> bool:
     return bool(re.search(rf"(^|\s){re.escape(phrase)}($|\s)", text))
 
@@ -121,8 +137,22 @@ def number_recall(reference: str, hypothesis: str) -> float | None:
     )
 
 
+def number_precision(reference: str, hypothesis: str) -> float | None:
+    return precision(
+        _canonical_values(NUMBER_PATTERN, reference),
+        _canonical_values(NUMBER_PATTERN, hypothesis),
+    )
+
+
 def dimension_recall(reference: str, hypothesis: str) -> float | None:
     return recall(
+        _canonical_values(DIMENSION_PATTERN, reference),
+        _canonical_values(DIMENSION_PATTERN, hypothesis),
+    )
+
+
+def dimension_precision(reference: str, hypothesis: str) -> float | None:
+    return precision(
         _canonical_values(DIMENSION_PATTERN, reference),
         _canonical_values(DIMENSION_PATTERN, hypothesis),
     )
@@ -163,12 +193,15 @@ def compute_stt_metrics(reference: str, hypothesis: str) -> dict[str, float | in
         "wer_strict": wer(reference, hypothesis, unify_numbers=False),
         "cer_strict": cer(reference, hypothesis, unify_numbers=False),
         "number_recall": number_recall(reference, hypothesis),
+        "number_precision": number_precision(reference, hypothesis),
         "dimension_recall": dimension_recall(reference, hypothesis),
+        "dimension_precision": dimension_precision(reference, hypothesis),
         "medical_term_recall": medical_term_recall(reference, hypothesis),
         "pesel_accuracy": pesel_accuracy(reference, hypothesis),
     }
 
     # Twarde błędy krytyczne (exact-match, wysoka stawka): liczby, wymiary, PESEL.
+    # Recall-based: sygnalizuje ZGUBIONE wartości krytyczne.
     hard_critical_checks = [
         metrics["number_recall"],
         metrics["dimension_recall"],
@@ -177,6 +210,9 @@ def compute_stt_metrics(reference: str, hypothesis: str) -> dict[str, float | in
     critical_error_count = sum(1 for value in hard_critical_checks if _is_recall_error(value))
     metrics["critical_error_count"] = critical_error_count
     metrics["has_critical_error"] = critical_error_count > 0
+
+    # Precision-based: sygnalizuje DODANE (halucynowane) liczby, których recall nie łapie.
+    metrics["has_spurious_number"] = _is_recall_error(metrics["number_precision"])
 
     # Terminologia medyczna — kategoria miękka, śledzona osobno.
     metrics["has_term_error"] = _is_recall_error(metrics["medical_term_recall"])
@@ -188,6 +224,12 @@ def _self_check() -> None:
     assert wer("guz 3 cm", "guz 3 cm") == 0
     assert cer("guz 3 cm", "guz 3 cm") == 0
     assert number_recall("guz 3 cm i 4 cm", "guz 3 cm i 40 cm") == 0.5
+    # Halucynowana liczba: wszystkie referencyjne obecne (recall=1), ale dodano zbędną (precision<1).
+    assert number_recall("guz 3 cm", "guz 3 cm i 8 cm") == 1.0
+    assert number_precision("guz 3 cm", "guz 3 cm i 8 cm") == 0.5
+    spurious = compute_stt_metrics("guz 3 cm", "guz 3 cm i 8 cm")
+    assert spurious["has_critical_error"] is False
+    assert spurious["has_spurious_number"] is True
     assert medical_term_recall("Guz nerka 3 cm.", "Guz nerka 3 cm.") == 1.0
     assert medical_term_recall("Guz nerka 3 cm.", "Guz 3 cm.") == 0.5
     assert pesel_accuracy("PESEL 12345678901", "PESEL 12345678901") == 1.0
