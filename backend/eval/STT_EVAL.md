@@ -141,6 +141,20 @@ backend/venv/bin/python backend/eval/end_to_end/run_eval.py \
   --output backend/eval/results/end_to_end_eval_results.csv
 ```
 
+Sanity eval na lokalnych plikach audio, czyli audio -> STT -> NER -> sanity check, też odpalać najpierw na małym limicie:
+
+```bash
+backend/venv/bin/python backend/eval/sanity/run_eval.py \
+  --input backend/eval/results/stt_manifest.csv \
+  --input-format audio_manifest \
+  --limit 1 \
+  --models whisper-small \
+  --preprocessing baseline \
+  --ner-strategies chained \
+  --mode rules \
+  --output backend/eval/results/sanity_eval_audio_results.csv
+```
+
 Prosty raport markdown z dostępnych wyników:
 
 ```bash
