@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_ROOT = REPO_ROOT / "backend/src"
 DEFAULT_INPUT = REPO_ROOT / "backend/eval/data/ner/ner_eval_samples.jsonl"
 DEFAULT_OUTPUT = REPO_ROOT / "backend/eval/results/sanity_eval_results.csv"
+MODES = ["rules", "rules_and_llm", "llm_only"]
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -127,6 +128,73 @@ def _issue_counts(issues: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+def _run_rules_only(data_sanity_check, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
+    original_llm_review = data_sanity_check.check_with_llm
+    data_sanity_check.check_with_llm = lambda transcript, form_data, rule_issues: []
+    try:
+        return data_sanity_check.run_data_sanity_check(transcript, form_data)
+    finally:
+        data_sanity_check.check_with_llm = original_llm_review
+
+
+def _run_rules_and_llm(data_sanity_check, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
+    return data_sanity_check.run_data_sanity_check(transcript, form_data)
+
+
+def _run_llm_only(data_sanity_check, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
+    rule_result = _run_rules_only(data_sanity_check, transcript, form_data)
+    rule_issues = rule_result.get("issues", [])
+    issues = data_sanity_check.check_with_llm(transcript, form_data, rule_issues)
+    score = data_sanity_check.calculate_score(issues)
+
+    return {
+        "status": "ok" if not issues else "suspicious",
+        "score": score,
+        "issues": issues,
+        "metrics": {
+            "transcript_length": len(transcript or ""),
+            "description_length": len(str(form_data.get("description", "") or "")),
+        },
+    }
+
+
+def _run_mode(data_sanity_check, mode: str, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
+    if mode == "rules":
+        return _run_rules_only(data_sanity_check, transcript, form_data)
+    if mode == "rules_and_llm":
+        return _run_rules_and_llm(data_sanity_check, transcript, form_data)
+    if mode == "llm_only":
+        return _run_llm_only(data_sanity_check, transcript, form_data)
+
+    raise ValueError(f"Unknown sanity eval mode: {mode}")
+
+
+def _build_result_row(
+    sample_id: str,
+    mode: str,
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    issues = result.get("issues", [])
+    issue_codes = sorted({str(issue.get("code", "")) for issue in issues if issue.get("code")})
+    counts = _issue_counts(issues)
+
+    return {
+        "sample_id": sample_id,
+        "mode": mode,
+        "status": result.get("status", ""),
+        "score": result.get("score", ""),
+        "issue_count": len(issues),
+        "issue_codes": "|".join(issue_codes),
+        **counts,
+        "description_length": result.get("metrics", {}).get("description_length", ""),
+        "transcript_length": result.get("metrics", {}).get("transcript_length", ""),
+        "manual_warning_sensible": "",
+        "manual_false_positive": "",
+        "manual_score_sensible": "",
+        "manual_notes": "",
+    }
+
+
 def run_eval(args: argparse.Namespace) -> list[dict[str, Any]]:
     if str(SRC_ROOT) not in sys.path:
         sys.path.insert(0, str(SRC_ROOT))
@@ -137,40 +205,21 @@ def run_eval(args: argparse.Namespace) -> list[dict[str, Any]]:
     if args.limit is not None:
         samples = samples[:args.limit]
 
-    original_llm_review = data_sanity_check.check_with_llm
-    if args.disable_llm_review:
-        data_sanity_check.check_with_llm = lambda transcript, form_data, rule_issues: []
+    modes = MODES if args.mode == "all" else [args.mode]
 
     rows = []
-    try:
-        for sample in samples:
-            expected_entities = sample.get("expected_entities") or {}
-            if isinstance(expected_entities, str):
-                expected_entities = json.loads(expected_entities)
+    for sample in samples:
+        expected_entities = sample.get("expected_entities") or {}
+        if isinstance(expected_entities, str):
+            expected_entities = json.loads(expected_entities)
 
-            transcript = str(sample.get("transcript") or "")
-            form_data = build_form_data(expected_entities)
-            result = data_sanity_check.run_data_sanity_check(transcript, form_data)
-            issues = result.get("issues", [])
-            issue_codes = sorted({str(issue.get("code", "")) for issue in issues if issue.get("code")})
-            counts = _issue_counts(issues)
+        transcript = str(sample.get("transcript") or "")
+        form_data = build_form_data(expected_entities)
+        sample_id = str(sample.get("sample_id", ""))
 
-            rows.append({
-                "sample_id": sample.get("sample_id", ""),
-                "status": result.get("status", ""),
-                "score": result.get("score", ""),
-                "issue_count": len(issues),
-                "issue_codes": "|".join(issue_codes),
-                **counts,
-                "description_length": result.get("metrics", {}).get("description_length", ""),
-                "transcript_length": result.get("metrics", {}).get("transcript_length", ""),
-                "manual_warning_sensible": "",
-                "manual_false_positive": "",
-                "manual_score_sensible": "",
-                "manual_notes": "",
-            })
-    finally:
-        data_sanity_check.check_with_llm = original_llm_review
+        for mode in modes:
+            result = _run_mode(data_sanity_check, mode, transcript, form_data)
+            rows.append(_build_result_row(sample_id, mode, result))
 
     return rows
 
@@ -179,6 +228,7 @@ def write_results(rows: list[dict[str, Any]], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
         "sample_id",
+        "mode",
         "status",
         "score",
         "issue_count",
@@ -205,7 +255,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--disable-llm-review", action="store_true", default=True)
+    parser.add_argument(
+        "--mode",
+        choices=[*MODES, "all"],
+        default="rules",
+        help="rules = heuristics only, rules_and_llm = production flow, llm_only = LLM review with production rule issue context.",
+    )
     return parser.parse_args()
 
 
