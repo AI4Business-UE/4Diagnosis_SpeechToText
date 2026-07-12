@@ -2,12 +2,45 @@ import re
 import requests
 import json
 import os
+import importlib.util
+from pathlib import Path
 
 try:
     from logging_config import logger
 except ModuleNotFoundError:  # pozwala uruchomić self-check standalone (bez ścieżki Django)
     import logging
     logger = logging.getLogger("data_sanity_check")
+
+
+def _load_organ_plausibility() -> tuple[dict, float, list]:
+    """Ładuje zakresy per narząd z data/organ_plausibility.py po ścieżce (importlib),
+    żeby działało i w Django, i przy standalone self-check."""
+    path = Path(__file__).resolve().parents[1] / "data" / "organ_plausibility.py"
+    spec = importlib.util.spec_from_file_location("organ_plausibility", path)
+    if spec is None or spec.loader is None:
+        return {}, 50.0, []
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return (
+        getattr(module, "ORGAN_MAX_DIMENSION_CM", {}),
+        getattr(module, "GLOBAL_MAX_DIMENSION_CM", 50.0),
+        getattr(module, "ORGAN_STEMS", []),
+    )
+
+
+ORGAN_MAX_DIMENSION_CM, GLOBAL_MAX_DIMENSION_CM, ORGAN_STEMS = _load_organ_plausibility()
+
+
+def _resolve_organ(form_data: dict) -> str | None:
+    """Rozpoznaje kanoniczną nazwę narządu z pola `organ` (obsługa polskiej fleksji
+    przez dopasowanie rdzenia). Pierwszy pasujący rdzeń wygrywa (kolejność w ORGAN_STEMS)."""
+    text = str(form_data.get("organ") or "").lower().strip()
+    if not text:
+        return None
+    for stem, canonical in ORGAN_STEMS:
+        if stem in text:
+            return canonical
+    return None
 
 
 ALLOWED_SEVERITIES = {"error", "warning", "info"}
@@ -31,6 +64,7 @@ CODE_WEIGHTS = {
     "non_positive_dimension": 0.5,
     "suspicious_unit_meter": 0.15,
     "suspicious_large_dimension": 0.15,
+    "implausible_dimension_for_organ": 0.2,
     "lesion_without_dimension": 0.1,
     "possible_lesion_omitted": 0.15,
 }
@@ -191,6 +225,21 @@ def _to_cm(value: float, unit: str) -> float | None:
 # \b po jednostce, żeby "20 ml" nie było czytane jako "20 m" (metry).
 DIMENSION_PATTERN = r"(\d+(?:[,.]\d+)?)\s*(mm|cm|metrów|metry|metra|metr|m)\b"
 
+# Łańcuch wymiarów "AxBxC cm" — jednostka na końcu dotyczy wszystkich liczb w łańcuchu.
+DIMENSION_CHAIN_PATTERN = re.compile(
+    r"(\d+(?:[,.]\d+)?(?:\s*[x×]\s*\d+(?:[,.]\d+)?)*)\s*(mm|cm|metrów|metry|metra|metr|m)\b"
+)
+
+
+def _iter_dimensions(text: str):
+    """Zwraca (wartość, jednostka) dla każdej liczby w opisie — również z łańcuchów
+    typu "40 x 30 x 20 cm" (bez tego łapana byłaby tylko ostatnia liczba przed jednostką)."""
+    for chain, unit in DIMENSION_CHAIN_PATTERN.findall(str(text or "").lower()):
+        for raw_value in re.split(r"\s*[x×]\s*", chain.strip()):
+            raw_value = raw_value.strip()
+            if raw_value:
+                yield raw_value, unit
+
 def check_dimensions(transcript: str, form_data: dict) -> list:
     """Skanuje wymiary osobno w opisie i w transkrypcji, żeby `field` w issue
     wiernie mówił, skąd pochodzi wartość. Wymiar obecny w obu miejscach jest
@@ -199,8 +248,11 @@ def check_dimensions(transcript: str, form_data: dict) -> list:
     seen = set()  # (field, code, evidence)
     described_evidence = set()
 
+    organ = _resolve_organ(form_data)
+    limit_cm = ORGAN_MAX_DIMENSION_CM.get(organ, GLOBAL_MAX_DIMENSION_CM)
+
     def scan(text: str, field: str) -> None:
-        for raw_value, raw_unit in re.findall(DIMENSION_PATTERN, str(text or "").lower()):
+        for raw_value, raw_unit in _iter_dimensions(text):
             evidence = f"{raw_value} {raw_unit}"
 
             # Wymiar już zgłoszony z opisu — nie duplikuj go z transkrypcji.
@@ -234,8 +286,15 @@ def check_dimensions(transcript: str, form_data: dict) -> list:
             if unit in ["m", "metr", "metry", "metrów", "metra"]:
                 add_issue("warning", "suspicious_unit_meter", "Suspicious unit: meters used in tissue description.")
 
-            if value_cm is not None and value_cm > 50:
-                add_issue("warning", "suspicious_large_dimension", "Suspiciously large dimension detected.")
+            if value_cm is not None and value_cm > limit_cm:
+                if organ is not None:
+                    add_issue(
+                        "warning",
+                        "implausible_dimension_for_organ",
+                        f"Dimension exceeds plausible size for organ '{organ}' (limit {limit_cm} cm).",
+                    )
+                else:
+                    add_issue("warning", "suspicious_large_dimension", "Suspiciously large dimension detected.")
 
     scan(form_data.get("description", ""), "description")
     scan(transcript, "transcript")
@@ -438,6 +497,26 @@ def _self_check() -> None:
         assert check_dimensions("BAL 20 ml", {"description": "materiał 20 ml"}) == []
         # "20 cm" nadal jest wykrywane.
         assert check_dimensions("", {"description": "guz 60 cm"}) != []
+
+        # Zakresy per narząd: 40 cm dla nerki to nonsens.
+        kidney_big = check_dimensions("", {"organ": "nerka", "description": "guz 40 cm"})
+        assert any(issue["code"] == "implausible_dimension_for_organ" for issue in kidney_big)
+        # Łańcuch "40 x 30 x 20 cm": największa liczba (40) też musi być sprawdzona, nie tylko 20.
+        kidney_chain = check_dimensions("", {"organ": "nerka", "description": "guz 40 x 30 x 20 cm"})
+        assert any(
+            issue["code"] == "implausible_dimension_for_organ" and issue["evidence"] == "40 cm"
+            for issue in kidney_chain
+        )
+        # Rozmiary w normie nie flagują: nerka 8 cm, macica 9 cm.
+        assert check_dimensions("", {"organ": "nerka", "description": "guz 8 cm"}) == []
+        assert check_dimensions("", {"organ": "macica", "description": "trzon 9 cm"}) == []
+        # Fleksja: "nerki prawej" rezolwuje do "nerka".
+        assert _resolve_organ({"organ": "nerki prawej"}) == "nerka"
+        # Specyficzność: "szyjka macicy" nie może rozwiązać się jako "macica".
+        assert _resolve_organ({"organ": "szyjka macicy"}) == "szyjka macicy"
+        # Nieznany narząd -> globalny próg (300 cm nadal łapane).
+        unknown_organ = check_dimensions("", {"organ": "", "description": "tkanka 300 cm"})
+        assert any(issue["code"] == "suspicious_large_dimension" for issue in unknown_organ)
 
         # Bez klucza LLM realnie się nie uruchamia.
         llm = check_with_llm("x", {}, [])

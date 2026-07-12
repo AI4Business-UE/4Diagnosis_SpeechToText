@@ -108,7 +108,7 @@ W repo są trzy typy danych evalowych:
 - `score` - wynik jakości w `(0, 1]`, liczony multiplikatywnie (każde issue mnoży przez `1 - waga`,
   wagi per kod issue). Nie zeruje się od kilku drobnych warningów; błąd krytyczny ciągnie mocniej.
 - `issue_count` - liczba wszystkich issues.
-- `issue_codes` - kody wykrytych problemów, np. `missing_required_field`, `invalid_pesel_checksum`, `suspicious_large_dimension`.
+- `issue_codes` - kody wykrytych problemów, np. `missing_required_field`, `invalid_pesel_checksum`, `suspicious_large_dimension`, `implausible_dimension_for_organ`.
 - `issue_fields` / `missing_fields` - pola, których dotyczą issues; `field` rozróżnia teraz
   `description` od `transcript` (skąd pochodzi wykryty wymiar).
 - `rules_issue_count` / `llm_issue_count` - rozdzielenie problemów wykrytych przez reguły i przez LLM-review.
@@ -122,6 +122,19 @@ W repo są trzy typy danych evalowych:
 LLM-review domyślnie odpala się tylko, gdy reguły coś znalazły (oszczędność kosztu). Żeby wymusić
 LLM także na formularzach czystych wg reguł, ustaw `SANITY_LLM_FORCE=1`. Model LLM bierze się z
 `SANITY_LLM_MODEL` (domyślnie `gpt-4o-2024-05-13`); tryby z LLM wymagają `OPENROUTER_API_KEY`/`OPENAI_KEY`.
+
+**Zakresy sensowności per narząd.** Wymiary z opisu są porównywane z górną granicą sensownego
+rozmiaru danego narządu (`backend/src/app_stt/data/organ_plausibility.py`). Narząd jest rozpoznawany
+z pola `organ` (obsługa polskiej fleksji), a przekroczenie limitu daje `implausible_dimension_for_organ`;
+dla nieznanego narządu obowiązuje globalny próg (`suspicious_large_dimension`, 50 cm). Wartości
+zakresów są **wstępne** (TODO: przegląd przez osobę medyczną) i celowo hojne, żeby łapać tylko
+wyraźny nonsens (np. 40 cm nerka), a nie preparaty powiększone patologicznie.
+
+**Test na gotowych formularzach.** Tryb `--input-format form_jsonl` uruchamia sanity check na
+gotowym `form_data` (bez rekonstrukcji z encji) — to realniejszy test niż `jsonl` i miejsce na
+przyszłe zanonimizowane realne formularze. Curated fixture z przypadkami plausible/implausible jest
+w `backend/eval/data/sanity/plausibility_fixture.jsonl`; każdy wiersz ma `expected_flag`/`note`,
+które trafiają do wyniku, żeby ręcznie porównać `status` z oczekiwaniem.
 
 ## Komendy
 
@@ -233,6 +246,18 @@ backend/venv/bin/python backend/eval/sanity/summarize_results.py \
   --input backend/eval/results/sanity_eval_results.csv \
   --output backend/eval/results/sanity_eval_summary.csv
 ```
+
+Test zakresów sensowności na curated fixture (gotowe formularze, bez modeli i sieci):
+
+```bash
+backend/venv/bin/python backend/eval/sanity/run_eval.py \
+  --input backend/eval/data/sanity/plausibility_fixture.jsonl \
+  --input-format form_jsonl \
+  --mode rules \
+  --output backend/eval/results/sanity_plausibility_results.csv
+```
+
+W wyniku porównaj kolumnę `status` (flaguje = nie `ok`) z `expected_flag` — rozjazdy to false-positive/negative.
 
 Prosty raport markdown z dostępnych wyników:
 

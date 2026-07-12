@@ -93,9 +93,25 @@ def _read_audio_manifest(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _read_form_jsonl(path: Path) -> list[dict[str, Any]]:
+    """Gotowe formularze (bez rekonstrukcji z encji). Każdy wiersz: form_id, opcjonalnie
+    transcript, form_data (dict), oraz opcjonalnie expected_flag/note do ręcznej oceny."""
+    rows = []
+    with path.open(encoding="utf-8") as input_file:
+        for line_number, line in enumerate(input_file, start=1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            row["sample_id"] = row.get("form_id") or row.get("sample_id") or line_number
+            rows.append(row)
+    return rows
+
+
 def load_samples(path: Path, input_format: str) -> list[dict[str, Any]]:
     if input_format == "jsonl":
         return _read_jsonl(path)
+    if input_format == "form_jsonl":
+        return _read_form_jsonl(path)
     if input_format == "baseline_csv":
         return _read_baseline_csv(path)
     if input_format == "audio_manifest":
@@ -381,6 +397,8 @@ def _build_result_row(
         "llm_reason": llm_review.get("reason", ""),
         "gold_has_patient": sample.get("gold_has_patient", ""),
         "filtered_synthetic_issues": filtered_synthetic_issues,
+        "expected_flag": sample.get("expected_flag", ""),
+        "note": sample.get("note", ""),
         "description_length": result.get("metrics", {}).get("description_length", ""),
         "transcript_length": result.get("metrics", {}).get("transcript_length", ""),
         "manual_warning_sensible": "",
@@ -472,6 +490,19 @@ def run_eval(args: argparse.Namespace) -> list[dict[str, Any]]:
     ):
         return _run_audio_eval(args, data_sanity_check, samples, modes)
 
+    if args.input_format == "form_jsonl" or (samples and "form_data" in samples[0]):
+        rows = []
+        for sample in samples:
+            form_data = sample.get("form_data") or {}
+            if isinstance(form_data, str):
+                form_data = json.loads(form_data)
+
+            # Gotowy formularz — realny fill, bez rekonstrukcji i filtrowania artefaktów.
+            sample = {**sample, "synthetic": False, "gold_has_patient": ""}
+            transcript = str(sample.get("transcript") or "")
+            rows.extend(_run_sanity_modes(data_sanity_check, sample, transcript, form_data, modes))
+        return rows
+
     rows = []
     for sample in samples:
         expected_entities = sample.get("expected_entities") or {}
@@ -520,6 +551,8 @@ def write_results(rows: list[dict[str, Any]], output_path: Path) -> None:
         "llm_reason",
         "gold_has_patient",
         "filtered_synthetic_issues",
+        "expected_flag",
+        "note",
         "description_length",
         "transcript_length",
         "manual_warning_sensible",
@@ -539,7 +572,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument(
         "--input-format",
-        choices=["auto", "jsonl", "baseline_csv", "audio_manifest"],
+        choices=["auto", "jsonl", "form_jsonl", "baseline_csv", "audio_manifest"],
         default="auto",
     )
     parser.add_argument("--limit", type=int, default=None)
