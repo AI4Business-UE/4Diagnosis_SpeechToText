@@ -16,6 +16,9 @@ NUMERIC_COLUMNS = [
     "cer",
     "number_recall",
     "dimension_recall",
+    "medical_term_recall",
+    "pesel_accuracy",
+    "critical_error_count",
     "duration_seconds",
     "audio_duration_seconds",
     "real_time_factor",
@@ -48,6 +51,18 @@ def _median(group: pd.DataFrame, column: str) -> float | None:
     return float(values.median())
 
 
+def _true_count(group: pd.DataFrame, column: str) -> int:
+    if column not in group:
+        return 0
+
+    values = group[column].fillna(False)
+    if values.dtype == bool:
+        return int(values.sum())
+
+    normalized = values.astype(str).str.lower().str.strip()
+    return int(normalized.isin(["true", "1", "yes"]).sum())
+
+
 def summarize_results(results: pd.DataFrame) -> pd.DataFrame:
     missing_columns = [column for column in GROUP_COLUMNS if column not in results.columns]
     if missing_columns:
@@ -71,6 +86,10 @@ def summarize_results(results: pd.DataFrame) -> pd.DataFrame:
             "median_cer": _median(group, "cer"),
             "mean_number_recall": _mean(group, "number_recall"),
             "mean_dimension_recall": _mean(group, "dimension_recall"),
+            "mean_medical_term_recall": _mean(group, "medical_term_recall"),
+            "mean_pesel_accuracy": _mean(group, "pesel_accuracy"),
+            "critical_samples_count": _true_count(group, "has_critical_error"),
+            "mean_critical_error_count": _mean(group, "critical_error_count"),
             "mean_duration_seconds": _mean(group, "duration_seconds"),
             "mean_audio_duration_seconds": _mean(group, "audio_duration_seconds"),
             "mean_real_time_factor": _mean(group, "real_time_factor"),

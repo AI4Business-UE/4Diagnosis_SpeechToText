@@ -60,6 +60,10 @@ Ten folder jest roboczy i nie powinien iść do commita.
 - `CER` (`Character Error Rate`) - błąd na poziomie znaków. Im niżej, tym lepiej.
 - `number_recall` - ile liczb z referencji model przepisał poprawnie. Im bliżej `1.0`, tym lepiej.
 - `dimension_recall` - ile wymiarów z referencji model przepisał poprawnie, np. `1,5 cm` albo `3 x 2 cm`. Im bliżej `1.0`, tym lepiej.
+- `medical_term_recall` - ile terminów medycznych ze słownika projektu, obecnych w referencji, pojawiło się też w transkrypcji. Im bliżej `1.0`, tym lepiej.
+- `pesel_accuracy` - dokładność PESEL-u, jeśli PESEL występuje w referencji. `1.0` oznacza idealne dopasowanie, `0.0` błąd, a pusta wartość oznacza brak PESEL-u w referencji.
+- `has_critical_error` - czy próbka ma błąd w krytycznej kategorii: liczbach, wymiarach, PESEL-u albo terminach medycznych.
+- `critical_error_count` - liczba krytycznych kategorii z błędem dla jednej próbki.
 - `duration_seconds` - całkowity czas przetwarzania jednej próbki.
 - `audio_duration_seconds` - długość pliku audio.
 - `real_time_factor` - stosunek czasu przetwarzania do długości audio. `3.0` oznacza, że przetwarzanie trwało 3 razy dłużej niż samo audio.
