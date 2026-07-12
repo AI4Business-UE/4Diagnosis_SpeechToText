@@ -13,7 +13,7 @@ def run_data_sanity_check(transcript: str, form_data: dict) -> dict:
     issues += check_dimensions(transcript, form_data)
     issues += check_description_consistency(transcript, form_data)
 
-    if any(issue.get("field") == "description" for issue in issues):
+    if issues:
         issues += check_with_llm(transcript, form_data, issues)
 
     score = calculate_score(issues)
@@ -258,9 +258,10 @@ def check_with_llm(transcript: str, form_data: dict, rule_issues: list) -> list:
         return []
 
     prompt = f"""
-    You are reviewing a pathology macro-description form filled by an LLM.
+    You are reviewing a pathology form filled by an LLM from a speech transcript.
 
-    Compare the original transcript with form_data and existing rule issues.
+    Compare the original transcript, form_data and existing rule issues.
+    Check whether patient data and the macro-description look consistent and sensible.
     Do not correct the form.
     Do not diagnose.
     Return only JSON in this format:

@@ -8,6 +8,7 @@ import struct
 from datetime import datetime
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .transcriber import transcribe_audio_chunk, correct_full_transcription
+from .data_sanity_check import run_data_sanity_check
 from logging_config import logger
 
 def create_wav_from_float32(float32_chunks, sample_rate=16000, filename=None):
@@ -323,7 +324,29 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 "pesel": corrected_text.get("pesel", "") or self.patient_metadata.get("pesel", ""),
                 "description": corrected_text.get("description", "")
             }
-            logger.info(f"[FINALIZE] Sending form data: {form_data}")
+            try:
+                sanity_result = run_data_sanity_check(
+                    transcript=self.full_transcription.strip(),
+                    form_data=form_data,
+                )
+                logger.info(
+                    "[SANITY_CHECK] status=%s score=%s issues=%s metrics=%s",
+                    sanity_result.get("status"),
+                    sanity_result.get("score"),
+                    sanity_result.get("issues"),
+                    sanity_result.get("metrics"),
+                )
+            except Exception as sanity_error:
+                logger.warning(f"[SANITY_CHECK] Failed: {sanity_error}")
+
+            logger.info(
+                "[FINALIZE] Sending form data fields: organ=%s name_present=%s age_present=%s pesel_present=%s description_length=%s",
+                bool(form_data.get("organ")),
+                bool(form_data.get("name")),
+                bool(form_data.get("age")),
+                bool(form_data.get("pesel")),
+                len(str(form_data.get("description", "") or "")),
+            )
             await self.send(text_data=json.dumps({
                 "type": "form_data",
                 "formData": form_data,
