@@ -108,7 +108,7 @@ W repo są trzy typy danych evalowych:
 - `score` - wynik jakości w `(0, 1]`, liczony multiplikatywnie (każde issue mnoży przez `1 - waga`,
   wagi per kod issue). Nie zeruje się od kilku drobnych warningów; błąd krytyczny ciągnie mocniej.
 - `issue_count` - liczba wszystkich issues.
-- `issue_codes` - kody wykrytych problemów, np. `missing_required_field`, `invalid_pesel_checksum`, `suspicious_large_dimension`, `implausible_dimension_for_organ`.
+- `issue_codes` - kody wykrytych problemów, np. `missing_required_field`, `description_not_meaningful`, `invalid_pesel_checksum`, `age_pesel_mismatch`, `suspicious_large_dimension`, `implausible_dimension_for_organ`.
 - `issue_fields` / `missing_fields` - pola, których dotyczą issues; `field` rozróżnia teraz
   `description` od `transcript` (skąd pochodzi wykryty wymiar).
 - `rules_issue_count` / `llm_issue_count` - rozdzielenie problemów wykrytych przez reguły i przez LLM-review.

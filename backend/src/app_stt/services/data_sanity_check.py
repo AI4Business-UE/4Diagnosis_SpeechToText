@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import importlib.util
+from datetime import datetime
 from pathlib import Path
 
 try:
@@ -61,6 +62,8 @@ CODE_WEIGHTS = {
     "age_not_a_number": 0.2,
     "age_too_high": 0.2,
     "negative_age": 0.3,
+    "age_pesel_mismatch": 0.2,
+    "description_not_meaningful": 0.15,
     "non_positive_dimension": 0.5,
     "suspicious_unit_meter": 0.15,
     "suspicious_large_dimension": 0.15,
@@ -80,8 +83,10 @@ def run_data_sanity_check(transcript: str, form_data: dict) -> dict:
     issues = []
 
     issues += check_required_fields(form_data)
+    issues += check_description_quality(form_data)
     issues += check_pesel(form_data)
     issues += check_age(form_data)
+    issues += check_age_pesel_consistency(form_data)
     issues += check_dimensions(transcript, form_data)
     issues += check_description_consistency(transcript, form_data)
 
@@ -123,6 +128,26 @@ def check_required_fields(form_data: dict) -> list:
                 "message": f"Missing required field: {field}",
             })
     return issues
+
+def check_description_quality(form_data: dict) -> list:
+    """Opis może być technicznie niepusty, ale bez treści (sama interpunkcja/liczba, np. "."
+    lub "3 cm"). Sam whitespace łapie już check_required_fields, więc tu go nie dublujemy."""
+    description = str(form_data.get("description", "") or "").strip()
+
+    if not description:
+        return []
+
+    letters = re.sub(r"[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]", "", description)
+    if len(letters) < 3:
+        return [{
+            "severity": "warning",
+            "source": "rules",
+            "code": "description_not_meaningful",
+            "field": "description",
+            "message": "Description present but lacks meaningful text content.",
+        }]
+
+    return []
 
 def check_pesel(form_data: dict) -> list:
     issues = []
@@ -207,6 +232,59 @@ def check_age(form_data: dict) -> list:
         })
 
     return issues
+
+def _age_from_pesel(pesel: str) -> int | None:
+    """Wiek z daty urodzenia zakodowanej w PESEL-u. Lustro logiki z
+    audio_consumers.calculate_age_from_pesel. Zwraca None gdy PESEL/data są niepoprawne."""
+    pesel = str(pesel or "").strip()
+    if len(pesel) != 11 or not pesel.isdigit():
+        return None
+
+    try:
+        year = int(pesel[0:2])
+        month = int(pesel[2:4])
+        day = int(pesel[4:6])
+
+        if 1 <= month <= 12:
+            century = 1900
+        elif 21 <= month <= 32:
+            century = 2000
+            month -= 20
+        else:
+            return None
+
+        birth_date = datetime(century + year, month, day)
+        today = datetime.today()
+        return today.year - birth_date.year - (
+            (today.month, today.day) < (birth_date.month, birth_date.day)
+        )
+    except (ValueError, IndexError):
+        return None
+
+def check_age_pesel_consistency(form_data: dict) -> list:
+    """Rozjazd między polem `age` a wiekiem wyliczonym z PESEL-a to realny sygnał błędu
+    (w produkcji wiek jest liczony właśnie z PESEL-a)."""
+    age = str(form_data.get("age", "")).strip()
+    pesel = str(form_data.get("pesel", "")).strip()
+
+    if not age.isdigit() or not pesel:
+        return []
+
+    pesel_age = _age_from_pesel(pesel)
+    if pesel_age is None:
+        return []
+
+    if abs(int(age) - pesel_age) > 1:
+        return [{
+            "severity": "warning",
+            "source": "rules",
+            "code": "age_pesel_mismatch",
+            "field": "age",
+            "message": "Age does not match the date of birth encoded in PESEL.",
+            "evidence": f"age={age} pesel_age={pesel_age}",
+        }]
+
+    return []
 
 def _to_cm(value: float, unit: str) -> float | None:
     unit = unit.lower()
@@ -517,6 +595,24 @@ def _self_check() -> None:
         # Nieznany narząd -> globalny próg (300 cm nadal łapane).
         unknown_organ = check_dimensions("", {"organ": "", "description": "tkanka 300 cm"})
         assert any(issue["code"] == "suspicious_large_dimension" for issue in unknown_organ)
+
+        # Wiek ↔ PESEL: PESEL 44051401359 -> data 1944-05-14.
+        pesel_age = _age_from_pesel("44051401359")
+        assert pesel_age is not None
+        # Wiek zgodny z PESEL-em -> brak flagi.
+        assert check_age_pesel_consistency({"age": str(pesel_age), "pesel": "44051401359"}) == []
+        # Wiek wyraźnie inny -> flaga age_pesel_mismatch.
+        mismatch = check_age_pesel_consistency({"age": str(pesel_age + 30), "pesel": "44051401359"})
+        assert any(issue["code"] == "age_pesel_mismatch" for issue in mismatch)
+        # Brak PESEL-a albo nie-liczbowy wiek -> nie flagujemy.
+        assert check_age_pesel_consistency({"age": "40", "pesel": ""}) == []
+
+        # Jakość opisu: "." i "3 cm" bez treści -> flaga; sensowny opis -> brak.
+        assert check_description_quality({"description": "."})[0]["code"] == "description_not_meaningful"
+        assert check_description_quality({"description": "3 cm"})[0]["code"] == "description_not_meaningful"
+        assert check_description_quality({"description": "Fragment nerki 8 cm."}) == []
+        # Sam whitespace obsługuje check_required_fields -> tu bez dublowania.
+        assert check_description_quality({"description": "   "}) == []
 
         # Bez klucza LLM realnie się nie uruchamia.
         llm = check_with_llm("x", {}, [])
