@@ -104,6 +104,50 @@ backend/venv/bin/python backend/eval/summarize_stt_results.py \
   --output backend/eval/results/stt_eval_summary.csv
 ```
 
+Porównanie aktualnego runu z baseline:
+
+```bash
+backend/venv/bin/python backend/eval/compare_stt_baseline.py \
+  --current backend/eval/results/stt_eval_results.csv \
+  --baseline backend/eval/baselines/stt/whisper_comparison_results.csv \
+  --output backend/eval/results/stt_baseline_comparison.csv
+```
+
+NER eval na referencyjnych transkryptach:
+
+```bash
+backend/venv/bin/python backend/eval/run_ner_eval.py \
+  --input backend/eval/data/ner/ner_eval_samples.jsonl \
+  --strategies chained split \
+  --output backend/eval/results/ner_eval_results.csv
+```
+
+Podsumowanie NER:
+
+```bash
+backend/venv/bin/python backend/eval/summarize_ner_results.py \
+  --input backend/eval/results/ner_eval_results.csv \
+  --output backend/eval/results/ner_eval_summary.csv
+```
+
+End-to-end eval, czyli audio -> STT -> NER, odpalać tylko na małym limicie:
+
+```bash
+backend/venv/bin/python backend/eval/run_end_to_end_eval.py \
+  --limit 1 \
+  --models whisper-small \
+  --preprocessing baseline \
+  --ner-strategies chained \
+  --output backend/eval/results/end_to_end_eval_results.csv
+```
+
+Prosty raport markdown z dostępnych wyników:
+
+```bash
+backend/venv/bin/python backend/eval/generate_eval_report.py \
+  --output backend/eval/results/eval_report.md
+```
+
 ## Co commitować
 
 Można commitować:
