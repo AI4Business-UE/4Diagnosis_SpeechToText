@@ -56,14 +56,16 @@ Ten folder jest roboczy i nie powinien iść do commita.
 
 ## Definicje metryk
 
-- `WER` (`Word Error Rate`) - błąd na poziomie słów. Im niżej, tym lepiej. `0.0` oznacza brak błędów.
-- `CER` (`Character Error Rate`) - błąd na poziomie znaków. Im niżej, tym lepiej.
+- `WER` (`Word Error Rate`) - błąd na poziomie słów, liczony **z ujednoliceniem zapisu liczb** (`5,5` = `5.5`, a `3,5 x 3,0 x 3,5` to jeden token). Im niżej, tym lepiej. `0.0` oznacza brak błędów.
+- `CER` (`Character Error Rate`) - błąd na poziomie znaków, również z ujednoliceniem liczb. Im niżej, tym lepiej.
+- `wer_strict` / `cer_strict` - te same metryki, ale **bez ujednolicenia zapisu liczb** — karzą różnicę formatu (`5,5` vs `5.5`). Porównanie z `WER`/`CER` pokazuje, ile błędu bierze się z samego zapisu, a ile z realnego przekręcenia słów.
 - `number_recall` - ile liczb z referencji model przepisał poprawnie. Im bliżej `1.0`, tym lepiej.
 - `dimension_recall` - ile wymiarów z referencji model przepisał poprawnie, np. `1,5 cm` albo `3 x 2 cm`. Im bliżej `1.0`, tym lepiej.
 - `medical_term_recall` - ile terminów medycznych ze słownika projektu, obecnych w referencji, pojawiło się też w transkrypcji. Im bliżej `1.0`, tym lepiej.
 - `pesel_accuracy` - dokładność PESEL-u, jeśli PESEL występuje w referencji. `1.0` oznacza idealne dopasowanie, `0.0` błąd, a pusta wartość oznacza brak PESEL-u w referencji.
-- `has_critical_error` - czy próbka ma błąd w krytycznej kategorii: liczbach, wymiarach, PESEL-u albo terminach medycznych.
-- `critical_error_count` - liczba krytycznych kategorii z błędem dla jednej próbki.
+- `has_critical_error` - czy próbka ma **twardy** błąd krytyczny: w liczbach, wymiarach albo PESEL-u (kategorie exact-match, wysokiej stawki). Terminologia medyczna jest liczona osobno (patrz `has_term_error`).
+- `critical_error_count` - liczba twardych kategorii krytycznych (liczby / wymiary / PESEL) z błędem dla jednej próbki.
+- `has_term_error` - czy próbka zgubiła jakiś termin medyczny obecny w referencji (kategoria miękka, śledzona osobno od błędów twardych).
 - `duration_seconds` - całkowity czas przetwarzania jednej próbki.
 - `audio_duration_seconds` - długość pliku audio.
 - `real_time_factor` - stosunek czasu przetwarzania do długości audio. `3.0` oznacza, że przetwarzanie trwało 3 razy dłużej niż samo audio.

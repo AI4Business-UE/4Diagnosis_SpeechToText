@@ -6,7 +6,12 @@ import string
 from pathlib import Path
 
 
-PUNCT_TRANSLATION = str.maketrans({char: " " for char in string.punctuation})
+_SENTENCE_PUNCT = "".join(char for char in string.punctuation if char not in ".,")
+PUNCT_TRANSLATION = str.maketrans({char: " " for char in _SENTENCE_PUNCT})
+# usuwa . oraz , tylko gdy NIE stoją między dwiema cyframi (kropki zdaniowe, przecinki na końcu słowa)
+BOUNDARY_DOTCOMMA_PATTERN = re.compile(r"(?<!\d)[.,]|[.,](?!\d)")
+# ujednolica zapis wymiarów: "3,5 x 3,0" -> "3,5x3,0" (lookaround nie zjada cyfr, więc działa dla łańcuchów AxBxC)
+DIMENSION_SPACING_PATTERN = re.compile(r"(?<=\d)\s*x\s*(?=\d)")
 NUMBER_PATTERN = re.compile(r"\d+(?:[,.]\d+)?")
 DIMENSION_PATTERN = re.compile(
     r"\d+(?:[,.]\d+)?(?:\s*[x×]\s*\d+(?:[,.]\d+)?)+\s*(?:mm|cm|m)?|"
@@ -33,10 +38,14 @@ def _load_medical_terms() -> list[str]:
     return sorted({normalize_text(term) for term in terms if normalize_text(term)}, key=len, reverse=True)
 
 
-def normalize_text(text: str) -> str:
+def normalize_text(text: str, unify_numbers: bool = True) -> str:
     text = str(text or "").lower()
     text = text.replace("×", "x")
     text = text.translate(PUNCT_TRANSLATION)
+    text = BOUNDARY_DOTCOMMA_PATTERN.sub(" ", text)
+    text = DIMENSION_SPACING_PATTERN.sub("x", text)
+    if unify_numbers:
+        text = text.replace(",", ".")
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
@@ -63,17 +72,17 @@ def _edit_distance(left: list[str] | str, right: list[str] | str) -> int:
     return previous[right_len]
 
 
-def wer(reference: str, hypothesis: str) -> float:
-    ref_words = normalize_text(reference).split()
-    hyp_words = normalize_text(hypothesis).split()
+def wer(reference: str, hypothesis: str, unify_numbers: bool = True) -> float:
+    ref_words = normalize_text(reference, unify_numbers).split()
+    hyp_words = normalize_text(hypothesis, unify_numbers).split()
     if not ref_words:
         return 0.0 if not hyp_words else 1.0
     return _edit_distance(ref_words, hyp_words) / len(ref_words)
 
 
-def cer(reference: str, hypothesis: str) -> float:
-    ref_chars = normalize_text(reference).replace(" ", "")
-    hyp_chars = normalize_text(hypothesis).replace(" ", "")
+def cer(reference: str, hypothesis: str, unify_numbers: bool = True) -> float:
+    ref_chars = normalize_text(reference, unify_numbers).replace(" ", "")
+    hyp_chars = normalize_text(hypothesis, unify_numbers).replace(" ", "")
     if not ref_chars:
         return 0.0 if not hyp_chars else 1.0
     return _edit_distance(ref_chars, hyp_chars) / len(ref_chars)
@@ -151,21 +160,26 @@ def compute_stt_metrics(reference: str, hypothesis: str) -> dict[str, float | in
     metrics = {
         "wer": wer(reference, hypothesis),
         "cer": cer(reference, hypothesis),
+        "wer_strict": wer(reference, hypothesis, unify_numbers=False),
+        "cer_strict": cer(reference, hypothesis, unify_numbers=False),
         "number_recall": number_recall(reference, hypothesis),
         "dimension_recall": dimension_recall(reference, hypothesis),
         "medical_term_recall": medical_term_recall(reference, hypothesis),
         "pesel_accuracy": pesel_accuracy(reference, hypothesis),
     }
 
-    critical_checks = [
+    # Twarde błędy krytyczne (exact-match, wysoka stawka): liczby, wymiary, PESEL.
+    hard_critical_checks = [
         metrics["number_recall"],
         metrics["dimension_recall"],
-        metrics["medical_term_recall"],
         metrics["pesel_accuracy"],
     ]
-    critical_error_count = sum(1 for value in critical_checks if _is_recall_error(value))
+    critical_error_count = sum(1 for value in hard_critical_checks if _is_recall_error(value))
     metrics["critical_error_count"] = critical_error_count
     metrics["has_critical_error"] = critical_error_count > 0
+
+    # Terminologia medyczna — kategoria miękka, śledzona osobno.
+    metrics["has_term_error"] = _is_recall_error(metrics["medical_term_recall"])
 
     return metrics
 
@@ -180,6 +194,22 @@ def _self_check() -> None:
     assert pesel_accuracy("PESEL 12345678901", "PESEL 12345678902") == 0.0
     assert pesel_accuracy("Brak identyfikatora", "Brak identyfikatora") is None
     assert compute_stt_metrics("Guz 3 cm PESEL 12345678901", "Guz 4 cm PESEL 12345678902")["has_critical_error"] is True
+
+    # Normalizacja świadoma liczb: "5,5 cm" to 2 tokeny (nie 3), a łańcuch wymiarów to 1 token.
+    assert normalize_text("5,5 cm").split() == ["5.5", "cm"]
+    assert normalize_text("materiał 3,5 x 3,0 x 3,5 cm.").split() == ["materiał", "3.5x3.0x3.5", "cm"]
+    # Wariant główny ujednolica , vs . (WER=0); wariant strict karze różnicę formatu (WER>0).
+    assert wer("materiał 5,5 cm", "materiał 5.5 cm") == 0.0
+    assert wer("materiał 5,5 cm", "materiał 5.5 cm", unify_numbers=False) > 0.0
+
+    # Rozdzielone flagi: zgubiony termin ≠ błąd krytyczny; liczby/PESEL poprawne.
+    term_only = compute_stt_metrics("Guz nerka 3 cm.", "Guz 3 cm.")
+    assert term_only["has_critical_error"] is False
+    assert term_only["has_term_error"] is True
+    # Błąd twardy (liczba) nie jest sygnalizowany jako błąd terminologii, jeśli terminy się zgadzają.
+    hard_only = compute_stt_metrics("Guz 3 cm.", "Guz 4 cm.")
+    assert hard_only["has_critical_error"] is True
+    assert hard_only["has_term_error"] is False
 
 
 if __name__ == "__main__":
