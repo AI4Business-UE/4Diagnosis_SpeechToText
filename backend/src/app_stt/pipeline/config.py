@@ -7,6 +7,7 @@ WHISPER_MODELS: dict[str, str] = {
     "whisper-medium": "openai/whisper-medium",
     "whisper-medical-pl": "msxksm/whisper-medium-medical-pl",
     "whisper-large-v3": "openai/whisper-large-v3",
+    "whisper-large-v3-turbo": "openai/whisper-large-v3-turbo",
 }
 
 import qdrant_client.models as qdrant_models
@@ -22,8 +23,16 @@ class PipelineConfig:
     stt_model: str = "whisper_local"
 
     # HuggingFace model ID for local whisper
-    # choices: whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3
-    whisper_model: str = "whisper-small"
+    # choices: whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3, whisper-large-v3-turbo
+    whisper_model: str = "whisper-large-v3-turbo"
+    
+    # Whisper local settings below ensure that if model starts to hallucinate at the end of 30s window
+    # these hallucinations won't loop at the start of the next window.
+    
+    # Hugging Face default value = 0
+    whisper_local_no_repeat_ngram_size: int = 3
+    # Hugging Face default value = True
+    whisper_local_condition_on_prev_tokens: bool = False
 
     WHISPER_MODELS: ClassVar[dict[str, str]] = WHISPER_MODELS
 

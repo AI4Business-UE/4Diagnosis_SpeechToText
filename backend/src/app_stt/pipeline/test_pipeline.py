@@ -206,7 +206,7 @@ def test_full_pipeline(audio_path: str):
     pipeline = Pipeline(cfg)
     result = pipeline.run(audio_path)
 
-    print("Transcript:", result["transcript"][:200], "...")
+    print("Transcript:", result["transcript"])
     print("Entities:", json.dumps(result["entities"], indent=2, ensure_ascii=False))
     print("Retrieved Templates:")
     pprint.pp(result["retrieved_templates"], width=120)

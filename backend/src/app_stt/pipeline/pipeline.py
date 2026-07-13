@@ -20,7 +20,7 @@ class Pipeline:
       2. STT            — Whisper (local or API)
       3. NER            — extract Patient, Components, Lesions, FluidSamples
       4. RAG            — build queries from Components, Lesions, FluidSamples and query the templates db
-      5. Template fill  — (in progress)
+      5. Answerer       - send transcript for correction using retrieved templates and NER data 
 
     Usage
     -----
@@ -102,7 +102,11 @@ class Pipeline:
     def _build_stt(self):
         model = self.config.stt_model
         if model == "whisper_local":
-            return WhisperLocal(model_id=self.config.whisper_hf_id)
+            return WhisperLocal(
+                model_id=self.config.whisper_hf_id,
+                condition_on_prev_tokens=self.config.whisper_local_condition_on_prev_tokens,
+                no_repeat_ngram_size=self.config.whisper_local_no_repeat_ngram_size
+            )
         raise ValueError(
             f"Unknown STT model '{model}'. "
             "Supported: 'whisper_local'. "

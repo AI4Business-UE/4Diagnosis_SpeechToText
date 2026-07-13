@@ -15,8 +15,16 @@ class WhisperLocal:
 
     LANGUAGE = "pl"
 
-    def __init__(self, model_id: str = "openai/whisper-small"):
+    def __init__(
+        self, 
+        model_id: str = "openai/whisper-small",
+        condition_on_prev_tokens: bool = False,
+        no_repeat_ngram_size: int = 3 
+        ):
         self.model_id = model_id
+        self._condition_on_prev_tokens = condition_on_prev_tokens
+        self._no_repeat_ngram_size = no_repeat_ngram_size
+        
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.processor = self._load_processor()
         self.model = self._load_model()
@@ -34,7 +42,12 @@ class WhisperLocal:
         audio, sr = librosa.load(audio_path, sr=16000)
         result = self.pipe(
             {"array": audio, "sampling_rate": sr},
-            generate_kwargs={"language": self.LANGUAGE, "task": "transcribe"},
+            generate_kwargs={
+                "language": self.LANGUAGE, 
+                "task": "transcribe",
+                "condition_on_prev_tokens": self._condition_on_prev_tokens,
+                "no_repeat_ngram_size": self._no_repeat_ngram_size
+            },
             return_timestamps=True,
         )
         return result
