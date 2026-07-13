@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import ClassVar
 
 
@@ -13,13 +13,12 @@ WHISPER_MODELS: dict[str, str] = {
 import qdrant_client.models as qdrant_models
 
 from .stages.rag.qdrant.client import QdrantClientMode
-from .stages.rag.encoder_models.base import SentenceEncoder
-from .stages.rag.encoder_models.encoders import E5Large, FastEmbedSparse
+
 
 @dataclass
 class PipelineConfig:
     # ── STT ──────────────────────────────────────────────────────────────────
-    # whisper_local | openai_whisper | openrouter_whisper
+    # whisper_local | whisper hosted
     stt_model: str = "whisper_local"
 
     # HuggingFace model ID for local whisper

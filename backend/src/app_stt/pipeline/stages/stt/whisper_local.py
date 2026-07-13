@@ -4,16 +4,15 @@ import torch
 import librosa
 from transformers import WhisperForConditionalGeneration, WhisperProcessor, pipeline
 
+from .whisper_base import WhisperBase
 
-class WhisperLocal:
+class WhisperLocal(WhisperBase):
     """
     Local Whisper STT model via HuggingFace Transformers.
 
     Uses the pipeline API with chunk_length_s=30 so long recordings
     are handled correctly without manual chunking.
     """
-
-    LANGUAGE = "pl"
 
     def __init__(
         self, 

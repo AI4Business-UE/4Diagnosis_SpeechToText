@@ -4,7 +4,7 @@ import os
 
 from .config import PipelineConfig
 from .stages.preprocessing import AudioPreprocessor
-from .stages.stt.whisper_local import WhisperLocal
+from .stages.stt import WhisperLocal, WhisperHosted
 from .stages.ner.base import NERStrategy
 from .stages.ner.split import SplitNERStrategy
 from .stages.ner.chained import ChainedNERStrategy
@@ -107,10 +107,14 @@ class Pipeline:
                 condition_on_prev_tokens=self.config.whisper_local_condition_on_prev_tokens,
                 no_repeat_ngram_size=self.config.whisper_local_no_repeat_ngram_size
             )
+        if model == "whisper_hosted":
+            return WhisperHosted(
+                model_id=self.config.whisper_hf_id
+            )
+        
         raise ValueError(
             f"Unknown STT model '{model}'. "
-            "Supported: 'whisper_local'. "
-            "OpenAI / OpenRouter variants coming soon."
+            "Supported: 'whisper_local', 'whisper_hosted. "
         )
 
     def _build_ner(self) -> NERStrategy:
