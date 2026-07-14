@@ -1,0 +1,60 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Konfiguracja evala. Edytujesz ten plik i odpalasz: python backend/eval/run_eval.py
+# Ścieżki są względne do folderu backend/eval/.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Które etapy pipeline'u przetestować. Najczęściej wystarczy end_to_end:
+#   end_to_end – domyślny eval całości: audio → STT → NER → formularz → sanity check.
+#                Jeśli gold ma referencje, liczy też metryki STT/NER z prefiksami stt_/ner_.
+#   stt    – diagnostyka samej transkrypcji: audio → preprocessing → STT.
+#            Metryki STT (WER/CER, liczby, wymiary, terminy medyczne, PESEL).
+#   ner    – diagnostyka samego NER: transkrypt gold → NER, bez audio i błędów STT.
+#            Metryki NER (precision/recall/f1 per encja).
+# Uwaga: [stt, ner, end_to_end] uruchamia STT/NER także osobno, więc jest droższe i częściowo
+# redundantne. Używaj tego tylko do pełnej diagnostyki.
+stages: [end_to_end]
+
+# Ile próbek na etap (null = wszystkie). Trzymaj mało na start — STT i NER są kosztowne.
+limit: 10
+
+# ── STT / pełny pipeline ────────────────────────────────────────────────────
+# whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3
+models: [whisper-small]
+# baseline, volume_norm, vad, noise_reduction, bandpass
+preprocessing: [baseline]
+
+# ── NER / pełny pipeline ────────────────────────────────────────────────────
+# chained: Patient → Component → Lesion → FluidSample (z kontekstem komponentów)
+# split:   cztery ekstrakcje niezależnie na surowym transkrypcie
+ner_strategies: [chained]
+# model LLM dla NER i LLM-review (przez OpenRouter; wymaga klucza w backend/env)
+llm_model: openai/gpt-4o
+
+# ── Sanity ──────────────────────────────────────────────────────────────────
+# rules         – tylko heurystyki (bez sieci/klucza)
+# rules_and_llm – przepływ produkcyjny (reguły + LLM-review gdy reguły coś znalazły)
+# llm_only      – sam LLM-review z kontekstem reguł
+# all           – trzy tryby obok siebie
+sanity_mode: rules
+
+# ── Ścieżki (względne do backend/eval/) ─────────────────────────────────────
+paths:
+  # etap stt + end_to_end(audio): manifest z audio + tekstem referencyjnym.
+  # Budowany automatycznie z metadata + audio_dir, jeśli nie istnieje.
+  audio_dir: data/audio_samples
+  metadata: data/metadata/samples_metadata.xlsx
+  manifest: results/stt_manifest.csv
+
+  # etap ner: gold z kolumnami transcript + expected_entities
+  ner_gold: data/gold_ner.jsonl
+
+  # etap end_to_end: wejście pipeline'u. Format wykrywany automatycznie:
+  #   - CSV z kolumną audio_path        → pełny pipeline (audio → ... → sanity)
+  #   - JSONL z polem form_data          → sam sanity check na gotowym formularzu (offline)
+  #   - JSONL/CSV z expected_entities    → rekonstrukcja formularza z gold-encji (offline)
+  # data/gold_audio.csv ma expected_entities + ref_transcript → liczy też STT + NER.
+  # Dla samego sanity offline użyj data/plausibility_fixture.jsonl.
+  end_to_end_input: data/gold_audio.csv
+
+  # tu lądują wszystkie wyniki (per etap: stt_results.csv, ner_results.csv, end_to_end_results.csv)
+  output_dir: results

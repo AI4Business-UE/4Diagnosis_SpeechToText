@@ -1,2 +1,5 @@
-stt_manifest.csv
-preprocessed_audio/
+# Wszystkie wyniki evala lądują w tym folderze i są roboczym outputem runu.
+# Ignorujemy całą zawartość, zostawiamy tylko ten plik.
+# Świadomie wybrany wynik można nadal dodać przez `git add -f <plik>`.
+*
+!.gitignore
