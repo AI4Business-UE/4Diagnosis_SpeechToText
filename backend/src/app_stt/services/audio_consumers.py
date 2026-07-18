@@ -75,7 +75,6 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.full_transcription = ""  # Przechowuje pełną transkrypcję
         self.is_recording = True  # Flaga określająca czy nagrywanie trwa
         self.patient_metadata = {} # Przechowuje metadane pacjenta
-        self.whisper_model = None  # Wybrany model Whisper
         
         tmp_dir = os.path.join(os.getcwd(), "app_stt", "data", "tmp_audio")
         os.makedirs(tmp_dir, exist_ok=True)
@@ -130,18 +129,11 @@ class AudioConsumer(AsyncWebsocketConsumer):
                     self.patient_metadata.update(metadata)
                 return
 
-            if msg.get("type") == "set_model":
-                self.whisper_model = msg.get("model")
-                logger.info(f"[WS] Whisper model set to: {self.whisper_model}")
-                return
-
             if msg.get("type") == "recording_start":
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
-                if msg.get("whisper_model"):
-                    self.whisper_model = msg["whisper_model"]
-                logger.info(f"[WS] Recording started (model: {self.whisper_model})")
+                logger.info(f"[WS] Recording started...")
                 return
 
             if msg.get("type") == "recording_end":
@@ -193,7 +185,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
     async def process_buffer(self):
         logger.info("[TRANSCRIBE] Starting buffer processing loop")
         while True:
-            await asyncio.sleep(5)
+            await asyncio.sleep(2)
 
             if not self.is_recording and not self.audio_buffer:
                 logger.info("[TRANSCRIBE] Exiting loop (recording stopped and buffer empty)")
@@ -252,12 +244,14 @@ class AudioConsumer(AsyncWebsocketConsumer):
             pipeline_results = await asyncio.get_event_loop().run_in_executor(
                 None, self.pipeline.run, self.audio_file.name
             )
-            
+             
             corrected_text = pipeline_results['corrected_transcript']
             logger.info(f"[FINALIZE] Corrected transcription: {corrected_text}")
             
             patient_data = extract_patient_data(pipeline_results['entities'])
-            full_name = f"{patient_data['first_name']} {patient_data['last_name']}"
+            full_name = (f"{patient_data['first_name']} {patient_data['last_name']}"
+                        if patient_data['first_name'] and patient_data['last_name']
+                        else '')
             if not full_name and self.patient_metadata.get("name"):
                 full_name = self.patient_metadata.get("name", "")
                 
@@ -266,9 +260,9 @@ class AudioConsumer(AsyncWebsocketConsumer):
             )
             if calculated_age is None and self.patient_metadata.get("age"):
                 calculated_age = self.patient_metadata.get("age", "")
-                
+            
+            logger.info(f"Dane pacjenta: {patient_data}")
             form_data = {
-                "organ": "",
                 "name": full_name or self.patient_metadata.get("name", ""),
                 "age": str(calculated_age) if calculated_age is not None else self.patient_metadata.get("age", ""),
                 "pesel": patient_data['pesel'] or self.patient_metadata.get("pesel", ""),

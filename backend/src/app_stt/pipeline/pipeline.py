@@ -86,12 +86,20 @@ class Pipeline:
             preprocessing – metadata dict from AudioPreprocessor
             retrieved_templates - templates retrieved from vector database
         """
+        logger.info("PIPELINE: Beginning audio preprocessing...")
         preprocessing_meta = self.preprocessor.process(audio_path)
+        logger.info("PIPELINE: Audio prerocessed!")
 
+        logger.info("PIPELINE: Beginning transcription...")
         stt_result = self.stt.transcribe(preprocessing_meta["output_path"])
+        
         transcript = self._get_text(stt_result)
+        logger.info(f"PIPELINE: Transcription finished: {transcript}")
 
+        logger.info(f"PIPELINE: Beginning extraction...")
         entities = self.ner.extract(transcript)
+        logger.info(f"PIPELINE: NER extraction finished: {entities}")
+        
         templates = self.rag.retrieve_fusion(
             components=entities.components,
             lesions=entities.lesions,

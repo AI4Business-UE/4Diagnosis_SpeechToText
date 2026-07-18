@@ -19,11 +19,11 @@ from .stages.rag.qdrant.client import QdrantClientMode
 class PipelineConfig:
     # ── STT ──────────────────────────────────────────────────────────────────
     # whisper_local | whisper hosted
-    stt_model: str = "whisper_local"
+    stt_model: str = "whisper_hosted"
 
     # HuggingFace model ID for local whisper
     # choices: whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3, whisper-large-v3-turbo
-    whisper_model: str = "whisper-small"
+    whisper_model: str = "whisper-large-v3"
     
     # Whisper local settings below ensure that if model starts to hallucinate at the end of 30s window
     # these hallucinations won't loop at the start of the next window.
