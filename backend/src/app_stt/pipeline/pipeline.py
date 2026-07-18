@@ -4,12 +4,13 @@ import os
 
 from .config import PipelineConfig
 from .stages.preprocessing import AudioPreprocessor
-from .stages.stt.whisper_local import WhisperLocal
+from .stages.stt import WhisperLocal, WhisperHosted
 from .stages.ner.base import NERStrategy
 from .stages.ner.split import SplitNERStrategy
 from .stages.ner.chained import ChainedNERStrategy
 from .stages.rag.rag_retriever import RAGRetriever
 from .stages.rag.qdrant import QdrantRetriever
+from .stages.answerer import Answerer, NoFillAnswerer
 
 
 class Pipeline:
@@ -19,7 +20,7 @@ class Pipeline:
       2. STT            — Whisper (local or API)
       3. NER            — extract Patient, Components, Lesions, FluidSamples
       4. RAG            — build queries from Components, Lesions, FluidSamples and query the templates db
-      5. Template fill  — (in progress)
+      5. Answerer       - send transcript for correction using retrieved templates and NER data 
 
     Usage
     -----
@@ -43,6 +44,7 @@ class Pipeline:
         self.stt = self._build_stt()
         self.ner = self._build_ner()
         self.rag = self._build_rag()
+        self.answerer = self._build_answerer()
 
     @classmethod
     def from_config(cls, **overrides) -> Pipeline:
@@ -81,11 +83,18 @@ class Pipeline:
             fusion_type=self.config.qdrant_fusion_type,
         )
 
+        corrected_transcript = self.answerer.correct_transcription(
+            transcript,
+            templates,
+            entities
+        )
+
         return {
             "transcript": transcript,
             "entities": entities.model_dump(),
             "preprocessing": preprocessing_meta,
-            "retrieved_templates": templates
+            "retrieved_templates": templates,
+            "corrected_transcript": corrected_transcript
         }
 
     # ── private ───────────────────────────────────────────────────────────────
@@ -93,11 +102,19 @@ class Pipeline:
     def _build_stt(self):
         model = self.config.stt_model
         if model == "whisper_local":
-            return WhisperLocal(model_id=self.config.whisper_hf_id)
+            return WhisperLocal(
+                model_id=self.config.whisper_hf_id,
+                condition_on_prev_tokens=self.config.whisper_local_condition_on_prev_tokens,
+                no_repeat_ngram_size=self.config.whisper_local_no_repeat_ngram_size
+            )
+        if model == "whisper_hosted":
+            return WhisperHosted(
+                model_id=self.config.whisper_hf_id
+            )
+        
         raise ValueError(
             f"Unknown STT model '{model}'. "
-            "Supported: 'whisper_local'. "
-            "OpenAI / OpenRouter variants coming soon."
+            "Supported: 'whisper_local', 'whisper_hosted. "
         )
 
     def _build_ner(self) -> NERStrategy:
@@ -111,9 +128,9 @@ class Pipeline:
 
         strategy = self.config.ner_strategy
         if strategy == "chained":
-            return ChainedNERStrategy(self.config.llm_model)
+            return ChainedNERStrategy(self.config.ner_llm_model)
         if strategy == "split":
-            return SplitNERStrategy(self.config.llm_model)
+            return SplitNERStrategy(self.config.ner_llm_model)
         raise ValueError(
             f"Unknown NER strategy '{strategy}'. Supported: 'chained', 'split'."
         )
@@ -125,6 +142,15 @@ class Pipeline:
 
         raise ValueError(
             f"Unknown vector db provider '{provider}'. Supported: 'qdrant'."
+        )
+    
+    def _build_answerer(self) -> Answerer:
+        strategy = self.config.answerer_strategy
+        if strategy == 'no-fill':
+            return NoFillAnswerer(self.config.answerer_llm_model)
+        
+        raise ValueError(
+            f"Unknown answerer strategy '{strategy}'. Supported: 'no-fill'."
         )
         
     @staticmethod
