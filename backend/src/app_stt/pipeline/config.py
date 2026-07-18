@@ -23,7 +23,7 @@ class PipelineConfig:
 
     # HuggingFace model ID for local whisper
     # choices: whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3, whisper-large-v3-turbo
-    whisper_model: str = "whisper-large-v3-turbo"
+    whisper_model: str = "whisper-small"
     
     # Whisper local settings below ensure that if model starts to hallucinate at the end of 30s window
     # these hallucinations won't loop at the start of the next window.
@@ -58,7 +58,7 @@ class PipelineConfig:
     top_k_results: int = 5
     qdrant_fusion_type: qdrant_models.Fusion = qdrant_models.Fusion.DBSF
     qdrant_distance_metric: qdrant_models.Distance = qdrant_models.Distance.COSINE
-    qdrant_client_mode: QdrantClientMode = QdrantClientMode.IN_MEMORY
+    qdrant_client_mode: QdrantClientMode = QdrantClientMode.CONNECTION
     qdrant_sparse_modifier: qdrant_models.Modifier = qdrant_models.Modifier.IDF
     
     # ── Preprocessing ────────────────────────────────────────────────────────

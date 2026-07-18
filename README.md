@@ -79,13 +79,13 @@ source venv/bin/activate
 # albo na Windowsie .\venv\Scripts\Activate.ps1 
 
 # Opcja 1: Uruchom z katalogu src/
-cd src && daphne -p 8010 stt.asgi:application
+cd src && daphne -p 8000 stt.asgi:application
 
 # Opcja 2: Uruchom z katalogu backend/ z PYTHONPATH
-PYTHONPATH=src daphne -p 8010 stt.asgi:application
+PYTHONPATH=src daphne -p 8000 stt.asgi:application
 ```
 
-Backend będzie dostępny na `http://localhost:8010`
+Backend będzie dostępny na `http://localhost:8000`
 
 **Uwaga:** Przy pierwszym uruchomieniu backend automatycznie pobierze i załaduje model Whisper (może zająć kilka minut). W logach zobaczysz komunikaty:
 - "🔄 Ładowanie processora Whisper..."
