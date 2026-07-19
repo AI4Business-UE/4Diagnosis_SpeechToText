@@ -76,6 +76,8 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.is_recording = True  # Flaga określająca czy nagrywanie trwa
         self.patient_metadata = {} # Przechowuje metadane pacjenta
         
+        self.chunk_event = asyncio.Event()
+        
         tmp_dir = os.path.join(os.getcwd(), "app_stt", "data", "tmp_audio")
         os.makedirs(tmp_dir, exist_ok=True)
 
@@ -158,6 +160,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 try:
                     audio_chunk = self._unpack_audio_chunk_from_b64(audio_b64)
                     self.audio_buffer.append(audio_chunk)
+                    self.chunk_event.set()
                 except Exception as e:
                     logger.error(f"[ERROR] Failed to decode audio chunk: {e}")
                     return
@@ -167,6 +170,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 try:
                     audio_chunk = self._unpack_audio_chunk_from_b64(text_data)
                     self.audio_buffer.append(audio_chunk)
+                    self.chunk_event.set()
                 except Exception:
                     logger.error("[ERROR] Failed to decode raw base64 audio chunk")
         except Exception as e:
@@ -185,7 +189,8 @@ class AudioConsumer(AsyncWebsocketConsumer):
     async def process_buffer(self):
         logger.info("[TRANSCRIBE] Starting buffer processing loop")
         while True:
-            await asyncio.sleep(2)
+            await self.chunk_event.wait()
+            self.chunk_event.clear()
 
             if not self.is_recording and not self.audio_buffer:
                 logger.info("[TRANSCRIBE] Exiting loop (recording stopped and buffer empty)")
@@ -195,7 +200,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 logger.info("[TRANSCRIBE] Processing audio buffer")
 
                 # Create WAV file from Float32Array chunks
-                create_wav_from_float32(self.audio_buffer, sample_rate=16000, filename=self.audio_file.name)
+                await asyncio.to_thread(create_wav_from_float32, self.audio_buffer, 16000, self.audio_file.name)
                 logger.info(f"[AUDIO] Created WAV file from chunks (Total chunks: {len(self.audio_buffer)})") 
 
     async def finalize_transcription(self):
