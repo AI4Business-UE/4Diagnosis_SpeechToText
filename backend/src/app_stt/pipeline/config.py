@@ -58,6 +58,8 @@ class PipelineConfig:
     top_k_results: int = 5
     qdrant_fusion_type: qdrant_models.Fusion = qdrant_models.Fusion.DBSF
     qdrant_distance_metric: qdrant_models.Distance = qdrant_models.Distance.COSINE
+    
+    # When running from frontend this must be set to 'CONNECTION'
     qdrant_client_mode: QdrantClientMode = QdrantClientMode.CONNECTION
     qdrant_sparse_modifier: qdrant_models.Modifier = qdrant_models.Modifier.IDF
     
