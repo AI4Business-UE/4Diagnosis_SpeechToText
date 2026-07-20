@@ -18,7 +18,6 @@ export const createWebSocketConnection = (url: string) => {
             };
 
             const handleOpen = () => {
-                cleanup();
                 onOpen();
                 resolve(ws);
             };
@@ -33,13 +32,14 @@ export const createWebSocketConnection = (url: string) => {
             };
 
             const handleError = (error: Event) => {
-                cleanup();
                 onError(error);
+                cleanup();
                 reject(error);
             };
 
             const handleClose = () => {
                 onClose();
+                cleanup()
             };
 
             ws.addEventListener("open", handleOpen);

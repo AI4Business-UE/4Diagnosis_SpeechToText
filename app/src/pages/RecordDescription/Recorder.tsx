@@ -45,7 +45,19 @@ export default function Recorder() {
   const visualizer = createAudioVisualizer();
 
   useEffect(() => {
-    if (!ws) return;
+    if (!ws) {
+      if (!isConnected) {
+        if (isRecording) {
+          handleStopRecording();
+        }
+
+        if (isTranscriptionFinalizing) {
+          setTranscriptionFinalizing(false);
+        }
+      }
+
+      return
+    }
 
     const handleMessage = (event: MessageEvent) => {
       try {
@@ -53,6 +65,7 @@ export default function Recorder() {
         const parsedData = JSON.parse(event.data) as {
           type: string;
           text?: string;
+          ack?: boolean;
           transcription?: string;
           formData?: {
             //organ?: string;
@@ -79,6 +92,11 @@ export default function Recorder() {
           }
         }*/
 
+        if (parsedData.type === "recording_start" && parsedData.ack) {
+          console.log("DEBUG: Acknowledge received for recording_start, starting recording...")
+          handleStartRecording();
+        }
+        
         if (parsedData.type === "error") {
           setTranscriptionFinalizing(false);
         }
@@ -128,6 +146,7 @@ export default function Recorder() {
 
 
   const handleStartRecording = useCallback(async () => {
+    console.log("DEBUG[handleStartRecording]: Starting recording...")
     if (!isConnected) {
       alert("Najpierw połącz się z serwerem!");
       return;
@@ -150,7 +169,7 @@ export default function Recorder() {
 
       await audioProcessor.startProcessing(stream);
       startRecording();
-      sendMessage(createRecordingStartMessage(metadata));
+      // sendMessage(createRecordingStartMessage(metadata));
 
       if (canvasRef.current) {
         cleanupVisualizerRef.current = visualizer.setupVisualizer(
@@ -216,7 +235,10 @@ export default function Recorder() {
                 Połączono z serwerem
               </span>
               <Button
-                onClick={disconnect}
+                onClick={() => {
+                  setTranscriptionFinalizing(false);
+                  disconnect();
+                }}
                 variant="outline"
                 size="sm"
                 className="ml-4"
@@ -261,7 +283,7 @@ export default function Recorder() {
 
             <div className="flex gap-4">
               <Button
-                onClick={handleStartRecording}
+                onClick={() => sendMessage(createRecordingStartMessage(metadata))}
                 disabled={!isConnected || isRecording || isTranscriptionFinalizing}
                 size="lg"
                 className="bg-green-500 hover:bg-green-600"
@@ -291,7 +313,7 @@ export default function Recorder() {
         </Card>
 
         <Card className="relative flex-1 p-6 bg-white/90 shadow-xl">
-          {isTranscriptionFinalizing ?
+          {isTranscriptionFinalizing && isConnected ?
             <div className="absolute inset-0 bg-black/50 rounded-xl transition-opacity duration-300">
               <div className="flex flex-col items-center justify-center h-full gap-4">
                 <svg aria-hidden="true" className="w-15 h-15 text-gray-400 animate-spin fill-brand" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
