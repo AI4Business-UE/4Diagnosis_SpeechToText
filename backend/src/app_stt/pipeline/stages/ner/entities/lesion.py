@@ -4,38 +4,42 @@ from typing import Optional, Literal, List
 
 
 class Lesion(BaseModel):
-    type: Optional[Literal["guz", "torbiel", "polip", "ognisko", "zmiana"]] = Field(
-        None, description="Typ zmiany patologicznej"
+    type: Optional[str] = Field(
+        None, description="Typ zmiany patologicznej",
+        examples=["guz", "torbiel", "polip", "ognisko", "zmiana"]
     )
     dim_x: Optional[float] = Field(None, description="Wymiar X (szerokość)", ge=0)
     dim_y: Optional[float] = Field(None, description="Wymiar Y (wysokość)", ge=0)
     dim_z: Optional[float] = Field(None, description="Wymiar Z (głębokość)", ge=0)
     diameter: Optional[float] = Field(None, description="Średnica", ge=0)
     length: Optional[float] = Field(None, description="Długość", ge=0)
-    unit: Literal["cm", "mm"] = Field("cm", description="Jednostka wymiarów")
+    unit: str = Field("cm", description="Jednostka wymiarów, możliwe wartości: ['cm', 'mm']")
     color: Optional[str] = Field(None, description="Kolor zmiany")
-    structure: Optional[Literal["lity", "torbielowaty", "lito-torbielowaty"]] = Field(
+    structure: Optional[str] = Field(
         None,
         description=(
             "'lity' gdy: lity/jednolity/solidny. "
             "'torbielowaty' gdy: torbielowaty/torbiel. "
             "'lito-torbielowaty' gdy: lito-torbielowaty lub częściowo lity częściowo torbielowaty. "
             "Null gdy nie podano LUB gdy opis dotyczy konsystencji (wtedy do additional_notes)."
-        )
+        ),
+        examples=["lity", "torbielowaty", "lito-torbielowaty"]
     )
-    features: List[Literal["martwica", "wylewy_krwawe", "zwapnienia", "owrzodzenie"]] = Field(
-        default_factory=list, description="Cechy dodatkowe zmiany"
+    features: List[str] = Field(
+        default_factory=list, description="Cechy dodatkowe zmiany",
+        examples=["martwica", "wylewy_krwawe", "zwapnienia", "owrzodzenie"]
     )
-    infiltration: Optional[Literal[
-        "brak", "do_miazszu", "nacieka_tkanke_tluszczowa", "nacieka_sciane", "poza_narzad"
-    ]] = Field(None, description="Stopień naciekania tkanek")
+    infiltration: Optional[str] = Field(None, description="Stopień naciekania tkanek",
+                                        examples=["brak", "do_miazszu", "nacieka_tkanke_tluszczowa", "nacieka_sciane", "poza_narzad"])
     location_description: Optional[str] = Field(None, description="Dokładna lokalizacja zmiany")
     organ: Optional[str] = Field(None, description="Narząd w mianowniku, małymi literami")
-    shape: Optional[Literal["okrągła", "owalna", "nieregularna", "gwiaździsta", "lobularna"]] = Field(
-        None, description="Kształt zmiany"
+    shape: Optional[str] = Field(
+        None, description="Kształt zmiany",
+        examples=["okrągła", "owalna", "nieregularna", "gwiaździsta", "lobularna"]
     )
-    borders: Optional[Literal["ostre", "zatarte", "nieregularne", "regularne"]] = Field(
-        None, description="Granice zmiany"
+    borders: Optional[str] = Field(
+        None, description="Granice zmiany",
+        examples=["ostre", "zatarte", "nieregularne", "regularne"]
     )
     additional_notes: Optional[str] = Field(None, description="Dodatkowe uwagi, w tym konsystencja/tekstura")
     component_index: Optional[int] = Field(

@@ -70,6 +70,12 @@ pip install -r requirements.txt
 pip uninstall torch torchvision torchaudio
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
+# Uruchom kontener Qdrant (z głównego katalogu repozytorium)
+docker-compose up qdrant -d
+
+# Przeprowadź migrację bazy Qdranta (z src/)
+python manage.py index_qdrant
+
 # Przeprowadź migracje bazy danych
 python src/manage.py migrate
 
@@ -79,13 +85,13 @@ source venv/bin/activate
 # albo na Windowsie .\venv\Scripts\Activate.ps1 
 
 # Opcja 1: Uruchom z katalogu src/
-cd src && daphne -p 8010 stt.asgi:application
+cd src && daphne -p 8000 stt.asgi:application
 
 # Opcja 2: Uruchom z katalogu backend/ z PYTHONPATH
-PYTHONPATH=src daphne -p 8010 stt.asgi:application
+PYTHONPATH=src daphne -p 8000 stt.asgi:application
 ```
 
-Backend będzie dostępny na `http://localhost:8010`
+Backend będzie dostępny na `http://localhost:8000`
 
 **Uwaga:** Przy pierwszym uruchomieniu backend automatycznie pobierze i załaduje model Whisper (może zająć kilka minut). W logach zobaczysz komunikaty:
 - "🔄 Ładowanie processora Whisper..."
@@ -100,20 +106,20 @@ Po uruchomieniu obu części sprawdź czy wszystko działa:
 curl -I http://localhost:3010
 
 # Sprawdź backend (powinien odpowiadać)
-curl http://localhost:8010
+curl http://localhost:8000
 ```
 
 ### 🔧 Konfiguracja
 
 #### Frontend
-Konfiguracja API znajduje się w `app/src/lib/apiService.ts` (domyślnie `http://localhost:8010/api`).
+Konfiguracja API znajduje się w `app/src/lib/apiService.ts` (domyślnie `http://localhost:8000/api`).
 
 Konfiguracja WebSocket znajduje się w:
 - `app/src/pages/RecordDescription/config.ts`
 - `app/src/hooks/useAudioRecorder.ts`
 - `app/src/pages/WebSocketRecordingPage.tsx`
 
-Wszystkie są skonfigurowane do używania portu 8010.
+Wszystkie są skonfigurowane do używania portu 8000.
 
 #### Backend
 Główne ustawienia w `backend/src/stt/settings.py`:

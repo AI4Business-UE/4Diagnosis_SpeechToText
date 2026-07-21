@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import logging
 
 from .config import PipelineConfig
 from .stages.preprocessing import AudioPreprocessor
@@ -11,6 +12,22 @@ from .stages.ner.chained import ChainedNERStrategy
 from .stages.rag.rag_retriever import RAGRetriever
 from .stages.rag.qdrant import QdrantRetriever
 from .stages.answerer import Answerer, NoFillAnswerer
+
+
+logger = logging.getLogger(__name__)
+
+_pipeline = None
+
+
+def get_pipeline() -> Pipeline:
+    global _pipeline
+    
+    if isinstance(_pipeline, Pipeline):
+        return _pipeline
+
+    _pipeline = Pipeline()
+
+    return _pipeline
 
 
 class Pipeline:
@@ -37,7 +54,7 @@ class Pipeline:
         from pipeline import Pipeline
         result = Pipeline().run("/content/sample.m4a")
     """
-
+ 
     def __init__(self, config: PipelineConfig | None = None):
         self.config = config or PipelineConfig()
         self.preprocessor = AudioPreprocessor(self.config)
@@ -51,7 +68,7 @@ class Pipeline:
         """Create pipeline with default config, optionally overriding fields."""
         config = PipelineConfig(**overrides)
         return cls(config)
-
+    
     def run(self, audio_path: str) -> dict:
         """
         Run the full pipeline on an audio file.
@@ -69,12 +86,20 @@ class Pipeline:
             preprocessing – metadata dict from AudioPreprocessor
             retrieved_templates - templates retrieved from vector database
         """
+        logger.info("PIPELINE: Beginning audio preprocessing...")
         preprocessing_meta = self.preprocessor.process(audio_path)
+        logger.info("PIPELINE: Audio prerocessed!")
 
+        logger.info("PIPELINE: Beginning transcription...")
         stt_result = self.stt.transcribe(preprocessing_meta["output_path"])
+        
         transcript = self._get_text(stt_result)
+        logger.info(f"PIPELINE: Transcription finished: {transcript}")
 
+        logger.info(f"PIPELINE: Beginning extraction...")
         entities = self.ner.extract(transcript)
+        logger.info(f"PIPELINE: NER extraction finished: {entities}")
+        
         templates = self.rag.retrieve_fusion(
             components=entities.components,
             lesions=entities.lesions,
