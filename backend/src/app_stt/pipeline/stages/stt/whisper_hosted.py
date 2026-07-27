@@ -1,5 +1,5 @@
 from .whisper_base import WhisperBase
-from ..llm.client import get_llm_client
+from app_stt.pipeline.utils.llm.client import get_llm_client
 
 
 class WhisperHosted(WhisperBase):

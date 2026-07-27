@@ -52,6 +52,8 @@ class PipelineConfig:
     answerer_llm_model: str = "openai/gpt-4o"
 
     # ── RAG ────────────────────────────────────────────────────
+    macro_descs_collection = "macro_descriptions"
+    qdrant_connection_string = "localhost:6333"
     vector_db_provider: str = "qdrant"
     dense_encoder_model: str = "intfloat/multilingual-e5-large"
     sparse_encoder_model: str = "Qdrant/bm25"

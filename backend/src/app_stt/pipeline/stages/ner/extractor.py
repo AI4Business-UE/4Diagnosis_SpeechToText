@@ -4,7 +4,7 @@ import time
 
 from pydantic import ValidationError
 
-from app_stt.pipeline.stages.llm.client import get_llm_client
+from app_stt.pipeline.utils.llm.client import get_llm_client
 
 
 def _strip_empty_and_none(data):

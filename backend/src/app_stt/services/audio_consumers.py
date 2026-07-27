@@ -13,7 +13,7 @@ import numpy as np
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from logging_config import logger
-from app_stt.services.utils import extract_patient_data
+from app_stt.services.utils import extract_organs, extract_patient_data
 from app_stt.pipeline import get_pipeline
 
 class RecordingState(enum.Enum):
@@ -164,6 +164,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
             logger.info(f"[FINALIZE] Corrected transcription: {corrected_text}")
             
             patient_data = extract_patient_data(pipeline_results['entities'])
+            organs = extract_organs(pipeline_results['entities'])
             full_name = (f"{patient_data['first_name']} {patient_data['last_name']}"
                         if patient_data['first_name'] and patient_data['last_name']
                         else '')
@@ -179,6 +180,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
             logger.info(f"Dane pacjenta: {patient_data}")
             form_data = {
                 "name": full_name or patient_metadata.get("name", ""),
+                "organ": organs,
                 "age": str(calculated_age) if calculated_age is not None else patient_metadata.get("age", ""),
                 "pesel": patient_data['pesel'] or patient_metadata.get("pesel", ""),
                 "description": corrected_text

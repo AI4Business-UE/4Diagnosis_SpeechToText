@@ -4,7 +4,8 @@ from app_stt.pipeline import PipelineConfig
 
 
 class Command(BaseCommand):
-    help = "Indexes Qdrant vector database with macro description templates"
+    help = "Indexes Qdrant vector database with macro description templates." \
+           "If collection already exists, it is deleted and replaced."
      
     
     def handle(self, *args, **options):

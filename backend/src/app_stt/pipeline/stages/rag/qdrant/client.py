@@ -4,15 +4,13 @@ from typing import Literal
 
 from qdrant_client import QdrantClient 
 
-from .config import QDRANT_CONNECTION_STRING 
-
 _client = None
 
 class QdrantClientMode(enum.Enum):
     IN_MEMORY = 'in_memory'
     CONNECTION = 'connection'
 
-def get_qdrant_client(mode: QdrantClientMode) -> QdrantClient:
+def get_qdrant_client(connection_string: str, mode: QdrantClientMode) -> QdrantClient:
     global _client
     
     if _client is not None:
@@ -23,7 +21,7 @@ def get_qdrant_client(mode: QdrantClientMode) -> QdrantClient:
         return _client
     
     if mode == QdrantClientMode.CONNECTION:
-        _client = QdrantClient(QDRANT_CONNECTION_STRING)
+        _client = QdrantClient(connection_string)
         return _client
     
     raise RuntimeError(f'Unsupported qdrant client mode: {mode}')

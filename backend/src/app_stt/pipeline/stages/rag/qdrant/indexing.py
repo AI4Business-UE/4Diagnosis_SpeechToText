@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING
 import qdrant_client.models as models
 
 from app_stt.pipeline.stages.rag.encoder_models.encoders import get_dense_encoder, get_sparse_encoder
-from app_stt.pipeline.data.macro_descs import MACRO_DESCS
+from app_stt.data.macro_descriptions import MACRO_DESCS
 from .client import get_qdrant_client
-from .config import MACRO_DESCS_COLLECTION
 from ..fts import prepare_fts_text
 
 if TYPE_CHECKING:
@@ -18,15 +17,20 @@ logger = logging.getLogger(__name__)
 
 def index_database(cfg: PipelineConfig):
     logger.info(f"RAG: Preparing to index Qdrant database. Creating Qdrant '{cfg.qdrant_client_mode.name}' client...")
-    client = get_qdrant_client(cfg.qdrant_client_mode)
+    client = get_qdrant_client(cfg.qdrant_connection_string, cfg.qdrant_client_mode)
     
     logger.info(f"RAG: Creating encoders...")
     dense_encoder = get_dense_encoder(cfg.dense_encoder_model)
     sparse_encoder = get_sparse_encoder(cfg.sparse_encoder_model)
     
-    logger.info(f"RAG: Creating template collection in the database...") 
+    logger.info(f"RAG: Creating template collection in the database...")
+
+    if client.collection_exists(collection_name=cfg.macro_descs_collection):
+        logger.info(f"RAG: Collection already exists, deleting and replacing...")
+        client.delete_collection(collection_name=cfg.macro_descs_collection)
+
     client.create_collection(
-        MACRO_DESCS_COLLECTION,
+        cfg.macro_descs_collection,
         vectors_config={
             "dense": models.VectorParams(
                 size = dense_encoder.get_output_size(),
@@ -64,5 +68,5 @@ def index_database(cfg: PipelineConfig):
         ))
     
     logger.info(f"RAG: Inserting vectors into database...")      
-    client.upsert(MACRO_DESCS_COLLECTION, points)
+    client.upsert(cfg.macro_descs_collection, points)
     logger.info(f"RAG: Indexing stage complete!")

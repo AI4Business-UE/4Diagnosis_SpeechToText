@@ -1,7 +1,7 @@
 import logging
 
 from .base import Answerer
-from ..llm.client import get_llm_client
+from app_stt.pipeline.utils.llm.client import get_llm_client
 
 
 logger = logging.getLogger(__name__)

@@ -7,7 +7,6 @@ import qdrant_client.models as models
 
 from .client import get_qdrant_client 
 from .queries import build_queries, SearchQuery
-from .config import MACRO_DESCS_COLLECTION
 from ..encoder_models import get_sparse_encoder, get_dense_encoder
 from ..fts import prepare_fts_text
 from ..rag_retriever import RAGRetriever
@@ -19,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 class QdrantRetriever(RAGRetriever):
     def __init__(self, config: PipelineConfig):
-        self._client = get_qdrant_client(config.qdrant_client_mode)
+        self._config = config
+        self._client = get_qdrant_client(config.qdrant_connection_string, config.qdrant_client_mode)
         self._dense_encoder = get_dense_encoder(config.dense_encoder_model)
         self._sparse_encoder = get_sparse_encoder(config.sparse_encoder_model)
     
@@ -35,7 +35,7 @@ class QdrantRetriever(RAGRetriever):
         
         logger.info(f"RAG: Queries built successfuly! Proceeding with retrieval...") 
         results = self._client.query_points(
-            MACRO_DESCS_COLLECTION,
+            self._config.macro_descs_collection,
             prefetch=prefetches,
             limit=top_k,
             query=models.FusionQuery(fusion=fusion_type),
