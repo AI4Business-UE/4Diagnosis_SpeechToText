@@ -2,40 +2,9 @@ import os
 import json
 import time
 
-from openai import OpenAI
-from dotenv import load_dotenv
 from pydantic import ValidationError
 
-load_dotenv()
-
-_client: OpenAI | None = None
-
-
-def _get_client() -> OpenAI:
-    """
-    Build LLM client — tries keys in order:
-      1. OPENROUTER_API_KEY  → OpenRouter (openrouter.ai)
-      2. OPENAI_API_KEY      → OpenAI directly
-    Raises RuntimeError if neither is set.
-    """
-    global _client
-    if _client is not None:
-        return _client
-
-    key = os.getenv("OPENROUTER_API_KEY")
-    if key:
-        _client = OpenAI(api_key=key, base_url="https://openrouter.ai/api/v1")
-        return _client
-
-    key = os.getenv("OPENAI_API_KEY")
-    if key:
-        _client = OpenAI(api_key=key)
-        return _client
-
-    raise RuntimeError(
-        "Brak klucza API. Ustaw OPENROUTER_API_KEY lub OPENAI_API_KEY w pliku .env. "
-        "Jeśli nie masz klucza, pipeline użyje TTT fallback (stary serwis TTT)."
-    )
+from app_stt.pipeline.utils.llm.client import get_llm_client
 
 
 def _strip_empty_and_none(data):
@@ -63,7 +32,7 @@ def extract(transcript: str, prompt: str, schema, model: str = "openai/gpt-4o"):
     validation_errors : list
         Pydantic validation errors (empty if validation passed).
     """
-    client = _get_client()
+    client = get_llm_client()
     start = time.perf_counter()
 
     response = client.chat.completions.create(
