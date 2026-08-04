@@ -20,7 +20,7 @@ Możesz też jednorazowo nadpisać stage z terminala:
 backend/venv/bin/python backend/eval/run_eval.py --stages end_to_end
 ```
 
-Jeśli run używa NER, wczytaj wcześniej klucze (sanity check jest rules-only, kluczy nie potrzebuje):
+Jeśli run używa NER albo `sanity_modes: [rules_and_llm]`, wczytaj wcześniej klucze:
 
 ```bash
 set -a; source backend/env; set +a
@@ -37,6 +37,21 @@ stages: [end_to_end]
 To jest normalny eval end-to-end: bierze audio, robi STT, potem NER, buduje formularz i puszcza
 sanity check. Jeśli wejście ma referencje (`ref_transcript`, `expected_entities`), w tym samym
 wyniku pojawią się też metryki STT i NER z prefiksami `stt_` oraz `ner_`.
+
+Sanity check ma tryby wybierane w `config.yaml`:
+
+```yaml
+sanity_modes: [rules]
+```
+
+`rules` to deterministyczny baseline bez sieci. Do eksperymentu porównawczego możesz ustawić:
+
+```yaml
+sanity_modes: [rules, rules_and_llm]
+```
+
+Wtedy eval zapisze osobny wiersz dla każdego trybu. `rules_and_llm` odpala reguły, a potem opcjonalny
+LLM review; wymaga klucza API i może generować koszt.
 
 Pozostałe stage'e są głównie do debugowania:
 
@@ -95,11 +110,13 @@ W NER patrz głównie na:
 
 W sanity check najważniejsze są:
 
+- `sanity_mode` - `rules` albo `rules_and_llm`.
 - `status` - `ok`, `warning` albo `critical`.
 - `score` - szybka liczba jakości; im bliżej `1`, tym lepiej.
 - `issue_count` / `issue_codes` - co konkretnie zostało wykryte.
+- `llm_ran`, `llm_reason`, `llm_issue_count` - czy LLM review realnie się wykonał i co zwrócił.
 
-Sanity check jest **rules-only**: działa deterministycznie, bez LLM, sieci i kluczy API.
+Domyślny runtime hidden logging w backendzie dalej używa `rules`, więc nie robi ukrytej sieci.
 
 Jeśli `end_to_end_results.csv` ma kolumny z prefiksem `stt_` albo `ner_`, to znaczy, że eval liczył
 te metryki przy okazji pełnego runu.

@@ -30,6 +30,12 @@ ner_strategies: [chained]
 # model LLM dla NER (przez OpenRouter; wymaga klucza w backend/env)
 llm_model: openai/gpt-4o
 
+# ── Data sanity check ───────────────────────────────────────────────────────
+# rules: deterministic baseline, bez sieci.
+# rules_and_llm: rules + opcjonalny LLM review (wymaga klucza API i może kosztować).
+# Do porównania ustaw: [rules, rules_and_llm].
+sanity_modes: [rules]
+
 # ── Ścieżki (względne do backend/eval/) ─────────────────────────────────────
 paths:
   # etap stt + end_to_end(audio): manifest z audio + tekstem referencyjnym.

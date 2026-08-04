@@ -487,6 +487,7 @@ def _filter_synthetic_patient_issues(issues: list[dict[str, Any]], sample: dict[
 
 def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
     issues, filtered_synthetic_issues = _filter_synthetic_patient_issues(result.get("issues", []), sample)
+    llm_review = result.get("llm_review", {})
     if filtered_synthetic_issues:
         status = data_sanity_check.derive_status(issues)
         score = data_sanity_check.calculate_score(issues)
@@ -516,6 +517,7 @@ def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[st
         "pipeline_status": sample.get("pipeline_status", ""),
         "pipeline_error": sample.get("pipeline_error", ""),
         "pipeline_duration_seconds": sample.get("pipeline_duration_seconds", ""),
+        "sanity_mode": sample.get("sanity_mode", ""),
         "status": status,
         "score": score,
         "issue_count": len(issues),
@@ -528,6 +530,9 @@ def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[st
         "expected_flag": expected_flag,
         "predicted_flag": predicted_flag,
         "flag_match": flag_match,
+        "llm_ran": llm_review.get("ran", ""),
+        "llm_reason": llm_review.get("reason", ""),
+        "llm_issue_count": llm_review.get("issue_count", ""),
         "note": sample.get("note", ""),
         "description_length": result.get("metrics", {}).get("description_length", ""),
         "transcript_length": result.get("metrics", {}).get("transcript_length", ""),
@@ -541,8 +546,19 @@ def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[st
 
 
 def _run_sanity(data_sanity_check, sample: dict[str, Any], transcript: str, form_data: dict[str, str], extra: dict[str, Any]) -> dict[str, Any]:
-    result = data_sanity_check.run_data_sanity_check(transcript, form_data)
+    result = data_sanity_check.run_data_sanity_check(
+        transcript,
+        form_data,
+        mode=sample.get("sanity_mode", "rules"),
+    )
     return _build_sanity_row(data_sanity_check, result, sample, extra)
+
+
+def _sanity_modes(config: dict[str, Any]) -> list[str]:
+    modes = config.get("sanity_modes") or ["rules"]
+    if isinstance(modes, str):
+        modes = [modes]
+    return list(modes)
 
 
 def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict[str, Any]) -> dict[str, Any]:
@@ -563,6 +579,7 @@ def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict
 def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[dict[str, Any]], output_dir: Path) -> list[dict[str, Any]]:
     AudioPreprocessor, WhisperLocal = load_stt_components()
     preprocessed_dir = output_dir / "preprocessed_audio" / "sanity"
+    sanity_modes = _sanity_modes(config)
     rows = []
 
     for model in config["models"]:
@@ -603,7 +620,14 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
                         })
                         extra = {}
 
-                    rows.append(_run_sanity(data_sanity_check, eval_sample, transcript, form_data, extra))
+                    for sanity_mode in sanity_modes:
+                        rows.append(_run_sanity(
+                            data_sanity_check,
+                            {**eval_sample, "sanity_mode": sanity_mode},
+                            transcript,
+                            form_data,
+                            extra,
+                        ))
     return rows
 
 
@@ -620,6 +644,7 @@ def run_end_to_end(config: dict[str, Any], output_dir: Path) -> None:
         write_rows([], output_dir / "end_to_end_results.csv")
         return
 
+    sanity_modes = _sanity_modes(config)
     if fmt == "audio":
         rows = _run_sanity_audio(config, data_sanity_check, samples, output_dir)
     elif fmt == "form":
@@ -635,17 +660,31 @@ def run_end_to_end(config: dict[str, Any], output_dir: Path) -> None:
                 if pesel_age is not None:
                     form_data = {**form_data, "age": str(pesel_age)}
             sample = {**sample, "synthetic": False, "gold_has_patient": ""}
-            rows.append(_run_sanity(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, {}))
+            for sanity_mode in sanity_modes:
+                rows.append(_run_sanity(
+                    data_sanity_check,
+                    {**sample, "sanity_mode": sanity_mode},
+                    str(sample.get("transcript") or ""),
+                    form_data,
+                    {},
+                ))
     else:  # entities — rekonstrukcja formularza z gold-encji (offline)
         rows = []
         for sample in samples:
             expected = parse_entities(sample.get("expected_entities") or {})
             sample = {**sample, "synthetic": True, "gold_has_patient": bool(expected.get("patient"))}
             form_data = build_form_data(expected)
-            rows.append(_run_sanity(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, {}))
+            for sanity_mode in sanity_modes:
+                rows.append(_run_sanity(
+                    data_sanity_check,
+                    {**sample, "sanity_mode": sanity_mode},
+                    str(sample.get("transcript") or ""),
+                    form_data,
+                    {},
+                ))
 
-    print(f"  format wejścia: {fmt}, sanity=rules-only")
-    write_rows(rows, output_dir / "end_to_end_results.csv", leading=("sample_id", "audio_file", "status", "score"))
+    print(f"  format wejścia: {fmt}, sanity_modes={','.join(sanity_modes)}")
+    write_rows(rows, output_dir / "end_to_end_results.csv", leading=("sample_id", "audio_file", "sanity_mode", "status", "score"))
     _summarize_sanity(rows)
 
 
@@ -653,18 +692,21 @@ def _summarize_sanity(rows: list[dict[str, Any]]) -> None:
     if not rows:
         return
     frame = pd.DataFrame(rows)
-    distribution = frame["status"].value_counts().to_dict()
-    mean_score = round(pd.to_numeric(frame["score"], errors="coerce").mean(), 4)
-    print(f"  podsumowanie: {len(rows)} wierszy, statusy={distribution}, mean score={mean_score}")
+    mode_groups = frame.groupby("sanity_mode", dropna=False) if "sanity_mode" in frame else [("", frame)]
 
-    # Zgodność z gold — tylko wiersze z bool expected_flag (fixture). „positive" = sanity flagnął.
-    evaluable = [r for r in rows if isinstance(r.get("expected_flag"), bool)]
-    if evaluable:
-        tp = sum(1 for r in evaluable if r["expected_flag"] and r["status"] != "ok")
-        tn = sum(1 for r in evaluable if not r["expected_flag"] and r["status"] == "ok")
-        fp = sum(1 for r in evaluable if not r["expected_flag"] and r["status"] != "ok")
-        fn = sum(1 for r in evaluable if r["expected_flag"] and r["status"] == "ok")
-        print(f"  zgodność z expected_flag: {tp + tn}/{len(evaluable)} (TP={tp} TN={tn} FP={fp} FN={fn})")
+    for sanity_mode, group in mode_groups:
+        distribution = group["status"].value_counts().to_dict()
+        mean_score = round(pd.to_numeric(group["score"], errors="coerce").mean(), 4)
+        label = sanity_mode or "rules"
+        print(f"  [{label}] podsumowanie: {len(group)} wierszy, statusy={distribution}, mean score={mean_score}")
+
+        evaluable = [row for row in group.to_dict("records") if isinstance(row.get("expected_flag"), bool)]
+        if evaluable:
+            tp = sum(1 for row in evaluable if row["expected_flag"] and row["status"] != "ok")
+            tn = sum(1 for row in evaluable if not row["expected_flag"] and row["status"] == "ok")
+            fp = sum(1 for row in evaluable if not row["expected_flag"] and row["status"] != "ok")
+            fn = sum(1 for row in evaluable if row["expected_flag"] and row["status"] == "ok")
+            print(f"  [{label}] zgodność z expected_flag: {tp + tn}/{len(evaluable)} (TP={tp} TN={tn} FP={fp} FN={fn})")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
