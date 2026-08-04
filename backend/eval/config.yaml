@@ -27,14 +27,12 @@ preprocessing: [baseline]
 # chained: Patient → Component → Lesion → FluidSample (z kontekstem komponentów)
 # split:   cztery ekstrakcje niezależnie na surowym transkrypcie
 ner_strategies: [chained]
-# model LLM dla NER i LLM-review (przez OpenRouter; wymaga klucza w backend/env)
+# model LLM dla NER (przez OpenRouter; wymaga klucza w backend/env)
 llm_model: openai/gpt-4o
 
 # ── Sanity ──────────────────────────────────────────────────────────────────
-# rules         – tylko heurystyki (bez sieci/klucza)
-# rules_and_llm – przepływ produkcyjny (reguły + LLM-review gdy reguły coś znalazły)
-# llm_only      – sam LLM-review z kontekstem reguł
-# all           – trzy tryby obok siebie
+# Sanity check jest rules-only (deterministyczne heurystyki, bez LLM/sieci/klucza).
+# 'rules' to jedyny wspierany tryb.
 sanity_mode: rules
 
 # ── Ścieżki (względne do backend/eval/) ─────────────────────────────────────

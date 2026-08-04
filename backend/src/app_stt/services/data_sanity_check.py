@@ -1,7 +1,4 @@
 import re
-import requests
-import json
-import os
 import importlib.util
 from datetime import datetime
 from pathlib import Path
@@ -44,8 +41,6 @@ def _resolve_organ(form_data: dict) -> str | None:
     return None
 
 
-ALLOWED_SEVERITIES = {"error", "warning", "info"}
-
 # Domyślne wagi per severity (fallback, gdy kod issue nie ma własnej wagi).
 SEVERITY_WEIGHTS = {
     "error": 0.4,
@@ -74,13 +69,8 @@ CODE_WEIGHTS = {
 }
 
 
-def _llm_force_enabled() -> bool:
-    """LLM-review domyślnie odpala się tylko gdy reguły coś znalazły (oszczędność kosztu).
-    SANITY_LLM_FORCE=1 wymusza uruchomienie także na formularzach czystych wg reguł."""
-    return str(os.getenv("SANITY_LLM_FORCE", "")).strip().lower() in {"1", "true", "yes", "on"}
-
-
 def run_data_sanity_check(transcript: str, form_data: dict) -> dict:
+    """Rules-only warstwa QA — bez LLM, bez sieci. Deterministyczna: te same wejścia → ten sam wynik."""
     issues = []
 
     issues += check_required_fields(form_data)
@@ -91,20 +81,10 @@ def run_data_sanity_check(transcript: str, form_data: dict) -> dict:
     issues += check_dimensions(transcript, form_data)
     issues += check_description_consistency(transcript, form_data)
 
-    llm = {"ran": False, "issues": [], "reason": "disabled"}
-    if issues or _llm_force_enabled():
-        llm = check_with_llm(transcript, form_data, issues)
-        issues += llm["issues"]
-
     return {
         "status": derive_status(issues),
         "score": calculate_score(issues),
         "issues": issues,
-        "llm_review": {
-            "ran": llm["ran"],
-            "reason": llm["reason"],
-            "issue_count": len(llm["issues"]),
-        },
         "metrics": {
             "transcript_length": len(transcript or ""),
             "description_length": len(str(form_data.get("description", "") or "")),
@@ -485,210 +465,98 @@ def derive_status(issues: list) -> str:
     return "warning"
 
 
-def check_with_llm(transcript: str, form_data: dict, rule_issues: list) -> dict:
-    """Zwraca {"ran": bool, "issues": list, "reason": str}.
-    `ran=False` oznacza, że LLM realnie się nie wykonał (brak klucza / błąd sieci)."""
-    api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_KEY")
-
-    if not api_key:
-        return {"ran": False, "issues": [], "reason": "no_api_key"}
-
-    model = os.getenv("SANITY_LLM_MODEL", "gpt-4o-2024-05-13")
-
-    prompt = f"""
-    You are reviewing a pathology form filled by an LLM from a speech transcript.
-
-    Compare the original transcript, form_data and existing rule issues.
-    Check whether patient data and the macro-description look consistent and sensible.
-    Do not correct the form.
-    Do not diagnose.
-    Return only JSON in this format:
-    {{"issues": []}}
-
-    Each issue must have:
-    severity, source, code, field, message, evidence.
-
-    source must always be "llm_review".
-
-    transcript:
-    {transcript}
-
-    form_data:
-    {json.dumps(form_data, ensure_ascii=False)}
-
-    rule_issues:
-    {json.dumps(rule_issues, ensure_ascii=False)}
-    """
-
-    try:
-        response = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            data=json.dumps({
-                "model": model,
-                "messages": [
-                    {"role": "user", "content": prompt},
-                ],
-                "temperature": 0.0,
-            }),
-            timeout=20,
-        )
-
-        if response.status_code != 200:
-            logger.warning(f"[SANITY_CHECK] LLM review HTTP {response.status_code}")
-            return {"ran": False, "issues": [], "reason": "http_error"}
-
-        reply = response.json()["choices"][0]["message"]["content"]
-        cleaned = reply.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-
-        try:
-            parsed = json.loads(cleaned)
-        except json.JSONDecodeError:
-            logger.warning("[SANITY_CHECK] LLM review returned non-JSON output")
-            return {"ran": True, "issues": [], "reason": "parse_error"}
-
-        llm_issues = parsed.get("issues", [])
-        if not isinstance(llm_issues, list):
-            return {"ran": True, "issues": [], "reason": "parse_error"}
-
-        normalized_issues = []
-        for issue in llm_issues:
-            if not isinstance(issue, dict):
-                continue
-
-            severity = issue.get("severity", "warning")
-            if severity not in ALLOWED_SEVERITIES:
-                severity = "warning"
-
-            normalized_issue = {
-                "severity": severity,
-                "source": "llm_review",
-                "code": issue.get("code", "llm_review_issue"),
-                "field": issue.get("field", "description"),
-                "message": issue.get("message", "LLM review found a possible issue."),
-            }
-
-            if issue.get("evidence"):
-                normalized_issue["evidence"] = issue["evidence"]
-
-            normalized_issues.append(normalized_issue)
-
-        return {"ran": True, "issues": normalized_issues, "reason": "ok"}
-
-    except Exception as exc:
-        logger.warning(f"[SANITY_CHECK] LLM review failed: {exc}")
-        return {"ran": False, "issues": [], "reason": "exception"}
-
-
 def _self_check() -> None:
-    # Zdejmij klucze, żeby self-check nigdy nie chodził do sieci.
-    saved_keys = {
-        name: os.environ.pop(name, None)
-        for name in ("OPENROUTER_API_KEY", "OPENAI_KEY", "SANITY_LLM_FORCE")
-    }
-    try:
-        # Score multiplikatywny: 5 drobnych warningów nie zeruje wyniku...
-        five_warnings = [{"severity": "warning", "code": "missing_required_field"} for _ in range(5)]
-        score_five = calculate_score(five_warnings)
-        assert 0.0 < score_five < 1.0
-        # ...i jest wyżej (lepiej) niż pojedynczy twardy błąd.
-        assert score_five > calculate_score([{"severity": "error", "code": "non_positive_dimension"}])
+    # Score multiplikatywny: 5 drobnych warningów nie zeruje wyniku...
+    five_warnings = [{"severity": "warning", "code": "missing_required_field"} for _ in range(5)]
+    score_five = calculate_score(five_warnings)
+    assert 0.0 < score_five < 1.0
+    # ...i jest wyżej (lepiej) niż pojedynczy twardy błąd.
+    assert score_five > calculate_score([{"severity": "error", "code": "non_positive_dimension"}])
 
-        # Status trójpoziomowy z severity.
-        assert derive_status([]) == "ok"
-        assert derive_status([{"severity": "warning", "code": "x"}]) == "warning"
-        assert derive_status([{"severity": "error", "code": "x"}]) == "critical"
+    # Status trójpoziomowy z severity.
+    assert derive_status([]) == "ok"
+    assert derive_status([{"severity": "warning", "code": "x"}]) == "warning"
+    assert derive_status([{"severity": "error", "code": "x"}]) == "critical"
 
-        # Provenance: wymiar tylko w transkrypcji -> field=transcript.
-        only_transcript = check_dimensions("guz 60 cm", {"description": ""})
-        assert any(issue["field"] == "transcript" for issue in only_transcript)
-        # Wymiar tylko w opisie -> field=description.
-        only_description = check_dimensions("", {"description": "guz 60 cm"})
-        assert any(issue["field"] == "description" for issue in only_description)
-        # Wymiar w obu -> raportowany raz, z description.
-        both = check_dimensions("guz 60 cm", {"description": "guz 60 cm"})
-        large = [issue for issue in both if issue["code"] == "suspicious_large_dimension"]
-        assert len(large) == 1 and large[0]["field"] == "description"
+    # Provenance: wymiar tylko w transkrypcji -> field=transcript.
+    only_transcript = check_dimensions("guz 60 cm", {"description": ""})
+    assert any(issue["field"] == "transcript" for issue in only_transcript)
+    # Wymiar tylko w opisie -> field=description.
+    only_description = check_dimensions("", {"description": "guz 60 cm"})
+    assert any(issue["field"] == "description" for issue in only_description)
+    # Wymiar w obu -> raportowany raz, z description.
+    both = check_dimensions("guz 60 cm", {"description": "guz 60 cm"})
+    large = [issue for issue in both if issue["code"] == "suspicious_large_dimension"]
+    assert len(large) == 1 and large[0]["field"] == "description"
 
-        # Granice słów: "guz" łapie zmianę, ale nie "guzik".
-        assert LESION_PATTERN.search("guz") is not None
-        assert LESION_PATTERN.search("guzik") is None
+    # Granice słów: "guz" łapie zmianę, ale nie "guzik".
+    assert LESION_PATTERN.search("guz") is not None
+    assert LESION_PATTERN.search("guzik") is None
 
-        # "20 ml" to objętość, nie wymiar w metrach — nie może dawać issue wymiarowego.
-        assert check_dimensions("BAL 20 ml", {"description": "materiał 20 ml"}) == []
-        # "20 cm" nadal jest wykrywane.
-        assert check_dimensions("", {"description": "guz 60 cm"}) != []
+    # "20 ml" to objętość, nie wymiar w metrach — nie może dawać issue wymiarowego.
+    assert check_dimensions("BAL 20 ml", {"description": "materiał 20 ml"}) == []
+    # "20 cm" nadal jest wykrywane.
+    assert check_dimensions("", {"description": "guz 60 cm"}) != []
 
-        # Zakresy per narząd: 40 cm dla nerki to nonsens.
-        kidney_big = check_dimensions("", {"organ": "nerka", "description": "guz 40 cm"})
-        assert any(issue["code"] == "implausible_dimension_for_organ" for issue in kidney_big)
-        # Łańcuch "40 x 30 x 20 cm": największa liczba (40) też musi być sprawdzona, nie tylko 20.
-        kidney_chain = check_dimensions("", {"organ": "nerka", "description": "guz 40 x 30 x 20 cm"})
-        assert any(
-            issue["code"] == "implausible_dimension_for_organ" and issue["evidence"] == "40 cm"
-            for issue in kidney_chain
-        )
-        # Rozmiary w normie nie flagują: nerka 8 cm, macica 9 cm.
-        assert check_dimensions("", {"organ": "nerka", "description": "guz 8 cm"}) == []
-        assert check_dimensions("", {"organ": "macica", "description": "trzon 9 cm"}) == []
-        # Fleksja: "nerki prawej" rezolwuje do "nerka".
-        assert _resolve_organ({"organ": "nerki prawej"}) == "nerka"
-        # Specyficzność: "szyjka macicy" nie może rozwiązać się jako "macica".
-        assert _resolve_organ({"organ": "szyjka macicy"}) == "szyjka macicy"
-        # Nieznany narząd -> globalny próg (300 cm nadal łapane).
-        unknown_organ = check_dimensions("", {"organ": "", "description": "tkanka 300 cm"})
-        assert any(issue["code"] == "suspicious_large_dimension" for issue in unknown_organ)
+    # Zakresy per narząd: 40 cm dla nerki to nonsens.
+    kidney_big = check_dimensions("", {"organ": "nerka", "description": "guz 40 cm"})
+    assert any(issue["code"] == "implausible_dimension_for_organ" for issue in kidney_big)
+    # Łańcuch "40 x 30 x 20 cm": największa liczba (40) też musi być sprawdzona, nie tylko 20.
+    kidney_chain = check_dimensions("", {"organ": "nerka", "description": "guz 40 x 30 x 20 cm"})
+    assert any(
+        issue["code"] == "implausible_dimension_for_organ" and issue["evidence"] == "40 cm"
+        for issue in kidney_chain
+    )
+    # Rozmiary w normie nie flagują: nerka 8 cm, macica 9 cm.
+    assert check_dimensions("", {"organ": "nerka", "description": "guz 8 cm"}) == []
+    assert check_dimensions("", {"organ": "macica", "description": "trzon 9 cm"}) == []
+    # Fleksja: "nerki prawej" rezolwuje do "nerka".
+    assert _resolve_organ({"organ": "nerki prawej"}) == "nerka"
+    # Specyficzność: "szyjka macicy" nie może rozwiązać się jako "macica".
+    assert _resolve_organ({"organ": "szyjka macicy"}) == "szyjka macicy"
+    # Nieznany narząd -> globalny próg (300 cm nadal łapane).
+    unknown_organ = check_dimensions("", {"organ": "", "description": "tkanka 300 cm"})
+    assert any(issue["code"] == "suspicious_large_dimension" for issue in unknown_organ)
 
-        # Wiek ↔ PESEL: PESEL 44051401359 -> data 1944-05-14.
-        pesel_age = _age_from_pesel("44051401359")
-        assert pesel_age is not None
-        # Wiek zgodny z PESEL-em -> brak flagi.
-        assert check_age_pesel_consistency({"age": str(pesel_age), "pesel": "44051401359"}) == []
-        # Wiek wyraźnie inny -> flaga age_pesel_mismatch.
-        mismatch = check_age_pesel_consistency({"age": str(pesel_age + 30), "pesel": "44051401359"})
-        assert any(issue["code"] == "age_pesel_mismatch" for issue in mismatch)
-        # Brak PESEL-a albo nie-liczbowy wiek -> nie flagujemy.
-        assert check_age_pesel_consistency({"age": "40", "pesel": ""}) == []
+    # Wiek ↔ PESEL: PESEL 44051401359 -> data 1944-05-14.
+    pesel_age = _age_from_pesel("44051401359")
+    assert pesel_age is not None
+    # Wiek zgodny z PESEL-em -> brak flagi.
+    assert check_age_pesel_consistency({"age": str(pesel_age), "pesel": "44051401359"}) == []
+    # Wiek wyraźnie inny -> flaga age_pesel_mismatch.
+    mismatch = check_age_pesel_consistency({"age": str(pesel_age + 30), "pesel": "44051401359"})
+    assert any(issue["code"] == "age_pesel_mismatch" for issue in mismatch)
+    # Brak PESEL-a albo nie-liczbowy wiek -> nie flagujemy.
+    assert check_age_pesel_consistency({"age": "40", "pesel": ""}) == []
 
-        # Ujemny wiek jest realnie wykrywany (nie mylony z age_not_a_number).
-        assert any(issue["code"] == "negative_age" for issue in check_age({"age": "-5"}))
-        # Nadal łapiemy prawdziwie nieliczbowy wiek.
-        assert any(issue["code"] == "age_not_a_number" for issue in check_age({"age": "abc"}))
+    # Ujemny wiek jest realnie wykrywany (nie mylony z age_not_a_number).
+    assert any(issue["code"] == "negative_age" for issue in check_age({"age": "-5"}))
+    # Nadal łapiemy prawdziwie nieliczbowy wiek.
+    assert any(issue["code"] == "age_not_a_number" for issue in check_age({"age": "abc"}))
 
-        # PESEL: poprawna checksuma nie wystarczy — niemożliwa data łapana jako invalid_pesel_date.
-        for bad_date_pesel in ("99133212341", "00223012345", "22423112340"):
-            assert any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": bad_date_pesel}))
-        # Poprawny PESEL (1944-05-14) nie dostaje invalid_pesel_date.
-        assert not any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": "44051401359"}))
-        # Legalne PESEL-e 2000+ mają realną datę — dekoder ich nie odrzuca.
-        assert _pesel_birth_date("05210112345") is not None
-        # Data z przyszłości też jest flagowana (poprawna checksuma, ur. 2099-12-31).
-        assert any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": "99323100009"}))
+    # PESEL: poprawna checksuma nie wystarczy — niemożliwa data łapana jako invalid_pesel_date.
+    for bad_date_pesel in ("99133212341", "00223012345", "22423112340"):
+        assert any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": bad_date_pesel}))
+    # Poprawny PESEL (1944-05-14) nie dostaje invalid_pesel_date.
+    assert not any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": "44051401359"}))
+    # Legalne PESEL-e 2000+ mają realną datę — dekoder ich nie odrzuca.
+    assert _pesel_birth_date("05210112345") is not None
+    # Data z przyszłości też jest flagowana (poprawna checksuma, ur. 2099-12-31).
+    assert any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": "99323100009"}))
 
-        # Jakość opisu: "." i "3 cm" bez treści -> flaga; sensowny opis -> brak.
-        assert check_description_quality({"description": "."})[0]["code"] == "description_not_meaningful"
-        assert check_description_quality({"description": "3 cm"})[0]["code"] == "description_not_meaningful"
-        assert check_description_quality({"description": "Fragment nerki 8 cm."}) == []
-        # Sam whitespace obsługuje check_required_fields -> tu bez dublowania.
-        assert check_description_quality({"description": "   "}) == []
+    # Jakość opisu: "." i "3 cm" bez treści -> flaga; sensowny opis -> brak.
+    assert check_description_quality({"description": "."})[0]["code"] == "description_not_meaningful"
+    assert check_description_quality({"description": "3 cm"})[0]["code"] == "description_not_meaningful"
+    assert check_description_quality({"description": "Fragment nerki 8 cm."}) == []
+    # Sam whitespace obsługuje check_required_fields -> tu bez dublowania.
+    assert check_description_quality({"description": "   "}) == []
 
-        # Bez klucza LLM realnie się nie uruchamia.
-        llm = check_with_llm("x", {}, [])
-        assert llm["ran"] is False and llm["reason"] == "no_api_key"
-
-        # Pełny wynik ma blok llm_review i nie chodzi do sieci bez klucza.
-        result = run_data_sanity_check("guz 3 cm", {
-            "organ": "", "name": "", "age": "", "pesel": "", "description": "",
-        })
-        assert result["llm_review"]["ran"] is False
-        assert result["status"] in {"ok", "warning", "critical"}
-    finally:
-        for name, value in saved_keys.items():
-            if value is not None:
-                os.environ[name] = value
+    # Rules-only: pełny wynik ma poprawny status, bez bloku llm_review i bez sieci.
+    result = run_data_sanity_check("guz 3 cm", {
+        "organ": "", "name": "", "age": "", "pesel": "", "description": "",
+    })
+    assert result["status"] in {"ok", "warning", "critical"}
+    assert "llm_review" not in result
 
 
 if __name__ == "__main__":

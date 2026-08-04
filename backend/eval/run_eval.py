@@ -39,7 +39,7 @@ DEFAULT_CONFIG = EVAL_ROOT / "config.yaml"
 sys.path.insert(0, str(EVAL_ROOT))
 from metrics import compare_entities, compute_stt_metrics, flatten_metrics, parse_entities  # noqa: E402
 
-SANITY_MODES = ["rules", "rules_and_llm", "llm_only"]
+SANITY_MODES = ["rules"]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -470,45 +470,14 @@ def _issue_counts(issues: list[dict[str, Any]]) -> dict[str, int]:
         "warning_count": sum(1 for issue in issues if issue.get("severity") == "warning"),
         "error_count": sum(1 for issue in issues if issue.get("severity") == "error"),
         "rules_issue_count": sum(1 for issue in issues if issue.get("source") == "rules"),
-        "llm_issue_count": sum(1 for issue in issues if issue.get("source") == "llm_review"),
-    }
-
-
-def _run_rules_only(data_sanity_check, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
-    original_llm_review = data_sanity_check.check_with_llm
-    data_sanity_check.check_with_llm = lambda transcript, form_data, rule_issues: {
-        "ran": False, "issues": [], "reason": "disabled",
-    }
-    try:
-        return data_sanity_check.run_data_sanity_check(transcript, form_data)
-    finally:
-        data_sanity_check.check_with_llm = original_llm_review
-
-
-def _run_llm_only(data_sanity_check, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
-    rule_result = _run_rules_only(data_sanity_check, transcript, form_data)
-    llm = data_sanity_check.check_with_llm(transcript, form_data, rule_result.get("issues", []))
-    issues = llm["issues"]
-    return {
-        "status": data_sanity_check.derive_status(issues),
-        "score": data_sanity_check.calculate_score(issues),
-        "issues": issues,
-        "llm_review": {"ran": llm["ran"], "reason": llm["reason"], "issue_count": len(issues)},
-        "metrics": {
-            "transcript_length": len(transcript or ""),
-            "description_length": len(str(form_data.get("description", "") or "")),
-        },
     }
 
 
 def _run_sanity_mode(data_sanity_check, mode: str, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
+    # LLM został usunięty z data_sanity_check — dostępny jest tylko deterministyczny tryb 'rules'.
     if mode == "rules":
-        return _run_rules_only(data_sanity_check, transcript, form_data)
-    if mode == "rules_and_llm":
         return data_sanity_check.run_data_sanity_check(transcript, form_data)
-    if mode == "llm_only":
-        return _run_llm_only(data_sanity_check, transcript, form_data)
-    raise ValueError(f"Nieznany tryb sanity: {mode}")
+    raise ValueError(f"Tryb sanity '{mode}' nie jest wspierany — LLM usunięty, dostępny tylko 'rules'.")
 
 
 def _filter_synthetic_patient_issues(issues: list[dict[str, Any]], sample: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
@@ -540,7 +509,6 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
         str(issue.get("field", "")) for issue in issues
         if issue.get("code") == "missing_required_field" and issue.get("field")
     })
-    llm_review = result.get("llm_review", {})
 
     # Zgodność z gold: predicted = sanity coś zgłosił (status != ok). flag_match liczymy tylko gdy
     # gold ma bool expected_flag (fixture); dla audio bez etykiety zostaje puste.
@@ -565,8 +533,6 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
         "issue_fields": "|".join(issue_fields),
         "missing_fields": "|".join(missing_fields),
         **_issue_counts(issues),
-        "llm_ran": llm_review.get("ran", ""),
-        "llm_reason": llm_review.get("reason", ""),
         "gold_has_patient": sample.get("gold_has_patient", ""),
         "filtered_synthetic_issues": filtered_synthetic_issues,
         "expected_flag": expected_flag,

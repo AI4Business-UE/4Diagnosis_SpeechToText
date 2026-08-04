@@ -20,7 +20,7 @@ Możesz też jednorazowo nadpisać stage z terminala:
 backend/venv/bin/python backend/eval/run_eval.py --stages end_to_end
 ```
 
-Jeśli run używa NER albo trybu sanity z LLM, wczytaj wcześniej klucze:
+Jeśli run używa NER, wczytaj wcześniej klucze (sanity check jest rules-only, kluczy nie potrzebuje):
 
 ```bash
 set -a; source backend/env; set +a
@@ -98,8 +98,8 @@ W sanity check najważniejsze są:
 - `status` - `ok`, `warning` albo `critical`.
 - `score` - szybka liczba jakości; im bliżej `1`, tym lepiej.
 - `issue_count` / `issue_codes` - co konkretnie zostało wykryte.
-- `llm_ran` / `llm_reason` - czy LLM faktycznie brał udział. Bez tego łatwo pomylić tryb z LLM
-  z samymi regułami.
+
+Sanity check jest **rules-only** (deterministyczne heurystyki, bez LLM). Jedyny tryb to `rules`.
 
 Jeśli `end_to_end_results.csv` ma kolumny z prefiksem `stt_` albo `ner_`, to znaczy, że eval liczył
 te metryki przy okazji pełnego runu.
