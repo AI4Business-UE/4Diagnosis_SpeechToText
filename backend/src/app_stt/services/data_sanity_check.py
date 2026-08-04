@@ -201,7 +201,9 @@ def check_age(form_data: dict) -> list:
     if not age:
         return issues
 
-    if not age.isdigit():
+    try:
+        age_number = int(age)
+    except ValueError:
         issues.append({
             "severity": "warning",
             "source": "rules",
@@ -211,7 +213,14 @@ def check_age(form_data: dict) -> list:
         })
         return issues
 
-    age_number = int(age)
+    if age_number < 0:
+        issues.append({
+            "severity": "warning",
+            "source": "rules",
+            "code": "negative_age",
+            "field": "age",
+            "message": "Age is a negative number.",
+        })
 
     if age_number > 120:
         issues.append({
@@ -220,15 +229,6 @@ def check_age(form_data: dict) -> list:
             "code": "age_too_high",
             "field": "age",
             "message": "Age is too high.",
-        })
-
-    if age_number < 0:
-        issues.append({
-            "severity": "warning",
-            "source": "rules",
-            "code": "negative_age",
-            "field": "age",
-            "message": "Age is a negative number.",
         })
 
     return issues
@@ -606,6 +606,11 @@ def _self_check() -> None:
         assert any(issue["code"] == "age_pesel_mismatch" for issue in mismatch)
         # Brak PESEL-a albo nie-liczbowy wiek -> nie flagujemy.
         assert check_age_pesel_consistency({"age": "40", "pesel": ""}) == []
+
+        # Ujemny wiek jest realnie wykrywany (nie mylony z age_not_a_number).
+        assert any(issue["code"] == "negative_age" for issue in check_age({"age": "-5"}))
+        # Nadal łapiemy prawdziwie nieliczbowy wiek.
+        assert any(issue["code"] == "age_not_a_number" for issue in check_age({"age": "abc"}))
 
         # Jakość opisu: "." i "3 cm" bez treści -> flaga; sensowny opis -> brak.
         assert check_description_quality({"description": "."})[0]["code"] == "description_not_meaningful"

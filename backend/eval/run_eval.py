@@ -542,6 +542,12 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
     })
     llm_review = result.get("llm_review", {})
 
+    # Zgodność z gold: predicted = sanity coś zgłosił (status != ok). flag_match liczymy tylko gdy
+    # gold ma bool expected_flag (fixture); dla audio bez etykiety zostaje puste.
+    expected_flag = sample.get("expected_flag", "")
+    predicted_flag = status != "ok"
+    flag_match = (predicted_flag == expected_flag) if isinstance(expected_flag, bool) else ""
+
     row = {
         "sample_id": str(sample.get("sample_id", "")),
         "audio_file": sample.get("audio_file", ""),
@@ -563,7 +569,9 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
         "llm_reason": llm_review.get("reason", ""),
         "gold_has_patient": sample.get("gold_has_patient", ""),
         "filtered_synthetic_issues": filtered_synthetic_issues,
-        "expected_flag": sample.get("expected_flag", ""),
+        "expected_flag": expected_flag,
+        "predicted_flag": predicted_flag,
+        "flag_match": flag_match,
         "note": sample.get("note", ""),
         "description_length": result.get("metrics", {}).get("description_length", ""),
         "transcript_length": result.get("metrics", {}).get("transcript_length", ""),
@@ -669,6 +677,12 @@ def run_end_to_end(config: dict[str, Any], output_dir: Path) -> None:
             form_data = sample.get("form_data") or {}
             if isinstance(form_data, str):
                 form_data = json.loads(form_data)
+            # Uodpornienie na time-drift: dla ok-case (expected_flag False) licz wiek z PESEL-a,
+            # żeby age_pesel_mismatch nie zależał od dzisiejszej daty. Bad-case zostają nietknięte.
+            if sample.get("expected_flag") is False:
+                pesel_age = data_sanity_check._age_from_pesel(form_data.get("pesel", ""))
+                if pesel_age is not None:
+                    form_data = {**form_data, "age": str(pesel_age)}
             sample = {**sample, "synthetic": False, "gold_has_patient": ""}
             rows.extend(_run_sanity_modes(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, modes, {}))
     else:  # entities — rekonstrukcja formularza z gold-encji (offline)
@@ -691,6 +705,15 @@ def _summarize_sanity(rows: list[dict[str, Any]]) -> None:
     distribution = frame["status"].value_counts().to_dict()
     mean_score = round(pd.to_numeric(frame["score"], errors="coerce").mean(), 4)
     print(f"  podsumowanie: {len(rows)} wierszy, statusy={distribution}, mean score={mean_score}")
+
+    # Zgodność z gold — tylko wiersze z bool expected_flag (fixture). „positive" = sanity flagnął.
+    evaluable = [r for r in rows if isinstance(r.get("expected_flag"), bool)]
+    if evaluable:
+        tp = sum(1 for r in evaluable if r["expected_flag"] and r["status"] != "ok")
+        tn = sum(1 for r in evaluable if not r["expected_flag"] and r["status"] == "ok")
+        fp = sum(1 for r in evaluable if not r["expected_flag"] and r["status"] != "ok")
+        fn = sum(1 for r in evaluable if r["expected_flag"] and r["status"] == "ok")
+        print(f"  zgodność z expected_flag: {tp + tn}/{len(evaluable)} (TP={tp} TN={tn} FP={fp} FN={fn})")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
