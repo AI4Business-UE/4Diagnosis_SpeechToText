@@ -115,9 +115,10 @@ def load_data_sanity_check():
 def build_pipeline_config(model: str, preprocessing: str, ner_strategy: str, llm_model: str, preprocessing_output_dir: Path):
     PipelineConfig, _ = load_pipeline_classes()
     config = PipelineConfig(
+        stt_model="whisper_local",
         whisper_model=model,
         ner_strategy=ner_strategy,
-        llm_model=llm_model,
+        ner_llm_model=llm_model,
         preprocessing_output_dir=str(preprocessing_output_dir),
     )
 
@@ -598,14 +599,19 @@ def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict
 
 
 def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[dict[str, Any]], modes: list[str], output_dir: Path) -> list[dict[str, Any]]:
-    _, Pipeline = load_pipeline_classes()
+    AudioPreprocessor, WhisperLocal = load_stt_components()
     preprocessed_dir = output_dir / "preprocessed_audio" / "sanity"
     rows = []
 
     for model in config["models"]:
         for preprocessing in config["preprocessing"]:
             for ner_strategy in config["ner_strategies"]:
-                pipeline = Pipeline(build_pipeline_config(model, preprocessing, ner_strategy, config["llm_model"], preprocessed_dir / preprocessing))
+                # audio → STT → NER złożone ręcznie (jak w run_stt), z pominięciem RAG/answerera —
+                # nie wpływają na metryki STT/NER/sanity, a wymagałyby żywego Qdranta i dodatkowego LLM.
+                pipeline_config = build_pipeline_config(model, preprocessing, ner_strategy, config["llm_model"], preprocessed_dir / preprocessing)
+                preprocessor = AudioPreprocessor(pipeline_config)
+                stt_model = WhisperLocal(model_id=pipeline_config.whisper_hf_id)
+                ner = load_ner_strategy(ner_strategy, config["llm_model"])
 
                 for sample in samples:
                     eval_sample = {
@@ -620,9 +626,8 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
                     }
                     start = time.perf_counter()
                     try:
-                        result = pipeline.run(str(sample["audio_path"]))
-                        transcript = str(result.get("transcript") or "")
-                        entities = result.get("entities") or {}
+                        transcript, _meta, _prep_dur, _stt_dur = _transcribe_one(preprocessor, stt_model, str(sample["audio_path"]))
+                        entities = ner.extract(transcript).model_dump()
                         form_data = build_form_data(entities)
                         eval_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
                         extra = _audio_extra_metrics(sample, transcript, entities)
