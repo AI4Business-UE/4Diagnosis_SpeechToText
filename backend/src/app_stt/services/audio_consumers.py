@@ -14,6 +14,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from logging_config import logger
 from app_stt.services.utils import extract_organs, extract_patient_data
+from app_stt.services.data_sanity_check import run_data_sanity_check
+from app_stt.services.sanity_logging import append_sanity_record
 from app_stt.pipeline import get_pipeline
 
 class RecordingState(enum.Enum):
@@ -185,6 +187,19 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 "pesel": patient_data['pesel'] or patient_metadata.get("pesel", ""),
                 "description": corrected_text
             }
+
+            try:
+                sanity_result = run_data_sanity_check(corrected_text, form_data)
+                sanity_record = await asyncio.to_thread(append_sanity_record, sanity_result)
+                logger.info(
+                    "[SANITY_CHECK] status=%s score=%s issues=%s codes=%s",
+                    sanity_record["status"],
+                    sanity_record["score"],
+                    sanity_record["issue_count"],
+                    ",".join(sanity_record["issue_codes"]),
+                )
+            except Exception as sanity_error:
+                logger.warning(f"[SANITY_CHECK] Failed to write runtime QA log: {sanity_error}")
              
             logger.info(f"[FINALIZE] Sending form data: {form_data}")
             
