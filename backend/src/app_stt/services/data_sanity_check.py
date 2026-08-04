@@ -59,6 +59,7 @@ CODE_WEIGHTS = {
     "invalid_pesel_length": 0.25,
     "invalid_pesel_format": 0.25,
     "invalid_pesel_checksum": 0.3,
+    "invalid_pesel_date": 0.3,
     "age_not_a_number": 0.2,
     "age_too_high": 0.2,
     "negative_age": 0.3,
@@ -149,6 +150,32 @@ def check_description_quality(form_data: dict) -> list:
 
     return []
 
+_PESEL_CENTURY = {0: 1900, 20: 2000, 40: 2100, 60: 2200, 80: 1800}
+
+
+def _pesel_birth_date(pesel: str) -> datetime | None:
+    """Dekoduje datę urodzenia z PESEL-a albo None, gdy data jest niemożliwa. Obsługuje wszystkie
+    zakresy stuleci (miesiąc +0/+20/+40/+60/+80 → 1900/2000/2100/2200/1800). Osobno od
+    _age_from_pesel, żeby nie zmieniać produkcyjnej logiki wieku."""
+    pesel = str(pesel or "").strip()
+    if len(pesel) != 11 or not pesel.isdigit():
+        return None
+
+    year = int(pesel[0:2])
+    month_raw = int(pesel[2:4])
+    day = int(pesel[4:6])
+
+    century = _PESEL_CENTURY.get((month_raw // 20) * 20)
+    month = month_raw % 20
+    if century is None or not (1 <= month <= 12):
+        return None
+
+    try:
+        return datetime(century + year, month, day)
+    except ValueError:
+        return None
+
+
 def check_pesel(form_data: dict) -> list:
     issues = []
 
@@ -189,6 +216,25 @@ def check_pesel(form_data: dict) -> list:
             "code": "invalid_pesel_checksum",
             "field": "pesel",
             "message": "PESEL checksum is invalid.",
+        })
+
+    # Poprawna checksuma nie gwarantuje realnej daty — łapiemy daty niemożliwe i z przyszłości.
+    birth = _pesel_birth_date(pesel)
+    if birth is None:
+        issues.append({
+            "severity": "warning",
+            "source": "rules",
+            "code": "invalid_pesel_date",
+            "field": "pesel",
+            "message": "PESEL encodes a non-existent date.",
+        })
+    elif birth > datetime.today():
+        issues.append({
+            "severity": "warning",
+            "source": "rules",
+            "code": "invalid_pesel_date",
+            "field": "pesel",
+            "message": "PESEL encodes a future birth date.",
         })
 
     return issues
@@ -611,6 +657,16 @@ def _self_check() -> None:
         assert any(issue["code"] == "negative_age" for issue in check_age({"age": "-5"}))
         # Nadal łapiemy prawdziwie nieliczbowy wiek.
         assert any(issue["code"] == "age_not_a_number" for issue in check_age({"age": "abc"}))
+
+        # PESEL: poprawna checksuma nie wystarczy — niemożliwa data łapana jako invalid_pesel_date.
+        for bad_date_pesel in ("99133212341", "00223012345", "22423112340"):
+            assert any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": bad_date_pesel}))
+        # Poprawny PESEL (1944-05-14) nie dostaje invalid_pesel_date.
+        assert not any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": "44051401359"}))
+        # Legalne PESEL-e 2000+ mają realną datę — dekoder ich nie odrzuca.
+        assert _pesel_birth_date("05210112345") is not None
+        # Data z przyszłości też jest flagowana (poprawna checksuma, ur. 2099-12-31).
+        assert any(issue["code"] == "invalid_pesel_date" for issue in check_pesel({"pesel": "99323100009"}))
 
         # Jakość opisu: "." i "3 cm" bez treści -> flaga; sensowny opis -> brak.
         assert check_description_quality({"description": "."})[0]["code"] == "description_not_meaningful"
