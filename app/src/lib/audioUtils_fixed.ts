@@ -114,6 +114,9 @@ export class AudioStreamProcessor {
       // Use ScriptProcessorNode for audio processing (deprecated but still works)
       // Alternative: Use AudioWorklet for modern browsers
       this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
+
+      const muteNode = this.audioContext.createGain();
+      muteNode.gain.value = 0;
       
       this.processor.onaudioprocess = (event) => {
         if (!this.isProcessing) return;
@@ -154,7 +157,9 @@ export class AudioStreamProcessor {
       };
 
       source.connect(this.processor);
-      this.processor.connect(this.audioContext.destination);
+      this.processor.connect(muteNode);
+      muteNode.connect(this.audioContext.destination);
+
       this.isProcessing = true;
       
       console.log('✅ WAV Audio streaming rozpoczęty - częstotliwość:', this.audioContext.sampleRate, 'Hz');

@@ -2,8 +2,8 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Mic, Play, Square, Wifi, WifiOff } from "lucide-react";
-import { createStopRecordingMessage } from "@/lib/audioUtils_fixed";
-
+import SpinnerLoader from "@/components/ui/SpinnerLoader";
+import TextareaAutosize from 'react-textarea-autosize';
 
 import { WebSocketMessage } from "./types";
 import { WEBSOCKET_URL, AUDIO_CONFIG } from "./config";
@@ -35,6 +35,7 @@ export default function Recorder() {
     pesel?: string;
   }>({});
 
+  const [isTranscriptionFinalizing, setTranscriptionFinalizing] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioProcessorRef = useRef<AudioStreamProcessor | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -45,13 +46,27 @@ export default function Recorder() {
   const visualizer = createAudioVisualizer();
 
   useEffect(() => {
-    if (!ws) return;
+    if (!ws) {
+      if (!isConnected) {
+        if (isRecording) {
+          handleStopRecording();
+        }
+
+        if (isTranscriptionFinalizing) {
+          setTranscriptionFinalizing(false);
+        }
+      }
+
+      return
+    }
 
     const handleMessage = (event: MessageEvent) => {
       try {
+        console.log(`WS Event: ${event.name}`);
         const parsedData = JSON.parse(event.data) as {
           type: string;
           text?: string;
+          ack?: boolean;
           transcription?: string;
           formData?: {
             organ?: string;
@@ -64,7 +79,7 @@ export default function Recorder() {
         
         console.log("📨 Parsed WebSocket message:", parsedData);
         
-        if ((parsedData.type === "transcription" || parsedData.type === "transcript") && (parsedData.text || parsedData.transcription)) {
+        /*if ((parsedData.type === "transcription" || parsedData.type === "transcript") && (parsedData.text || parsedData.transcription)) {
           const newText = parsedData.text || parsedData.transcription;
           const trimmedNewText = newText.trim();
 
@@ -76,6 +91,15 @@ export default function Recorder() {
               setDescription(combinedText);
             }
           }
+        }*/
+
+        if (parsedData.type === "recording_start" && parsedData.ack) {
+          console.log("DEBUG: Acknowledge received for recording_start, starting recording...")
+          handleStartRecording();
+        }
+        
+        if (parsedData.type === "error") {
+          setTranscriptionFinalizing(false);
         }
         
         // Obsługa wypełnionego formularza od backendu
@@ -98,12 +122,14 @@ export default function Recorder() {
           if (formData.description !== undefined) {
             setDescription(formData.description);
           }
+
           setExtractedData({
             organ: formData.organ,
             fullName: formData.name,
             age: formData.age,
             pesel: formData.pesel,
           });
+          setTranscriptionFinalizing(false);
         } else if (parsedData.type === "form_data") {
           console.log("⚠️ Received form_data message but no formData field:", parsedData);
 
@@ -111,6 +137,7 @@ export default function Recorder() {
       } catch (error) {
         console.error("❌ Error parsing WebSocket message:", error);
         console.error("Raw message:", event.data);
+        setTranscriptionFinalizing(false);
       }
     };
 
@@ -142,7 +169,7 @@ export default function Recorder() {
 
       await audioProcessor.startProcessing(stream);
       startRecording();
-      sendMessage(createRecordingStartMessage(metadata));
+      // sendMessage(createRecordingStartMessage(metadata));
 
       if (canvasRef.current) {
         cleanupVisualizerRef.current = visualizer.setupVisualizer(
@@ -157,26 +184,27 @@ export default function Recorder() {
     }
   }, [isConnected, metadata, startRecording, sendMessage]);
 
-const handleStopRecording = useCallback(() => {
-  if (audioProcessorRef.current && isRecording) {
-    // Cast the message to your WebSocketMessage type
-    sendMessage({ control: "stop_recording" } as WebSocketMessage);
-    console.log("Sent stop_recording signal to server");
+  const handleStopRecording = useCallback(() => {
+    if (audioProcessorRef.current && isRecording) {
+      // Cast the message to your WebSocketMessage type
+      sendMessage({ control: "stop_recording" } as WebSocketMessage);
+      console.log("Sent stop_recording signal to server");
 
+      // Then send the recording end message with metadata
+      sendMessage(createRecordingEndMessage(metadata));
 
-    // Then send the recording end message with metadata
-    sendMessage(createRecordingEndMessage(metadata));
+      // Finally stop the local recording
+      audioProcessorRef.current.stopProcessing();
+      audioUtilities.stopStream(streamRef.current);
+      if (cleanupVisualizerRef.current) {
+        cleanupVisualizerRef.current();
+        cleanupVisualizerRef.current = null;
+      }
+      stopRecording();
 
-    // Finally stop the local recording
-    audioProcessorRef.current.stopProcessing();
-    audioUtilities.stopStream(streamRef.current);
-    if (cleanupVisualizerRef.current) {
-      cleanupVisualizerRef.current();
-      cleanupVisualizerRef.current = null;
+      setTranscriptionFinalizing(true); 
     }
-    stopRecording();
-  }
-}, [isRecording, stopRecording, sendMessage, metadata, audioUtilities]);
+  }, [isRecording, stopRecording, sendMessage, metadata, audioUtilities]);
 
   useEffect(() => {
     return () => {
@@ -207,7 +235,10 @@ const handleStopRecording = useCallback(() => {
                 Połączono z serwerem
               </span>
               <Button
-                onClick={disconnect}
+                onClick={() => {
+                  setTranscriptionFinalizing(false);
+                  disconnect();
+                }}
                 variant="outline"
                 size="sm"
                 className="ml-4"
@@ -252,8 +283,8 @@ const handleStopRecording = useCallback(() => {
 
             <div className="flex gap-4">
               <Button
-                onClick={handleStartRecording}
-                disabled={!isConnected || isRecording}
+                onClick={() => sendMessage(createRecordingStartMessage(metadata))}
+                disabled={!isConnected || isRecording || isTranscriptionFinalizing}
                 size="lg"
                 className="bg-green-500 hover:bg-green-600"
               >
@@ -281,14 +312,21 @@ const handleStopRecording = useCallback(() => {
           </div>
         </Card>
 
-        <Card className="flex-1 p-6 bg-white/90 shadow-xl">
+        <Card className="relative flex-1 p-6 bg-white/90 shadow-xl">
+          {isTranscriptionFinalizing && isConnected ?
+            <div className="absolute inset-0 bg-black/50 rounded-xl transition-opacity duration-300">
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <SpinnerLoader />
+                <p className="text-white text-lg">Poprawianie transkrypcji...</p>
+              </div>
+            </div> : null}
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Dane pacjenta
             </h3>
 
             {/* Wskaźnik automatycznie wypełnionych danych */}
-            {extractedData.organ && (
+            {(extractedData.fullName || extractedData.organ || extractedData.pesel) && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <h4 className="font-medium text-green-800 mb-2 flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -307,11 +345,11 @@ const handleStopRecording = useCallback(() => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Badany narząd
               </label>
-              <input
-                type="text"
+              <TextareaAutosize
                 value={metadata.organ}
                 onChange={(e) => updateField("organ", e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                minRows={1}
                 placeholder="Nazwa narządu"
               />
             </div>

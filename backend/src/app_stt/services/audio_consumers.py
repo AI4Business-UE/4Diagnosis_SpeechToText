@@ -1,4 +1,6 @@
 import os
+import wave
+import enum
 import base64
 import asyncio
 import tempfile
@@ -6,105 +8,217 @@ import json
 import traceback
 import struct
 from datetime import datetime
+
+import numpy as np
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .transcriber import transcribe_audio_chunk, correct_full_transcription
-from .data_sanity_check import run_data_sanity_check
+
 from logging_config import logger
+from app_stt.services.utils import extract_organs, extract_patient_data
+from app_stt.pipeline import get_pipeline
 
-def create_wav_from_float32(float32_chunks, sample_rate=16000, filename=None):
-    """
-    Create WAV file from list of Float32Array chunks
-    """
-    # Combine all chunks into one array
-    total_samples = sum(len(chunk) for chunk in float32_chunks)
-    if total_samples == 0:
-        raise ValueError("No audio data to write")
-
-    combined_audio = []
-    for chunk in float32_chunks:
-        combined_audio.extend(chunk)
-
-    # Convert float32 (-1.0 to 1.0) to int16 (-32768 to 32767)
-    pcm_data = b''
-    for sample in combined_audio:
-        # Clamp to [-1.0, 1.0]
-        sample = max(-1.0, min(1.0, sample))
-        # Convert to 16-bit PCM
-        pcm_sample = int(sample * 32767)
-        pcm_data += struct.pack('<h', pcm_sample)
-
-    # Create WAV header
-    num_channels = 1
-    bits_per_sample = 16
-    bytes_per_sample = bits_per_sample // 8
-    byte_rate = sample_rate * num_channels * bytes_per_sample
-    block_align = num_channels * bytes_per_sample
-    data_size = len(pcm_data)
-    file_size = 36 + data_size
-
-    header = b'RIFF'
-    header += struct.pack('<I', file_size)
-    header += b'WAVE'
-    header += b'fmt '
-    header += struct.pack('<I', 16)
-    header += struct.pack('<H', 1)
-    header += struct.pack('<H', num_channels)
-    header += struct.pack('<I', sample_rate)
-    header += struct.pack('<I', byte_rate)
-    header += struct.pack('<H', block_align)
-    header += struct.pack('<H', bits_per_sample)
-    header += b'data'
-    header += struct.pack('<I', data_size)
-
-    wav_data = header + pcm_data
-
-    if filename:
-        with open(filename, 'wb') as f:
-            f.write(wav_data)
-
-    return wav_data
+class RecordingState(enum.Enum):
+    IDLE = 'idle'
+    RECORDING = 'recording'
+    FINALIZING = 'finalizing'
 
 class AudioConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.audio_buffer = []  # Lista Float32Array chunks
-        self.transcription_task = None
+        self.audio_recording_task = None
+        self.pipeline_task = None
         self.full_transcription = ""  # Przechowuje pełną transkrypcję
-        self.is_recording = True  # Flaga określająca czy nagrywanie trwa
+        
+        self.connection_closed = False 
+        self.recording_state = RecordingState.IDLE
         self.patient_metadata = {} # Przechowuje metadane pacjenta
-        self.whisper_model = None  # Wybrany model Whisper
+        
+        self.chunk_event = asyncio.Event()
+        self.audio_swap_lock = asyncio.Lock()
+        
+        self.wave = None
+        self.audio_file = None
+        
+        self.tmp_dir = os.path.join(os.getcwd(), "app_stt", "data", "tmp_audio")
+        os.makedirs(self.tmp_dir, exist_ok=True)
+ 
 
-        tmp_dir = os.path.join(os.getcwd(), "app_stt", "data", "tmp_audio")
-        os.makedirs(tmp_dir, exist_ok=True)
-
-        self.audio_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav", dir=tmp_dir)
-        self.transcription_lock = asyncio.Lock()
+    async def _setup(self):
+        if self.recording_state == RecordingState.IDLE and (not self.audio_file or self.audio_file.closed):
+            self.recording_state = RecordingState.RECORDING
+            
+            # Readonly IO
+            self.audio_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav", dir=self.tmp_dir)
+            # Write interface for received chunks
+            self.wave = wave.open(self.audio_file.name, 'wb')
+            self.wave.setnchannels(1)
+            self.wave.setsampwidth(2)
+            self.wave.setframerate(16000)
+            
+            if not self.audio_recording_task or self.audio_recording_task.done():
+                self.audio_recording_task = asyncio.create_task(self.process_buffer())
+                
+            # Sending ACK message to allow streaming chunks
+            await self.send(text_data=json.dumps({
+                "type": "recording_start",
+                "ack": True
+            }))
+         
 
     async def connect(self):
         logger.info("[WS] Client connected")
         await self.accept()
-        self.transcription_task = asyncio.create_task(self.process_buffer())
+        self.pipeline = get_pipeline()
+
 
     async def disconnect(self, close_code):
         logger.error("[WS] WebSocket disconnected")
-        if self.transcription_task:
-            self.transcription_task.cancel()
-        self.audio_file.flush()
-        self.audio_file.close()
+        self.connection_closed = True
+        
+        try:
+            if self.audio_recording_task:
+                self.audio_recording_task.cancel()
+                await self.audio_recording_task
+        except asyncio.CancelledError:
+            logger.warning(f"[DISCONNECT] Cancelled background task during disconnect")
+        
+        if self.wave is not None:
+            self.wave.close()
+        if self.audio_file is not None and not self.audio_file.closed:
+            self.audio_file.flush()
+            self.audio_file.close()
 
+
+    def _unpack_audio_chunk_from_b64(self, audio_b64): 
+        audio_bytes = base64.b64decode(audio_b64)
+        
+        if len(audio_bytes) % 4:
+            raise ValueError("Audio payload is not aligned to Float32 samples")
+        
+        num_samples = len(audio_bytes) // 4
+        audio_chunk = [
+            struct.unpack('<f', audio_bytes[i*4:(i+1)*4])[0]
+            for i in range(num_samples)
+        ]
+        
+        return audio_chunk
+    
+    
+    def _write_chunks_to_wav(self, float32_chunks, sample_rate=16000, filename=None):
+        """
+        Create WAV file from list of Float32Array chunks
+        """
+        # Combine all chunks into one array
+        total_samples = sum(len(chunk) for chunk in float32_chunks)
+        if total_samples == 0:
+            raise ValueError("No audio data to write")
+
+        for chunk in float32_chunks:
+            pcm_bytes = np.clip(np.array(chunk), -1.0, 1.0)
+            pcm_bytes = (pcm_bytes * 32767).astype("<i2").tobytes() 
+            self.wave.writeframesraw(pcm_bytes)
+        
+        
+    async def _flush_remaining_audio(self):
+        if self.audio_buffer:
+            logger.info("[FINALIZE] Flushing remaining audio buffer")
+            async with self.audio_swap_lock:
+                chunks = self.audio_buffer
+                self.audio_buffer = []
+                await asyncio.to_thread(self._write_chunks_to_wav, chunks, 16000, self.audio_file.name)
+         
+            
+    def _calculate_age_from_pesel(self, pesel):
+        if not pesel or len(pesel) != 11 or not pesel.isdigit():
+            return None
+            
+        try:
+            year = int(pesel[0:2])
+            month = int(pesel[2:4])
+            day = int(pesel[4:6])
+
+            if 1 <= month <= 12:
+                century = 1900
+            elif 21 <= month <= 32:
+                century = 2000
+                month -= 20
+            else:
+                return None
+
+            birth_date = datetime(century + year, month, day)
+            today = datetime.today()
+            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+            return age
+        except (ValueError, IndexError):
+            return None
+        
+        
+    async def _run_pipeline_and_send(self, audio_path, patient_metadata): 
+        try:
+            logger.info(f"[FINALIZE] Running pipeline on audio")
+            pipeline_results = await asyncio.to_thread(
+                self.pipeline.run, audio_path
+            )
+             
+            corrected_text = pipeline_results['corrected_transcript']
+            logger.info(f"[FINALIZE] Corrected transcription: {corrected_text}")
+            
+            patient_data = extract_patient_data(pipeline_results['entities'])
+            organs = extract_organs(pipeline_results['entities'])
+            full_name = (f"{patient_data['first_name']} {patient_data['last_name']}"
+                        if patient_data['first_name'] and patient_data['last_name']
+                        else '')
+            if not full_name and patient_metadata.get("name"):
+                full_name = patient_metadata.get("name", "")
+                
+            calculated_age = (
+                patient_data['age'] or self._calculate_age_from_pesel(patient_data['pesel'])
+            )
+            if calculated_age is None and patient_metadata.get("age"):
+                calculated_age = patient_metadata.get("age", "")
+            
+            logger.info(f"Dane pacjenta: {patient_data}")
+            form_data = {
+                "name": full_name or patient_metadata.get("name", ""),
+                "organ": organs,
+                "age": str(calculated_age) if calculated_age is not None else patient_metadata.get("age", ""),
+                "pesel": patient_data['pesel'] or patient_metadata.get("pesel", ""),
+                "description": corrected_text
+            }
+             
+            logger.info(f"[FINALIZE] Sending form data: {form_data}")
+            
+            if not self.connection_closed: 
+                await self.send(text_data=json.dumps({
+                    "type": "form_data",
+                    "formData": form_data,
+                    "text": corrected_text,
+                    "interim": "",
+                    "is_final": True
+                }))
+                logger.info("[FINALIZE] Successfully sent form data to frontend")
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            logger.error("[FINALIZE] Error revision:")
+            traceback.print_exc()
+            if not self.connection_closed:
+                await self.send(text_data=json.dumps({
+                    "type": "error",
+                    "message": f"Błąd transkrypcji: {str(e)}"
+                }))
+                
+            
     async def receive(self, text_data=None, bytes_data=None):
         try:
+            if text_data is None and bytes_data:
+                raise ValueError("Raw bytes data not supported. Send JSON.")
+            
             msg = json.loads(text_data)
 
             if "control" in msg and msg["control"] == "stop_recording":
                 logger.info("[CTRL] Stop recording")
-                self.is_recording = False
-                await self.finalize_transcription()
-                return
-
-            if "control" in msg and msg["control"] == "rewind":
-                seconds = msg.get("seconds", 5)
-                await self.rewind_buffer(seconds)
+                await self._finalize_transcription()
                 return
 
             if msg.get("type") in ("metadata", "metadata_update"):
@@ -113,27 +227,21 @@ class AudioConsumer(AsyncWebsocketConsumer):
                     self.patient_metadata.update(metadata)
                 return
 
-            if msg.get("type") == "set_model":
-                self.whisper_model = msg.get("model")
-                logger.info(f"[WS] Whisper model set to: {self.whisper_model}")
-                return
-
             if msg.get("type") == "recording_start":
+                await self._setup()
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
-                if msg.get("whisper_model"):
-                    self.whisper_model = msg["whisper_model"]
-                logger.info(f"[WS] Recording started (model: {self.whisper_model})")
-                return
-
+                logger.info(f"[WS] Recording started...")
+                
             if msg.get("type") == "recording_end":
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
                 return
 
-            if msg.get("type") == "audio_chunk" and msg.get("data"):
+            if (msg.get("type") == "audio_chunk" and msg.get("data") 
+                    and self.recording_state == RecordingState.RECORDING):
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
@@ -147,233 +255,66 @@ class AudioConsumer(AsyncWebsocketConsumer):
                     logger.error(f"[ERROR] Unexpected audio data format: {type(audio_data)}")
                     return
                 try:
-                    audio_bytes = base64.b64decode(audio_b64)
-                    num_samples = len(audio_bytes) // 4
-                    audio_chunk = [
-                        struct.unpack('<f', audio_bytes[i*4:(i+1)*4])[0]
-                        for i in range(num_samples)
-                    ]
+                    audio_chunk = self._unpack_audio_chunk_from_b64(audio_b64)
                     self.audio_buffer.append(audio_chunk)
+                    self.chunk_event.set()
                 except Exception as e:
                     logger.error(f"[ERROR] Failed to decode audio chunk: {e}")
                     return
-        except json.JSONDecodeError:
-            if text_data:
-                try:
-                    audio_chunk = base64.b64decode(text_data)
-                    self.audio_buffer.extend(audio_chunk)
-                    self.audio_file.write(audio_chunk)
-                except Exception:
-                    logger.error("[ERROR] Failed to decode raw base64 audio chunk")
         except Exception as e:
             logger.error(f"[ERROR] Exception in receive: {e}")
             await self.send(text_data=json.dumps({
                 "type": "error",
                 "message": str(e)
             }))
-
-    async def rewind_buffer(self, seconds: int):
-        SAMPLE_RATE = 16000
-        BYTES_PER_SECOND = SAMPLE_RATE * 2
-        rewind_bytes = seconds * BYTES_PER_SECOND
-        self.audio_buffer = self.audio_buffer[:-rewind_bytes] if len(self.audio_buffer) > rewind_bytes else bytearray()
+        
 
     async def process_buffer(self):
         logger.info("[TRANSCRIBE] Starting buffer processing loop")
         while True:
-            await asyncio.sleep(5)
+            await self.chunk_event.wait()
+            self.chunk_event.clear()
 
-            if not self.is_recording and not self.audio_buffer:
-                logger.error("[TRANSCRIBE] Exiting loop (recording stopped and buffer empty)")
+            if self.recording_state != RecordingState.RECORDING and not self.audio_buffer:
+                logger.info("[TRANSCRIBE] Exiting loop (recording stopped and buffer empty)")
                 break
 
             if self.audio_buffer:
                 logger.info("[TRANSCRIBE] Processing audio buffer")
+                async with self.audio_swap_lock:
+                    chunks = self.audio_buffer
+                    self.audio_buffer = []
 
-                # Create WAV file from Float32Array chunks
-                create_wav_from_float32(self.audio_buffer, sample_rate=16000, filename=self.audio_file.name)
-                self.audio_buffer.clear()
-                audio_path = self.audio_file.name
+                    await asyncio.to_thread(self._write_chunks_to_wav, chunks, 16000, self.audio_file.name)
+                logger.info(f"[AUDIO] Written new chunks to WAV file (Total chunks: {len(chunks)})") 
+                
 
-                logger.info(f"[AUDIO] Created WAV file from chunks")
-
-                async with self.transcription_lock:
-                    try:
-                        text = transcribe_audio_chunk(audio_path, whisper_model=self.whisper_model)
-                        logger.info(f"[TRANSCRIBE] Raw transcription: {text}")
-
-                        if text.strip():
-                            # Dodaje tekst do pełnej transkrypcji jeśli jeszcze go tam nie ma
-                            stripped_text = text.strip()
-                            if stripped_text not in self.full_transcription:
-                                if self.full_transcription:
-                                    self.full_transcription += " " + stripped_text
-                                else:
-                                    self.full_transcription = stripped_text
-
-                        await self.send(text_data=json.dumps({
-                            "type": "transcript",
-                            "text": text,
-                            "interim": "",
-                            "is_final": False
-                        }))
-                    except AttributeError as ae:
-                        if "'NoneType' object has no attribute 'transcribe'" in str(ae):
-                            logger.error("[ERROR] Model STT is not available")
-                            await self.send(text_data=json.dumps({
-                                "type": "error",
-                                "message": "Model transkrypcji nie jest dostępny."
-                            }))
-                        else:
-                            raise
-                    except Exception as e:
-                        logger.error("[ERROR] Error transcription")
-                        traceback.print_exc()
-                        await self.send(text_data=json.dumps({
-                            "type": "error",
-                            "message": str(e)
-                        }))
-
-    async def finalize_transcription(self):
-
-        logger.info("[FINALIZE] Finalizing transcription")
-        self.is_recording = False
-
-        if self.audio_buffer:
-            logger.info("[FINALIZE] Processing remaining audio buffer")
-            create_wav_from_float32(self.audio_buffer, sample_rate=16000, filename=self.audio_file.name)
-            self.audio_buffer.clear()
-            audio_path = self.audio_file.name
-
-            try:
-                text = transcribe_audio_chunk(audio_path, whisper_model=self.whisper_model)
-                logger.info(f"[FINALIZE] Final transcription chunk: {text}")
-
-                if text.strip():
-                    # Dodaje ostatni chunk do pełnej transkrypcji jeśli jeszcze go tam nie ma
-                    stripped_text = text.strip()
-                    if stripped_text not in self.full_transcription:
-                        if self.full_transcription:
-                            self.full_transcription += " " + stripped_text
-                        else:
-                            self.full_transcription = stripped_text
-            except Exception as e:
-                logger.error(f"[FINALIZE] Error processing final chunk: {e}")
-
-        if self.transcription_task:
-            try:
-                logger.info("[FINALIZE] Awaiting transcription task")
-                await self.transcription_task
-            except asyncio.CancelledError:
-                logger.error("[FINALIZE] Transcription task cancelled")
-
-        if not self.full_transcription.strip():
-            logger.error("[FINALIZE] No transcription to correct")
+    async def _finalize_transcription(self):
+        if self.recording_state != RecordingState.RECORDING:
             return
-
-        def calculate_age_from_pesel(pesel):
-            if not pesel or len(pesel) != 11 or not pesel.isdigit():
-                return None
-                
-            try:
-                year = int(pesel[0:2])
-                month = int(pesel[2:4])
-                day = int(pesel[4:6])
-
-                if 1 <= month <= 12:
-                    century = 1900
-                elif 21 <= month <= 32:
-                    century = 2000
-                    month -= 20
-                else:
-                    return None
-
-                birth_date = datetime(century + year, month, day)
-                today = datetime.today()
-                age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-                return age
-            except (ValueError, IndexError):
-                return None
-
+        
+        logger.info("[FINALIZE] Finalizing transcription")
+        self.recording_state = RecordingState.FINALIZING
+        
         try:
-            logger.info(f"[FINALIZE] Running correction on: {self.full_transcription.strip()}")
-            corrected_text = await asyncio.get_event_loop().run_in_executor(
-                None, correct_full_transcription, self.full_transcription.strip()
+            await self._flush_remaining_audio()
+            
+            # Setting event here to allow the task
+            # to break the loop and exit cleanly
+            self.chunk_event.set()
+            if self.audio_recording_task:
+                await self.audio_recording_task
+                self.audio_recording_task = None
+            
+            self.wave.close()
+            self.audio_file.close()
+            
+            
+            await self._run_pipeline_and_send(
+                self.audio_file.name, self.patient_metadata.copy()
             )
-            corrected_text = json.loads(corrected_text)
-            logger.info(f"[FINALIZE] Corrected transcription: {corrected_text}")
-            if 'analyzed_organ' not in corrected_text:
-                print("⚠️ Brakuje pola 'analyzed_organ' w JSON-ie!")
-                corrected_text['analyzed_organ'] = ''
-                
-            # Przygotuj dane formularza z priorytetem dla danych z AI
-            full_name = corrected_text.get("name", "") + " " + corrected_text.get("surname", "")
-            full_name = full_name.strip()
-            if not full_name and self.patient_metadata.get("name"):
-                full_name = self.patient_metadata.get("name", "")
-                
-            calculated_age = calculate_age_from_pesel(corrected_text.get("pesel", ""))
-            if calculated_age is None and self.patient_metadata.get("age"):
-                calculated_age = self.patient_metadata.get("age", "")
-                
-            # Przygotuj dane do wysłania - priorytet mają dane z AI
-            form_data = {
-                "organ": corrected_text.get('analyzed_organ', "") or self.patient_metadata.get("organ", ""),
-                "name": full_name or self.patient_metadata.get("name", ""),
-                "age": str(calculated_age) if calculated_age is not None else self.patient_metadata.get("age", ""),
-                "pesel": corrected_text.get("pesel", "") or self.patient_metadata.get("pesel", ""),
-                "description": corrected_text.get("description", "")
-            }
-            try:
-                sanity_result = run_data_sanity_check(
-                    transcript=self.full_transcription.strip(),
-                    form_data=form_data,
-                )
-                logger.info(
-                    "[SANITY_CHECK] status=%s score=%s issues=%s metrics=%s",
-                    sanity_result.get("status"),
-                    sanity_result.get("score"),
-                    sanity_result.get("issues"),
-                    sanity_result.get("metrics"),
-                )
-            except Exception as sanity_error:
-                logger.warning(f"[SANITY_CHECK] Failed: {sanity_error}")
-
-            logger.info(
-                "[FINALIZE] Sending form data fields: organ=%s name_present=%s age_present=%s pesel_present=%s description_length=%s",
-                bool(form_data.get("organ")),
-                bool(form_data.get("name")),
-                bool(form_data.get("age")),
-                bool(form_data.get("pesel")),
-                len(str(form_data.get("description", "") or "")),
-            )
-            await self.send(text_data=json.dumps({
-                "type": "form_data",
-                "formData": form_data,
-
-                "text": corrected_text.get("description", ""),
-                "interim": "",
-                "is_final": True
-            }))
-            logger.info("[FINALIZE] Successfully sent form data to frontend")
-
-        except ValueError as ve:
-            if "requires `accelerate`" in str(ve):
-                logger.error("[FINALIZE] Correction error - missing accelerate package:")
-                traceback.print_exc()
-                await self.send(text_data=json.dumps({
-                    "type": "transcript",
-                    "text": self.full_transcription.strip(),
-                    "interim": "",
-                    "is_final": True,
-                    "note": "Używam surowej transkrypcji (błąd modelu korekty)"
-                }))
-            else:
-                raise
-        except Exception as e:
-            logger.error("[FINALIZE] Error revision:")
-            traceback.print_exc()
-            await self.send(text_data=json.dumps({
-                "type": "error",
-                "message": f"Błąd korekty: {str(e)}"
-            }))
+            
+        except asyncio.CancelledError:
+            raise
+        finally:
+            self.recording_state = RecordingState.IDLE
