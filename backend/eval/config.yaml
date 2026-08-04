@@ -30,11 +30,6 @@ ner_strategies: [chained]
 # model LLM dla NER (przez OpenRouter; wymaga klucza w backend/env)
 llm_model: openai/gpt-4o
 
-# ── Sanity ──────────────────────────────────────────────────────────────────
-# Sanity check jest rules-only (deterministyczne heurystyki, bez LLM/sieci/klucza).
-# 'rules' to jedyny wspierany tryb.
-sanity_mode: rules
-
 # ── Ścieżki (względne do backend/eval/) ─────────────────────────────────────
 paths:
   # etap stt + end_to_end(audio): manifest z audio + tekstem referencyjnym.

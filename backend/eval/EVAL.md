@@ -99,7 +99,7 @@ W sanity check najważniejsze są:
 - `score` - szybka liczba jakości; im bliżej `1`, tym lepiej.
 - `issue_count` / `issue_codes` - co konkretnie zostało wykryte.
 
-Sanity check jest **rules-only** (deterministyczne heurystyki, bez LLM). Jedyny tryb to `rules`.
+Sanity check jest **rules-only**: działa deterministycznie, bez LLM, sieci i kluczy API.
 
 Jeśli `end_to_end_results.csv` ma kolumny z prefiksem `stt_` albo `ner_`, to znaczy, że eval liczył
 te metryki przy okazji pełnego runu.

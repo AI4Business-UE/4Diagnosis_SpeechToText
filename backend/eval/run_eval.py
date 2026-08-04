@@ -39,8 +39,6 @@ DEFAULT_CONFIG = EVAL_ROOT / "config.yaml"
 sys.path.insert(0, str(EVAL_ROOT))
 from metrics import compare_entities, compute_stt_metrics, flatten_metrics, parse_entities  # noqa: E402
 
-SANITY_MODES = ["rules"]
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Config + ścieżki
@@ -473,13 +471,6 @@ def _issue_counts(issues: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
-def _run_sanity_mode(data_sanity_check, mode: str, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
-    # LLM został usunięty z data_sanity_check — dostępny jest tylko deterministyczny tryb 'rules'.
-    if mode == "rules":
-        return data_sanity_check.run_data_sanity_check(transcript, form_data)
-    raise ValueError(f"Tryb sanity '{mode}' nie jest wspierany — LLM usunięty, dostępny tylko 'rules'.")
-
-
 def _filter_synthetic_patient_issues(issues: list[dict[str, Any]], sample: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
     """W rekonstrukcji z gold-encji brak pacjenta nie jest problemem jakości — to artefakt
     tego, że próbka nie miała danych pacjenta. Odfiltrowujemy braki name/age/pesel."""
@@ -494,7 +485,7 @@ def _filter_synthetic_patient_issues(issues: list[dict[str, Any]], sample: dict[
     return kept, filtered
 
 
-def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], sample: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
+def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
     issues, filtered_synthetic_issues = _filter_synthetic_patient_issues(result.get("issues", []), sample)
     if filtered_synthetic_issues:
         status = data_sanity_check.derive_status(issues)
@@ -525,7 +516,6 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
         "pipeline_status": sample.get("pipeline_status", ""),
         "pipeline_error": sample.get("pipeline_error", ""),
         "pipeline_duration_seconds": sample.get("pipeline_duration_seconds", ""),
-        "mode": mode,
         "status": status,
         "score": score,
         "issue_count": len(issues),
@@ -550,11 +540,9 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
     return row
 
 
-def _run_sanity_modes(data_sanity_check, sample: dict[str, Any], transcript: str, form_data: dict[str, str], modes: list[str], extra: dict[str, Any]) -> list[dict[str, Any]]:
-    return [
-        _build_sanity_row(data_sanity_check, mode, _run_sanity_mode(data_sanity_check, mode, transcript, form_data), sample, extra)
-        for mode in modes
-    ]
+def _run_sanity(data_sanity_check, sample: dict[str, Any], transcript: str, form_data: dict[str, str], extra: dict[str, Any]) -> dict[str, Any]:
+    result = data_sanity_check.run_data_sanity_check(transcript, form_data)
+    return _build_sanity_row(data_sanity_check, result, sample, extra)
 
 
 def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict[str, Any]) -> dict[str, Any]:
@@ -572,7 +560,7 @@ def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict
     return extra
 
 
-def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[dict[str, Any]], modes: list[str], output_dir: Path) -> list[dict[str, Any]]:
+def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[dict[str, Any]], output_dir: Path) -> list[dict[str, Any]]:
     AudioPreprocessor, WhisperLocal = load_stt_components()
     preprocessed_dir = output_dir / "preprocessed_audio" / "sanity"
     rows = []
@@ -615,7 +603,7 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
                         })
                         extra = {}
 
-                    rows.extend(_run_sanity_modes(data_sanity_check, eval_sample, transcript, form_data, modes, extra))
+                    rows.append(_run_sanity(data_sanity_check, eval_sample, transcript, form_data, extra))
     return rows
 
 
@@ -632,11 +620,8 @@ def run_end_to_end(config: dict[str, Any], output_dir: Path) -> None:
         write_rows([], output_dir / "end_to_end_results.csv")
         return
 
-    mode = config.get("sanity_mode", "rules")
-    modes = SANITY_MODES if mode == "all" else [mode]
-
     if fmt == "audio":
-        rows = _run_sanity_audio(config, data_sanity_check, samples, modes, output_dir)
+        rows = _run_sanity_audio(config, data_sanity_check, samples, output_dir)
     elif fmt == "form":
         rows = []
         for sample in samples:
@@ -650,17 +635,17 @@ def run_end_to_end(config: dict[str, Any], output_dir: Path) -> None:
                 if pesel_age is not None:
                     form_data = {**form_data, "age": str(pesel_age)}
             sample = {**sample, "synthetic": False, "gold_has_patient": ""}
-            rows.extend(_run_sanity_modes(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, modes, {}))
+            rows.append(_run_sanity(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, {}))
     else:  # entities — rekonstrukcja formularza z gold-encji (offline)
         rows = []
         for sample in samples:
             expected = parse_entities(sample.get("expected_entities") or {})
             sample = {**sample, "synthetic": True, "gold_has_patient": bool(expected.get("patient"))}
             form_data = build_form_data(expected)
-            rows.extend(_run_sanity_modes(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, modes, {}))
+            rows.append(_run_sanity(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, {}))
 
-    print(f"  format wejścia: {fmt}, tryby: {', '.join(modes)}")
-    write_rows(rows, output_dir / "end_to_end_results.csv", leading=("sample_id", "audio_file", "mode", "status", "score"))
+    print(f"  format wejścia: {fmt}, sanity=rules-only")
+    write_rows(rows, output_dir / "end_to_end_results.csv", leading=("sample_id", "audio_file", "status", "score"))
     _summarize_sanity(rows)
 
 
