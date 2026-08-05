@@ -4,14 +4,6 @@ import os
 import logging
 
 from .config import PipelineConfig
-from .stages.preprocessing import AudioPreprocessor
-from .stages.stt import WhisperLocal, WhisperHosted
-from .stages.ner.base import NERStrategy
-from .stages.ner.split import SplitNERStrategy
-from .stages.ner.chained import ChainedNERStrategy
-from .stages.rag.rag_retriever import RAGRetriever
-from .stages.rag.qdrant import QdrantRetriever
-from .stages.answerer import Answerer, NoFillAnswerer
 from .form_data import build_form_data_from_entities
 from app_stt.services.data_sanity_check import run_data_sanity_check
 
@@ -60,6 +52,8 @@ class Pipeline:
  
     def __init__(self, config: PipelineConfig | None = None):
         self.config = config or PipelineConfig()
+        from .stages.preprocessing import AudioPreprocessor
+
         self.preprocessor = AudioPreprocessor(self.config)
         self.stt = self._build_stt()
         self.ner = self._build_ner()
@@ -145,6 +139,8 @@ class Pipeline:
     # ── private ───────────────────────────────────────────────────────────────
 
     def _build_stt(self):
+        from .stages.stt import WhisperLocal, WhisperHosted
+
         model = self.config.stt_model
         if model == "whisper_local":
             return WhisperLocal(
@@ -162,7 +158,7 @@ class Pipeline:
             "Supported: 'whisper_local', 'whisper_hosted. "
         )
 
-    def _build_ner(self) -> NERStrategy:
+    def _build_ner(self):
         if not os.getenv("OPENROUTER_API_KEY") and not os.getenv("OPENAI_API_KEY"):
             print(
                 "[Pipeline] Brak klucza API (OPENROUTER_API_KEY / OPENAI_API_KEY). "
@@ -173,23 +169,31 @@ class Pipeline:
 
         strategy = self.config.ner_strategy
         if strategy == "chained":
+            from .stages.ner.chained import ChainedNERStrategy
+
             return ChainedNERStrategy(self.config.ner_llm_model)
         if strategy == "split":
+            from .stages.ner.split import SplitNERStrategy
+
             return SplitNERStrategy(self.config.ner_llm_model)
         raise ValueError(
             f"Unknown NER strategy '{strategy}'. Supported: 'chained', 'split'."
         )
         
-    def _build_rag(self) -> RAGRetriever:
+    def _build_rag(self):
         provider = self.config.vector_db_provider
         if provider == 'qdrant':
+            from .stages.rag.qdrant import QdrantRetriever
+
             return QdrantRetriever(self.config)
 
         raise ValueError(
             f"Unknown vector db provider '{provider}'. Supported: 'qdrant'."
         )
     
-    def _build_answerer(self) -> Answerer:
+    def _build_answerer(self):
+        from .stages.answerer import NoFillAnswerer
+
         strategy = self.config.answerer_strategy
         if strategy == 'no-fill':
             return NoFillAnswerer(self.config.answerer_llm_model)

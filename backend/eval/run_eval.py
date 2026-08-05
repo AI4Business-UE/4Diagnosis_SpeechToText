@@ -117,6 +117,7 @@ def build_pipeline_config(
     llm_model: str,
     preprocessing_output_dir: Path,
     sanity_mode: str = "rules",
+    enable_sanity_check: bool = True,
 ):
     PipelineConfig, _ = load_pipeline_classes()
     config = PipelineConfig(
@@ -126,6 +127,7 @@ def build_pipeline_config(
         ner_llm_model=llm_model,
         answerer_llm_model=llm_model,
         sanity_mode=sanity_mode,
+        enable_sanity_check=enable_sanity_check,
         preprocessing_output_dir=str(preprocessing_output_dir),
     )
 
@@ -594,64 +596,65 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
     for model in config["models"]:
         for preprocessing in config["preprocessing"]:
             for ner_strategy in config["ner_strategies"]:
-                for sanity_mode in sanity_modes:
-                    pipeline_config = build_pipeline_config(
-                        model,
-                        preprocessing,
-                        ner_strategy,
-                        config["llm_model"],
-                        preprocessed_dir / preprocessing / sanity_mode,
-                        sanity_mode=sanity_mode,
-                    )
-                    pipeline = Pipeline(pipeline_config)
+                pipeline_config = build_pipeline_config(
+                    model,
+                    preprocessing,
+                    ner_strategy,
+                    config["llm_model"],
+                    preprocessed_dir / preprocessing,
+                    enable_sanity_check=False,
+                )
+                pipeline = Pipeline(pipeline_config)
 
-                    for sample in samples:
-                        eval_sample = {
-                            **sample,
-                            "pipeline_model": model,
-                            "preprocessing": preprocessing,
-                            "ner_strategy": ner_strategy,
-                            "pipeline_status": "ok",
-                            "pipeline_error": "",
-                            "synthetic": False,
-                            "gold_has_patient": "",
-                            "sanity_mode": sanity_mode,
+                for sample in samples:
+                    base_sample = {
+                        **sample,
+                        "pipeline_model": model,
+                        "preprocessing": preprocessing,
+                        "ner_strategy": ner_strategy,
+                        "pipeline_status": "ok",
+                        "pipeline_error": "",
+                        "synthetic": False,
+                        "gold_has_patient": "",
+                    }
+                    start = time.perf_counter()
+                    try:
+                        pipeline_result = pipeline.run(str(sample["audio_path"]))
+                        transcript = pipeline_result.get("transcript", "")
+                        corrected_transcript = pipeline_result.get("corrected_transcript", transcript)
+                        entities = pipeline_result.get("entities", {})
+                        form_data = pipeline_result.get("form_data", {})
+                        base_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
+                        extra = _audio_extra_metrics(sample, transcript, entities)
+
+                        for sanity_mode in sanity_modes:
+                            rows.append(_run_sanity(
+                                data_sanity_check,
+                                {**base_sample, "sanity_mode": sanity_mode},
+                                corrected_transcript,
+                                form_data,
+                                extra,
+                            ))
+                    except Exception as exc:  # noqa: BLE001
+                        base_sample.update({
+                            "pipeline_status": "error",
+                            "pipeline_error": str(exc),
+                            "pipeline_duration_seconds": round(time.perf_counter() - start, 4),
+                        })
+                        empty_result = {
+                            "status": "",
+                            "score": "",
+                            "issues": [],
+                            "metrics": {},
+                            "llm_review": {},
                         }
-                        start = time.perf_counter()
-                        try:
-                            pipeline_result = pipeline.run(str(sample["audio_path"]))
-                            transcript = pipeline_result.get("transcript", "")
-                            entities = pipeline_result.get("entities", {})
-                            sanity_result = pipeline_result.get("sanity_result") or {
-                                "status": "",
-                                "score": "",
-                                "issues": [],
-                                "metrics": {},
-                                "llm_review": {},
-                            }
-                            eval_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
-                            extra = _audio_extra_metrics(sample, transcript, entities)
-                        except Exception as exc:  # noqa: BLE001
-                            sanity_result = {
-                                "status": "",
-                                "score": "",
-                                "issues": [],
-                                "metrics": {},
-                                "llm_review": {},
-                            }
-                            eval_sample.update({
-                                "pipeline_status": "error",
-                                "pipeline_error": str(exc),
-                                "pipeline_duration_seconds": round(time.perf_counter() - start, 4),
-                            })
-                            extra = {}
-
-                        rows.append(_build_sanity_row(
-                            data_sanity_check,
-                            sanity_result,
-                            eval_sample,
-                            extra,
-                        ))
+                        for sanity_mode in sanity_modes:
+                            rows.append(_build_sanity_row(
+                                data_sanity_check,
+                                empty_result,
+                                {**base_sample, "sanity_mode": sanity_mode},
+                                {},
+                            ))
     return rows
 
 
