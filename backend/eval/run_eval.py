@@ -1,4 +1,4 @@
-"""Jeden eval dla całego pipeline'u 4Diagnosis: audio → STT → NER → sanity check.
+"""Jeden eval dla całego pipeline'u 4Diagnosis: audio → STT → NER → RAG/answerer → sanity check.
 
 Które etapy odpalić i z jakimi parametrami wybierasz w config.yaml (obok tego pliku).
 Uruchomienie:
@@ -7,7 +7,7 @@ Uruchomienie:
     backend/venv/bin/python backend/eval/run_eval.py --config backend/eval/config.yaml
 
 Etapy (config `stages`):
-    end_to_end – domyślny eval całego przepływu: audio → STT → NER → formularz → sanity check
+    end_to_end – domyślny eval całego przepływu: audio → STT → NER → RAG/answerer → formularz → sanity check
                  (metryki STT + NER, jeśli gold ma referencje, + status/score/issues)
     stt    – diagnostyka samej transkrypcji: audio → preprocessing → STT (metryki STT)
     ner    – diagnostyka samego NER: transkrypt gold → NER, bez audio (metryki NER)
@@ -110,13 +110,22 @@ def load_data_sanity_check():
     return data_sanity_check
 
 
-def build_pipeline_config(model: str, preprocessing: str, ner_strategy: str, llm_model: str, preprocessing_output_dir: Path):
+def build_pipeline_config(
+    model: str,
+    preprocessing: str,
+    ner_strategy: str,
+    llm_model: str,
+    preprocessing_output_dir: Path,
+    sanity_mode: str = "rules",
+):
     PipelineConfig, _ = load_pipeline_classes()
     config = PipelineConfig(
         stt_model="whisper_local",
         whisper_model=model,
         ner_strategy=ner_strategy,
         ner_llm_model=llm_model,
+        answerer_llm_model=llm_model,
+        sanity_mode=sanity_mode,
         preprocessing_output_dir=str(preprocessing_output_dir),
     )
 
@@ -350,7 +359,7 @@ def _summarize_ner(rows: list[dict[str, Any]]) -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Etap sanity — pełny pipeline audio → STT → NER → formularz → sanity check
+# Etap sanity — pełny pipeline audio → STT → NER → RAG/answerer → formularz → sanity check
 # (oraz warianty offline: gotowy formularz / rekonstrukcja z gold-encji)
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -577,7 +586,7 @@ def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict
 
 
 def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[dict[str, Any]], output_dir: Path) -> list[dict[str, Any]]:
-    AudioPreprocessor, WhisperLocal = load_stt_components()
+    _PipelineConfig, Pipeline = load_pipeline_classes()
     preprocessed_dir = output_dir / "preprocessed_audio" / "sanity"
     sanity_modes = _sanity_modes(config)
     rows = []
@@ -585,54 +594,69 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
     for model in config["models"]:
         for preprocessing in config["preprocessing"]:
             for ner_strategy in config["ner_strategies"]:
-                # audio → STT → NER złożone ręcznie (jak w run_stt), z pominięciem RAG/answerera —
-                # nie wpływają na metryki STT/NER/sanity, a wymagałyby żywego Qdranta i dodatkowego LLM.
-                pipeline_config = build_pipeline_config(model, preprocessing, ner_strategy, config["llm_model"], preprocessed_dir / preprocessing)
-                preprocessor = AudioPreprocessor(pipeline_config)
-                stt_model = WhisperLocal(model_id=pipeline_config.whisper_hf_id)
-                ner = load_ner_strategy(ner_strategy, config["llm_model"])
+                for sanity_mode in sanity_modes:
+                    pipeline_config = build_pipeline_config(
+                        model,
+                        preprocessing,
+                        ner_strategy,
+                        config["llm_model"],
+                        preprocessed_dir / preprocessing / sanity_mode,
+                        sanity_mode=sanity_mode,
+                    )
+                    pipeline = Pipeline(pipeline_config)
 
-                for sample in samples:
-                    eval_sample = {
-                        **sample,
-                        "pipeline_model": model,
-                        "preprocessing": preprocessing,
-                        "ner_strategy": ner_strategy,
-                        "pipeline_status": "ok",
-                        "pipeline_error": "",
-                        "synthetic": False,
-                        "gold_has_patient": "",
-                    }
-                    start = time.perf_counter()
-                    try:
-                        transcript, _meta, _prep_dur, _stt_dur = _transcribe_one(preprocessor, stt_model, str(sample["audio_path"]))
-                        entities = ner.extract(transcript).model_dump()
-                        form_data = build_form_data(entities)
-                        eval_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
-                        extra = _audio_extra_metrics(sample, transcript, entities)
-                    except Exception as exc:  # noqa: BLE001
-                        transcript = ""
-                        form_data = build_form_data({})
-                        eval_sample.update({
-                            "pipeline_status": "error",
-                            "pipeline_error": str(exc),
-                            "pipeline_duration_seconds": round(time.perf_counter() - start, 4),
-                        })
-                        extra = {}
+                    for sample in samples:
+                        eval_sample = {
+                            **sample,
+                            "pipeline_model": model,
+                            "preprocessing": preprocessing,
+                            "ner_strategy": ner_strategy,
+                            "pipeline_status": "ok",
+                            "pipeline_error": "",
+                            "synthetic": False,
+                            "gold_has_patient": "",
+                            "sanity_mode": sanity_mode,
+                        }
+                        start = time.perf_counter()
+                        try:
+                            pipeline_result = pipeline.run(str(sample["audio_path"]))
+                            transcript = pipeline_result.get("transcript", "")
+                            entities = pipeline_result.get("entities", {})
+                            sanity_result = pipeline_result.get("sanity_result") or {
+                                "status": "",
+                                "score": "",
+                                "issues": [],
+                                "metrics": {},
+                                "llm_review": {},
+                            }
+                            eval_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
+                            extra = _audio_extra_metrics(sample, transcript, entities)
+                        except Exception as exc:  # noqa: BLE001
+                            sanity_result = {
+                                "status": "",
+                                "score": "",
+                                "issues": [],
+                                "metrics": {},
+                                "llm_review": {},
+                            }
+                            eval_sample.update({
+                                "pipeline_status": "error",
+                                "pipeline_error": str(exc),
+                                "pipeline_duration_seconds": round(time.perf_counter() - start, 4),
+                            })
+                            extra = {}
 
-                    for sanity_mode in sanity_modes:
-                        rows.append(_run_sanity(
+                        rows.append(_build_sanity_row(
                             data_sanity_check,
-                            {**eval_sample, "sanity_mode": sanity_mode},
-                            transcript,
-                            form_data,
+                            sanity_result,
+                            eval_sample,
                             extra,
                         ))
     return rows
 
 
 def run_end_to_end(config: dict[str, Any], output_dir: Path) -> None:
-    print("[end_to_end] audio → STT → NER → formularz → sanity check")
+    print("[end_to_end] audio → STT → NER → RAG/answerer → formularz → sanity check")
     data_sanity_check = load_data_sanity_check()
 
     input_path = config["paths"].get("end_to_end_input") or config["paths"].get("sanity_input")

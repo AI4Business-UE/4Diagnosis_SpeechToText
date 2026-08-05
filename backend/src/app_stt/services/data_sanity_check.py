@@ -8,6 +8,34 @@ from pathlib import Path
 import requests
 
 try:
+    from app_stt.data.sanity_terms import (
+        LESION_WORDS,
+        REQUIRED_FORM_FIELDS,
+        SANITY_ALLOWED_SEVERITIES,
+    )
+except ModuleNotFoundError:
+    terms_path = Path(__file__).resolve().parents[1] / "data" / "sanity_terms.py"
+    terms_spec = importlib.util.spec_from_file_location("sanity_terms", terms_path)
+    if terms_spec is None or terms_spec.loader is None:
+        LESION_WORDS = []
+        REQUIRED_FORM_FIELDS = ["organ", "name", "age", "pesel", "description"]
+        SANITY_ALLOWED_SEVERITIES = {"error", "warning", "info"}
+    else:
+        terms_module = importlib.util.module_from_spec(terms_spec)
+        terms_spec.loader.exec_module(terms_module)
+        LESION_WORDS = getattr(terms_module, "LESION_WORDS", [])
+        REQUIRED_FORM_FIELDS = getattr(
+            terms_module,
+            "REQUIRED_FORM_FIELDS",
+            ["organ", "name", "age", "pesel", "description"],
+        )
+        SANITY_ALLOWED_SEVERITIES = getattr(
+            terms_module,
+            "SANITY_ALLOWED_SEVERITIES",
+            {"error", "warning", "info"},
+        )
+
+try:
     from logging_config import logger
 except ModuleNotFoundError:  # pozwala uruchomić self-check standalone (bez ścieżki Django)
     import logging
@@ -33,7 +61,6 @@ def _load_organ_plausibility() -> tuple[dict, float, list]:
 ORGAN_MAX_DIMENSION_CM, GLOBAL_MAX_DIMENSION_CM, ORGAN_STEMS = _load_organ_plausibility()
 
 SANITY_MODES = {"rules", "rules_and_llm"}
-ALLOWED_SEVERITIES = {"error", "warning", "info"}
 
 
 def _resolve_organ(form_data: dict) -> str | None:
@@ -119,9 +146,7 @@ def run_data_sanity_check(transcript: str, form_data: dict, mode: str = "rules")
 def check_required_fields(form_data: dict) -> list:
     issues = []
 
-    required_fields = ["organ", "name", "age", "pesel", "description"]
-
-    for field in required_fields:
+    for field in REQUIRED_FORM_FIELDS:
         value = form_data.get(field)
 
         if not str(value or "").strip():
@@ -429,7 +454,6 @@ def check_dimensions(transcript: str, form_data: dict) -> list:
 
     return issues
 
-LESION_WORDS = ["guz", "guza", "guzem", "torbiel", "torbieli", "polip", "polipa", "ognisko", "zmiana", "zmiany"]
 # Dopasowanie z granicami słów — inaczej "guz" łapałoby np. "guzik".
 LESION_PATTERN = re.compile(r"\b(?:" + "|".join(re.escape(word) for word in LESION_WORDS) + r")\b")
 
@@ -567,7 +591,7 @@ def check_with_llm(transcript: str, form_data: dict, rule_issues: list) -> dict:
                 continue
 
             severity = issue.get("severity", "warning")
-            if severity not in ALLOWED_SEVERITIES:
+            if severity not in SANITY_ALLOWED_SEVERITIES:
                 severity = "warning"
 
             normalized_issue = {
@@ -596,6 +620,10 @@ def _self_check() -> None:
         for name in ("OPENROUTER_API_KEY", "OPENAI_API_KEY", "OPENAI_KEY", "SANITY_LLM_MODEL")
     }
     try:
+        assert LESION_WORDS
+        assert {"organ", "name", "age", "pesel", "description"}.issubset(REQUIRED_FORM_FIELDS)
+        assert {"error", "warning", "info"}.issubset(SANITY_ALLOWED_SEVERITIES)
+
         five_warnings = [{"severity": "warning", "code": "missing_required_field"} for _ in range(5)]
         score_five = calculate_score(five_warnings)
         assert 0.0 < score_five < 1.0

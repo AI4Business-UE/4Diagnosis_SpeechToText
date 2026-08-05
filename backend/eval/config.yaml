@@ -4,7 +4,7 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Które etapy pipeline'u przetestować. Najczęściej wystarczy end_to_end:
-#   end_to_end – domyślny eval całości: audio → STT → NER → formularz → sanity check.
+#   end_to_end – domyślny eval całości: audio → STT → NER → RAG/answerer → formularz → sanity check.
 #                Jeśli gold ma referencje, liczy też metryki STT/NER z prefiksami stt_/ner_.
 #   stt    – diagnostyka samej transkrypcji: audio → preprocessing → STT.
 #            Metryki STT (WER/CER, liczby, wymiary, terminy medyczne, PESEL).
@@ -48,7 +48,7 @@ paths:
   ner_gold: data/gold_ner.jsonl
 
   # etap end_to_end: wejście pipeline'u. Format wykrywany automatycznie:
-  #   - CSV z kolumną audio_path        → pełny pipeline (audio → ... → sanity)
+  #   - CSV z kolumną audio_path        → pełny pipeline (audio → ... → RAG/answerer → sanity)
   #   - JSONL z polem form_data          → sam sanity check na gotowym formularzu (offline)
   #   - JSONL/CSV z expected_entities    → rekonstrukcja formularza z gold-encji (offline)
   # data/gold_audio.csv ma expected_entities + ref_transcript → liczy też STT + NER.

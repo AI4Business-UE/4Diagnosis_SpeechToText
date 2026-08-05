@@ -12,6 +12,8 @@ from .stages.ner.chained import ChainedNERStrategy
 from .stages.rag.rag_retriever import RAGRetriever
 from .stages.rag.qdrant import QdrantRetriever
 from .stages.answerer import Answerer, NoFillAnswerer
+from .form_data import build_form_data_from_entities
+from app_stt.services.data_sanity_check import run_data_sanity_check
 
 
 logger = logging.getLogger(__name__)
@@ -38,6 +40,7 @@ class Pipeline:
       3. NER            — extract Patient, Components, Lesions, FluidSamples
       4. RAG            — build queries from Components, Lesions, FluidSamples and query the templates db
       5. Answerer       - send transcript for correction using retrieved templates and NER data 
+      6. Sanity         - run final guardrails on generated form data
 
     Usage
     -----
@@ -69,7 +72,7 @@ class Pipeline:
         config = PipelineConfig(**overrides)
         return cls(config)
     
-    def run(self, audio_path: str) -> dict:
+    def run(self, audio_path: str, patient_metadata: dict | None = None) -> dict:
         """
         Run the full pipeline on an audio file.
 
@@ -85,6 +88,8 @@ class Pipeline:
             entities     – ExtractionResult as dict
             preprocessing – metadata dict from AudioPreprocessor
             retrieved_templates - templates retrieved from vector database
+            form_data    - frontend form payload derived from entities and corrected transcript
+            sanity_result - optional guardrail result, or None when disabled
         """
         logger.info("PIPELINE: Beginning audio preprocessing...")
         preprocessing_meta = self.preprocessor.process(audio_path)
@@ -113,13 +118,28 @@ class Pipeline:
             templates,
             entities
         )
+        entities_dict = entities.model_dump()
+        form_data = build_form_data_from_entities(
+            entities_dict,
+            corrected_transcript,
+            patient_metadata,
+        )
+        sanity_result = None
+        if self.config.enable_sanity_check:
+            sanity_result = run_data_sanity_check(
+                corrected_transcript,
+                form_data,
+                mode=self.config.sanity_mode,
+            )
 
         return {
             "transcript": transcript,
-            "entities": entities.model_dump(),
+            "entities": entities_dict,
             "preprocessing": preprocessing_meta,
             "retrieved_templates": templates,
-            "corrected_transcript": corrected_transcript
+            "corrected_transcript": corrected_transcript,
+            "form_data": form_data,
+            "sanity_result": sanity_result,
         }
 
     # ── private ───────────────────────────────────────────────────────────────

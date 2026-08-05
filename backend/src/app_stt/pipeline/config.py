@@ -51,6 +51,10 @@ class PipelineConfig:
     answerer_strategy: str = "no-fill"
     answerer_llm_model: str = "openai/gpt-4o"
 
+    # ── Sanity guardrails ────────────────────────────────────────────────────
+    enable_sanity_check: bool = True
+    sanity_mode: str = "rules"
+
     # ── RAG ────────────────────────────────────────────────────
     macro_descs_collection = "macro_descriptions"
     qdrant_connection_string = "localhost:6333"

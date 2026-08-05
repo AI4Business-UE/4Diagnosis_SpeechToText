@@ -3,7 +3,7 @@
 Ten eval jest po to, żeby szybko sprawdzić, czy pipeline 4Diagnosis działa sensownie:
 
 ```text
-audio -> STT -> NER -> formularz -> sanity check
+audio -> STT -> NER -> RAG/answerer -> formularz -> sanity check
 ```
 
 ## Jak odpalić
@@ -34,9 +34,10 @@ Na co dzień najczęściej wystarczy:
 stages: [end_to_end]
 ```
 
-To jest normalny eval end-to-end: bierze audio, robi STT, potem NER, buduje formularz i puszcza
-sanity check. Jeśli wejście ma referencje (`ref_transcript`, `expected_entities`), w tym samym
-wyniku pojawią się też metryki STT i NER z prefiksami `stt_` oraz `ner_`.
+To jest normalny eval end-to-end: bierze audio i idzie tą samą ścieżką co aplikacja, czyli
+`Pipeline.run()` robi STT, NER, RAG/answerer, buduje formularz i puszcza sanity guardrails. Jeśli
+wejście ma referencje (`ref_transcript`, `expected_entities`), w tym samym wyniku pojawią się też
+metryki STT i NER z prefiksami `stt_` oraz `ner_`.
 
 Sanity check ma tryby wybierane w `config.yaml`:
 
@@ -89,7 +90,7 @@ backend/eval/results/
 
 `end_to_end_input` w `config.yaml` decyduje, co dokładnie testuje end-to-end:
 
-- CSV z `audio_path` - pełny pipeline od audio.
+- CSV z `audio_path` - pełny pipeline od audio, z pipeline'owym `form_data` i `sanity_result`.
 - JSONL z `form_data` - sam sanity check na gotowym formularzu, bez STT/NER.
 - plik z `expected_entities` - formularz składany z gold encji, czyli wariant offline.
 
