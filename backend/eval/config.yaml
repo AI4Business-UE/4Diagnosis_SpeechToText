@@ -36,6 +36,13 @@ llm_model: openai/gpt-4o
 # Do porównania ustaw: [rules, rules_and_llm].
 sanity_modes: [rules]
 
+# ── Minimal full-app trace ───────────────────────────────────────────────────
+# Trace jest lokalnym JSONL do debugowania pełnego audio flow. Nie zapisuje pełnych tekstów
+# ani danych pacjenta.
+trace:
+  enabled: true
+  path: results/full_app_trace.jsonl
+
 # ── Ścieżki (względne do backend/eval/) ─────────────────────────────────────
 paths:
   # etap stt + end_to_end(audio): manifest z audio + tekstem referencyjnym.

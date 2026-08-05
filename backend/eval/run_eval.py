@@ -482,6 +482,115 @@ def _issue_counts(issues: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+def _trace_config(config: dict[str, Any]) -> dict[str, Any]:
+    trace = config.get("trace") or {}
+    if not isinstance(trace, dict):
+        return {"enabled": False}
+    return {
+        "enabled": bool(trace.get("enabled")),
+        "path": trace.get("path") or "results/full_app_trace.jsonl",
+    }
+
+
+def _trace_path(config: dict[str, Any]) -> Path | None:
+    trace = _trace_config(config)
+    if not trace["enabled"]:
+        return None
+
+    path = Path(trace["path"])
+    return path if path.is_absolute() else (EVAL_ROOT / path)
+
+
+def _present_form_fields(form_data: dict[str, Any]) -> list[str]:
+    hidden_fields = {"name", "pesel"}
+    return sorted(
+        field
+        for field, value in form_data.items()
+        if field not in hidden_fields and str(value or "").strip()
+    )
+
+
+def _entity_counts(entities: dict[str, Any]) -> dict[str, int]:
+    return {
+        "components": len(entities.get("components") or []),
+        "lesions": len(entities.get("lesions") or []),
+        "fluid_samples": len(entities.get("fluid_samples") or []),
+    }
+
+
+def _template_count(templates: Any) -> int:
+    if isinstance(templates, list):
+        return len(templates)
+    if isinstance(templates, dict):
+        return len(templates)
+    return 0
+
+
+def _safe_trace_error(error: Any, sample: dict[str, Any], limit: int = 500) -> str:
+    text = str(error or "")
+    for key in ("audio_path", "audio_file"):
+        value = str(sample.get(key) or "")
+        if value:
+            text = text.replace(value, Path(value).name)
+    return text if len(text) <= limit else text[:limit].rstrip() + "..."
+
+
+def _audio_file_label(sample: dict[str, Any]) -> str:
+    value = sample.get("audio_file") or sample.get("audio_path") or ""
+    return Path(str(value)).name if value else ""
+
+
+def build_minimal_trace(
+    sample: dict[str, Any],
+    eval_sample: dict[str, Any],
+    pipeline_result: dict[str, Any] | None,
+    sanity_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    record = {
+        "sample_id": str(sample.get("sample_id", "")),
+        "audio_file": _audio_file_label(sample),
+        "pipeline_model": eval_sample.get("pipeline_model", ""),
+        "preprocessing": eval_sample.get("preprocessing", ""),
+        "ner_strategy": eval_sample.get("ner_strategy", ""),
+        "pipeline_status": eval_sample.get("pipeline_status", ""),
+        "pipeline_duration_seconds": eval_sample.get("pipeline_duration_seconds", ""),
+    }
+
+    if eval_sample.get("pipeline_status") == "error":
+        record["pipeline_error"] = _safe_trace_error(eval_sample.get("pipeline_error", ""), sample)
+        record["stages"] = {"pipeline": {"status": "error"}}
+        return record
+
+    pipeline_result = pipeline_result or {}
+    transcript = pipeline_result.get("transcript", "")
+    corrected_transcript = pipeline_result.get("corrected_transcript", "")
+    entities = pipeline_result.get("entities", {})
+    form_data = pipeline_result.get("form_data", {})
+    templates = pipeline_result.get("retrieved_templates", [])
+    primary_sanity = sanity_rows[0] if sanity_rows else {}
+
+    record["stages"] = {
+        "stt": {"status": "ok", "transcript_length": len(transcript or "")},
+        "ner": {"status": "ok", "entity_counts": _entity_counts(entities)},
+        "rag": {"status": "ok", "template_count": _template_count(templates)},
+        "answerer": {"status": "ok", "corrected_length": len(corrected_transcript or "")},
+        "form_data": {"status": "ok", "present_fields": _present_form_fields(form_data)},
+        "sanity": {
+            "status": primary_sanity.get("status", ""),
+            "score": primary_sanity.get("score", ""),
+            "issue_codes": primary_sanity.get("issue_codes", "").split("|")
+            if primary_sanity.get("issue_codes") else [],
+        },
+    }
+    return record
+
+
+def append_trace_record(record: dict[str, Any], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as trace_file:
+        trace_file.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
 def _score_bucket(status: str, score: Any, issue_count: int) -> str:
     if status == "critical":
         return "critical"
@@ -646,6 +755,7 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
     _PipelineConfig, Pipeline = load_pipeline_classes()
     preprocessed_dir = output_dir / "preprocessed_audio" / "sanity"
     sanity_modes = _sanity_modes(config)
+    trace_path = _trace_path(config)
     rows = []
 
     for model in config["models"]:
@@ -681,15 +791,24 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
                         form_data = pipeline_result.get("form_data", {})
                         base_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
                         extra = _audio_extra_metrics(sample, transcript, entities)
+                        sanity_rows = []
 
                         for sanity_mode in sanity_modes:
-                            rows.append(_run_sanity(
+                            sanity_row = _run_sanity(
                                 data_sanity_check,
                                 {**base_sample, "sanity_mode": sanity_mode},
                                 corrected_transcript,
                                 form_data,
                                 extra,
-                            ))
+                            )
+                            rows.append(sanity_row)
+                            sanity_rows.append(sanity_row)
+
+                        if trace_path is not None:
+                            append_trace_record(
+                                build_minimal_trace(sample, base_sample, pipeline_result, sanity_rows),
+                                trace_path,
+                            )
                     except Exception as exc:  # noqa: BLE001
                         base_sample.update({
                             "pipeline_status": "error",
@@ -710,6 +829,11 @@ def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[d
                                 {**base_sample, "sanity_mode": sanity_mode},
                                 {},
                             ))
+                        if trace_path is not None:
+                            append_trace_record(
+                                build_minimal_trace(sample, base_sample, None, []),
+                                trace_path,
+                            )
     return rows
 
 

@@ -1,3 +1,5 @@
+import json
+
 from app_stt.services import data_sanity_check
 
 import run_eval
@@ -43,6 +45,7 @@ class FakePipeline:
 def test_audio_sanity_eval_runs_pipeline_once_per_sample_and_compares_modes(monkeypatch, tmp_path):
     FakePipeline.run_calls = 0
     monkeypatch.setattr(run_eval, "load_pipeline_classes", lambda: (FakePipelineConfig, FakePipeline))
+    trace_path = tmp_path / "trace.jsonl"
 
     rows = run_eval._run_sanity_audio(
         {
@@ -51,6 +54,7 @@ def test_audio_sanity_eval_runs_pipeline_once_per_sample_and_compares_modes(monk
             "ner_strategies": ["chained"],
             "llm_model": "openai/gpt-4o",
             "sanity_modes": ["rules", "rules_and_llm"],
+            "trace": {"enabled": True, "path": str(trace_path)},
         },
         data_sanity_check,
         [{"sample_id": "s1", "audio_path": "sample.wav", "audio_file": "sample.wav"}],
@@ -61,6 +65,32 @@ def test_audio_sanity_eval_runs_pipeline_once_per_sample_and_compares_modes(monk
     assert [row["sanity_mode"] for row in rows] == ["rules", "rules_and_llm"]
     assert [row["llm_reason"] for row in rows] == ["mode_rules", "no_api_key"]
     assert all(row["status"] != "should_not_be_used" for row in rows)
+    trace_records = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    assert len(trace_records) == 1
+    assert trace_records[0]["sample_id"] == "s1"
+    assert trace_records[0]["stages"]["sanity"]["issue_codes"] == ["missing_required_field"]
+
+
+def test_audio_sanity_eval_skips_trace_when_disabled(monkeypatch, tmp_path):
+    FakePipeline.run_calls = 0
+    monkeypatch.setattr(run_eval, "load_pipeline_classes", lambda: (FakePipelineConfig, FakePipeline))
+    trace_path = tmp_path / "trace.jsonl"
+
+    run_eval._run_sanity_audio(
+        {
+            "models": ["whisper-small"],
+            "preprocessing": ["baseline"],
+            "ner_strategies": ["chained"],
+            "llm_model": "openai/gpt-4o",
+            "sanity_modes": ["rules"],
+            "trace": {"enabled": False, "path": str(trace_path)},
+        },
+        data_sanity_check,
+        [{"sample_id": "s1", "audio_path": "sample.wav", "audio_file": "sample.wav"}],
+        tmp_path,
+    )
+
+    assert not trace_path.exists()
 
 
 def test_build_sanity_row_adds_score_bucket_and_severity_match():
@@ -163,3 +193,84 @@ def test_build_sanity_row_leaves_issue_code_rubric_empty_without_expected_codes(
     assert row["issue_code_match"] == ""
     assert row["missing_expected_issue_codes"] == ""
     assert row["unexpected_issue_codes"] == ""
+
+
+def test_build_minimal_trace_keeps_only_safe_diagnostics():
+    record = run_eval.build_minimal_trace(
+        {"sample_id": "s1", "audio_file": "/secret/sample.wav", "audio_path": "/secret/sample.wav"},
+        {
+            "pipeline_model": "whisper-small",
+            "preprocessing": "baseline",
+            "ner_strategy": "chained",
+            "pipeline_status": "ok",
+            "pipeline_duration_seconds": 1.23,
+        },
+        {
+            "transcript": "Pacjent Jan Nowak PESEL 12345678901. Guz 3 cm.",
+            "corrected_transcript": "Pacjent Jan Nowak PESEL 12345678901. Guz 3 cm.",
+            "entities": {
+                "patient": {"first_name": "Jan", "last_name": "Nowak", "pesel": "12345678901"},
+                "components": [{"name": "tarczyca"}],
+                "lesions": [{"type": "guz"}],
+                "fluid_samples": [],
+            },
+            "retrieved_templates": [{"text": "secret template"}],
+            "form_data": {
+                "name": "Jan Nowak",
+                "pesel": "12345678901",
+                "organ": "tarczyca",
+                "age": "42",
+                "description": "Guz 3 cm.",
+            },
+        },
+        [{"status": "warning", "score": 0.75, "issue_codes": "age_pesel_mismatch"}],
+    )
+
+    serialized = json.dumps(record, ensure_ascii=False)
+    assert "transcript" not in record
+    assert "corrected_transcript" not in record
+    assert "form_data" not in record
+    assert "Jan Nowak" not in serialized
+    assert "12345678901" not in serialized
+    assert "/secret/sample.wav" not in serialized
+    assert "secret template" not in serialized
+    assert record["audio_file"] == "sample.wav"
+    assert record["stages"]["stt"]["transcript_length"] > 0
+    assert record["stages"]["answerer"]["corrected_length"] > 0
+    assert record["stages"]["ner"]["entity_counts"] == {"components": 1, "lesions": 1, "fluid_samples": 0}
+    assert record["stages"]["rag"]["template_count"] == 1
+    assert record["stages"]["form_data"]["present_fields"] == ["age", "description", "organ"]
+    assert record["stages"]["sanity"]["issue_codes"] == ["age_pesel_mismatch"]
+
+
+def test_build_minimal_trace_records_pipeline_error_without_sensitive_payload():
+    record = run_eval.build_minimal_trace(
+        {"sample_id": "s1", "audio_file": "/secret/sample.wav", "audio_path": "/secret/sample.wav"},
+        {
+            "pipeline_model": "whisper-small",
+            "preprocessing": "baseline",
+            "ner_strategy": "chained",
+            "pipeline_status": "error",
+            "pipeline_error": "boom /secret/sample.wav " + "x" * 1000,
+            "pipeline_duration_seconds": 0.1,
+        },
+        None,
+        [],
+    )
+
+    assert record["pipeline_status"] == "error"
+    assert record["stages"] == {"pipeline": {"status": "error"}}
+    assert "/secret/sample.wav" not in record["pipeline_error"]
+    assert "sample.wav" in record["pipeline_error"]
+    assert len(record["pipeline_error"]) < 520
+
+
+def test_append_trace_record_writes_jsonl(tmp_path):
+    path = tmp_path / "trace.jsonl"
+    run_eval.append_trace_record({"sample_id": "s1", "stages": {}}, path)
+
+    assert json.loads(path.read_text(encoding="utf-8")) == {"sample_id": "s1", "stages": {}}
+
+
+def test_trace_path_is_none_when_disabled(tmp_path):
+    assert run_eval._trace_path({"trace": {"enabled": False, "path": str(tmp_path / "trace.jsonl")}}) is None
