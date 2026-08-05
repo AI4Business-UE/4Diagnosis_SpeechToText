@@ -84,7 +84,7 @@ SEVERITY_WEIGHTS = {
 
 # Wagi per konkretny kod issue — pozwalają różnicować „lekko podejrzany” od „katastrofy”.
 CODE_WEIGHTS = {
-    "missing_required_field": 0.08,
+    "missing_required_field": 0.12,
     "invalid_pesel_length": 0.25,
     "invalid_pesel_format": 0.25,
     "invalid_pesel_checksum": 0.3,
@@ -92,14 +92,14 @@ CODE_WEIGHTS = {
     "age_not_a_number": 0.2,
     "age_too_high": 0.2,
     "negative_age": 0.3,
-    "age_pesel_mismatch": 0.2,
+    "age_pesel_mismatch": 0.25,
     "description_not_meaningful": 0.15,
     "non_positive_dimension": 0.5,
-    "suspicious_unit_meter": 0.15,
-    "suspicious_large_dimension": 0.15,
-    "implausible_dimension_for_organ": 0.2,
-    "lesion_without_dimension": 0.1,
-    "possible_lesion_omitted": 0.15,
+    "suspicious_unit_meter": 0.25,
+    "suspicious_large_dimension": 0.3,
+    "implausible_dimension_for_organ": 0.25,
+    "lesion_without_dimension": 0.12,
+    "possible_lesion_omitted": 0.2,
 }
 
 

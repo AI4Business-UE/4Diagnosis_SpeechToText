@@ -482,6 +482,46 @@ def _issue_counts(issues: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+def _score_bucket(status: str, score: Any, issue_count: int) -> str:
+    if status == "critical":
+        return "critical"
+
+    try:
+        score_value = float(score)
+    except (TypeError, ValueError):
+        return ""
+
+    if issue_count == 0 and score_value == 1.0:
+        return "ok"
+    if score_value < 0.6:
+        return "critical"
+    if score_value < 0.8:
+        return "major"
+    if score_value < 1.0:
+        return "minor"
+    return "ok"
+
+
+def _parse_expected_issue_codes(value: Any) -> set[str]:
+    if value is None or value == "":
+        return set()
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return set()
+        if value.startswith("["):
+            try:
+                parsed = json.loads(value)
+                if isinstance(parsed, list):
+                    return {str(code).strip() for code in parsed if str(code).strip()}
+            except json.JSONDecodeError:
+                pass
+        return {code.strip() for code in value.split("|") if code.strip()}
+    if isinstance(value, (list, tuple, set)):
+        return {str(code).strip() for code in value if str(code).strip()}
+    return {str(value).strip()}
+
+
 def _filter_synthetic_patient_issues(issues: list[dict[str, Any]], sample: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
     """W rekonstrukcji z gold-encji brak pacjenta nie jest problemem jakości — to artefakt
     tego, że próbka nie miała danych pacjenta. Odfiltrowujemy braki name/age/pesel."""
@@ -518,6 +558,14 @@ def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[st
     expected_flag = sample.get("expected_flag", "")
     predicted_flag = status != "ok"
     flag_match = (predicted_flag == expected_flag) if isinstance(expected_flag, bool) else ""
+    bucket = _score_bucket(status, score, len(issues))
+    expected_severity = sample.get("expected_severity", "")
+    severity_match = bucket == expected_severity if expected_severity else ""
+    expected_issue_codes = _parse_expected_issue_codes(sample.get("expected_issue_codes"))
+    actual_issue_codes = set(issue_codes)
+    missing_expected_issue_codes = sorted(expected_issue_codes - actual_issue_codes)
+    unexpected_issue_codes = sorted(actual_issue_codes - expected_issue_codes)
+    issue_code_match = expected_issue_codes.issubset(actual_issue_codes) if expected_issue_codes else ""
 
     row = {
         "sample_id": str(sample.get("sample_id", "")),
@@ -541,6 +589,13 @@ def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[st
         "expected_flag": expected_flag,
         "predicted_flag": predicted_flag,
         "flag_match": flag_match,
+        "expected_severity": expected_severity,
+        "score_bucket": bucket,
+        "severity_match": severity_match,
+        "expected_issue_codes": "|".join(sorted(expected_issue_codes)),
+        "issue_code_match": issue_code_match,
+        "missing_expected_issue_codes": "|".join(missing_expected_issue_codes),
+        "unexpected_issue_codes": "|".join(unexpected_issue_codes) if expected_issue_codes else "",
         "llm_ran": llm_review.get("ran", ""),
         "llm_reason": llm_review.get("reason", ""),
         "llm_issue_count": llm_review.get("issue_count", ""),
@@ -724,8 +779,12 @@ def _summarize_sanity(rows: list[dict[str, Any]]) -> None:
     for sanity_mode, group in mode_groups:
         distribution = group["status"].value_counts().to_dict()
         mean_score = round(pd.to_numeric(group["score"], errors="coerce").mean(), 4)
+        bucket_distribution = group["score_bucket"].value_counts().to_dict() if "score_bucket" in group else {}
         label = sanity_mode or "rules"
-        print(f"  [{label}] podsumowanie: {len(group)} wierszy, statusy={distribution}, mean score={mean_score}")
+        print(
+            f"  [{label}] podsumowanie: {len(group)} wierszy, statusy={distribution}, "
+            f"score_bucket={bucket_distribution}, mean score={mean_score}"
+        )
 
         evaluable = [row for row in group.to_dict("records") if isinstance(row.get("expected_flag"), bool)]
         if evaluable:
@@ -734,6 +793,16 @@ def _summarize_sanity(rows: list[dict[str, Any]]) -> None:
             fp = sum(1 for row in evaluable if not row["expected_flag"] and row["status"] != "ok")
             fn = sum(1 for row in evaluable if row["expected_flag"] and row["status"] == "ok")
             print(f"  [{label}] zgodność z expected_flag: {tp + tn}/{len(evaluable)} (TP={tp} TN={tn} FP={fp} FN={fn})")
+
+        severity_evaluable = [row for row in group.to_dict("records") if row.get("expected_severity")]
+        if severity_evaluable:
+            matches = sum(1 for row in severity_evaluable if bool(row.get("severity_match")))
+            print(f"  [{label}] zgodność z expected_severity: {matches}/{len(severity_evaluable)}")
+
+        issue_code_evaluable = [row for row in group.to_dict("records") if row.get("expected_issue_codes")]
+        if issue_code_evaluable:
+            matches = sum(1 for row in issue_code_evaluable if bool(row.get("issue_code_match")))
+            print(f"  [{label}] zgodność z expected_issue_codes: {matches}/{len(issue_code_evaluable)}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
