@@ -45,9 +45,7 @@ export const createMessage = (
 ): WebSocketMessage => {
   const message: WebSocketMessage = { type };
   
-  if (type === "audio_chunk" && typeof data === "string") {
-    message.data = data;
-  } else if (data) {
+  if (data) {
     message.data = data;
   }
   

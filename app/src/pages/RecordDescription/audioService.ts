@@ -1,5 +1,5 @@
 import { AudioConfig } from "./types";
-import { AudioStreamProcessor, checkWAVSupport } from "@/lib/audioUtils_fixed";
+import { AudioStreamProcessor, checkWAVSupport } from "@/lib/audio/AudioStreamProcessor";
 
 export const createAudioUtilities = (config: AudioConfig) => {
   const getUserMedia = async (): Promise<MediaStream> => {
@@ -15,13 +15,13 @@ export const createAudioUtilities = (config: AudioConfig) => {
 
   const createAudioStreamProcessor = (
     stream: MediaStream,
-    onDataAvailable: (base64Data: string) => void
+    onDataAvailable: (b64data: string) => void
   ): AudioStreamProcessor => {
     if (!checkWAVSupport()) {
       throw new Error("WAV streaming is not supported in this browser");
     }
 
-    const processor = new AudioStreamProcessor(onDataAvailable, config.sampleRate);
+    const processor = new AudioStreamProcessor(onDataAvailable);
     return processor;
   };
 

@@ -19,7 +19,8 @@ import {
 } from "./hooks";
 import { createAudioUtilities } from "./audioService";
 import { createAudioVisualizer } from "./visualizerService";
-import { AudioStreamProcessor } from "@/lib/audioUtils_fixed";
+import { AudioStreamProcessor } from "@/lib/audio/AudioStreamProcessor";
+import { WavEncoder } from "@/lib/audio/WavEncoder";
 
 export default function Recorder() {
   const { isConnected, ws, connect, disconnect, sendMessage } =
@@ -79,20 +80,6 @@ export default function Recorder() {
         
         console.log("📨 Parsed WebSocket message:", parsedData);
         
-        /*if ((parsedData.type === "transcription" || parsedData.type === "transcript") && (parsedData.text || parsedData.transcription)) {
-          const newText = parsedData.text || parsedData.transcription;
-          const trimmedNewText = newText.trim();
-
-          if (trimmedNewText) {
-            if (!metadata.description || !metadata.description.includes(trimmedNewText)) {
-              const combinedText = metadata.description
-                ? metadata.description + " " + trimmedNewText
-                : trimmedNewText;
-              setDescription(combinedText);
-            }
-          }
-        }*/
-
         if (parsedData.type === "recording_start" && parsedData.ack) {
           console.log("DEBUG: Acknowledge received for recording_start, starting recording...")
           handleStartRecording();
@@ -156,8 +143,8 @@ export default function Recorder() {
       const stream = await audioUtilities.getUserMedia();
       streamRef.current = stream;
 
-      const handleAudioData = (base64Data: string) => {
-        const audioMessage = createAudioChunkMessage(base64Data, metadata);
+      const handleAudioData = (b64data: string) => {
+        const audioMessage = createAudioChunkMessage(b64data, metadata);
         sendMessage(audioMessage);
       };
 
@@ -169,7 +156,6 @@ export default function Recorder() {
 
       await audioProcessor.startProcessing(stream);
       startRecording();
-      // sendMessage(createRecordingStartMessage(metadata));
 
       if (canvasRef.current) {
         cleanupVisualizerRef.current = visualizer.setupVisualizer(
@@ -181,6 +167,7 @@ export default function Recorder() {
     } catch (error) {
       console.error("Error starting recording:", error);
       alert("Błąd podczas rozpoczynania nagrywania: " + error);
+      ws?.close();
     }
   }, [isConnected, metadata, startRecording, sendMessage]);
 

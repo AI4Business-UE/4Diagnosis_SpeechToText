@@ -21,9 +21,9 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "public/audio_processors/BaseProcessor.js"  ],
   "exclude": [
     "dist",
-    "node_modules"
+    "node_modules",
   ]
 }

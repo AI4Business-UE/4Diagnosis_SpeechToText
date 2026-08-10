@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { AudioStreamProcessor, createStopRecordingMessage, createRecordingEndMessage, checkWAVSupport } from '@/lib/audioUtils_fixed';
-import { WAVStreamingMonitor, validateWAVStreamingSupport, logStreamingStats, DEFAULT_STREAMING_CONFIG } from '@/lib/wavStreamingUtils';
+import { AudioStreamProcessor, createStopRecordingMessage, createRecordingEndMessage, checkWAVSupport } from '@/lib/audio/AudioStreamProcessor';
+import { WAVStreamingMonitor, validateWAVStreamingSupport, logStreamingStats, DEFAULT_STREAMING_CONFIG } from '@/lib/audio/wavStreamingUtils';
 
 interface AudioRecorderConfig {
     websocketUrl?: string;

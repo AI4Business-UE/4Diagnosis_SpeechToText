@@ -33,8 +33,9 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/audioworklet": "^0.0.100",
+    "@types/bun": "latest",
     "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/bun": "latest"
+    "@types/react-dom": "^19"
   }
 }
