@@ -125,6 +125,8 @@ async function main() {
     .filter(dir => !dir.includes("node_modules"));
   console.log(`📄 Found ${entrypoints.length} HTML ${entrypoints.length === 1 ? "file" : "files"} to process\n`);
 
+  entrypoints.push(path.resolve("src/audio-worklets/BaseProcessor.ts"));
+
   const result = await build({
     entrypoints,
     outdir,

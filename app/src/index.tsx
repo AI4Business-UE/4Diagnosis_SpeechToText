@@ -1,4 +1,4 @@
-import { serve, file } from "bun";
+import { serve, file, Transpiler } from "bun";
 import index from "./index.html";
 
 import path from "node:path";
@@ -8,23 +8,20 @@ const server = serve({
 
   routes: {
     // Serve index.html for all unmatched routes.
-    "/public/audio_processors/*": {
-      async GET(req) {
-        try {
-          const url = new URL(req.url);
-          const fileName = url.pathname.split('/').pop() || "";
-          const pathToFile = path.join(process.cwd(), "public", "audio_processors", fileName);
-          console.log("📂 Looking for file at:", pathToFile);
-          
-          const requestedFile = file(pathToFile);
-          if (!requestedFile.exists()) {
-            return new Response("Not Found", { status: 404 });
-          }
+    "/audio-worklets/BaseProcessor.js": {
+      async GET() {
+        const source = await file(path.join(process.cwd(), "src/audio-worklets/BaseProcessor.ts")).text();
 
-          return new Response(requestedFile);
-        } catch (e) {
-          return new Response("Internal Error", { status: 500 });
-        }
+        const javascript = await new Transpiler({
+          loader: 'ts'
+        }).transform(source);
+
+        return new Response(javascript, {
+          headers: {
+            "Content-Type": "application/javascript",
+            "Cache-Control": "no-store"
+          }
+        });
       }
     },
     "/*": index,

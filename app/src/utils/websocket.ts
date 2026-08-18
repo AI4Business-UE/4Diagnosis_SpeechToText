@@ -1,9 +1,8 @@
-import { WebSocketMessage } from "./types";
 
-export const createWebSocketConnection = (url: string) => {
+export const createWebSocketConnection = <IncomingMessageType, OutgoingMessageType>(url: string) => {
     const connect = (
         onOpen: () => void,
-        onMessage: (message: WebSocketMessage) => void,
+        onMessage: (message: IncomingMessageType) => void,
         onError: (error: Event) => void,
         onClose: () => void
     ): Promise<WebSocket> => {
@@ -24,7 +23,7 @@ export const createWebSocketConnection = (url: string) => {
 
             const handleMessage = (event: MessageEvent) => {
                 try {
-                    const message: WebSocketMessage = JSON.parse(event.data);
+                    const message: IncomingMessageType = JSON.parse(event.data);
                     onMessage(message);
                 } catch (error) {
                     console.error("Error parsing WebSocket message:", error);
@@ -49,11 +48,13 @@ export const createWebSocketConnection = (url: string) => {
         });
     };
 
-    const send = (ws: WebSocket | null, message: WebSocketMessage): boolean => {
+    const send = (ws: WebSocket | null, message: OutgoingMessageType): boolean => {
         if (ws?.readyState === WebSocket.OPEN) {
+            console.log('WS READY');
             ws.send(JSON.stringify(message));
             return true;
         }
+        console.log('WS NOT READY');
         return false;
     };
 

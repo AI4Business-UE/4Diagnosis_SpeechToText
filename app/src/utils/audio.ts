@@ -1,16 +1,21 @@
-import { AudioConfig } from "./types";
 import { AudioStreamProcessor, checkWAVSupport } from "@/lib/audio/AudioStreamProcessor";
+import { AudioConfig } from "../types/config";
 
 export const createAudioUtilities = (config: AudioConfig) => {
-  const getUserMedia = async (): Promise<MediaStream> => {
-    return navigator.mediaDevices.getUserMedia({
-      audio: {
-        sampleRate: config.sampleRate,
-        channelCount: config.channelCount,
-        echoCancellation: config.echoCancellation,
-        noiseSuppression: config.noiseSuppression,
-      },
-    });
+  const getUserMedia = async (): Promise<MediaStream | null> => {
+    try {
+      return await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: { ideal: config.sampleRate },
+          channelCount: { exact: config.channelCount },
+          echoCancellation: { ideal: config.echoCancellation },
+          noiseSuppression: { ideal: config.noiseSuppression },
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   };
 
   const createAudioStreamProcessor = (

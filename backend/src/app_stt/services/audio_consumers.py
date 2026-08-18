@@ -71,23 +71,29 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.pipeline = get_pipeline()
 
 
-    async def disconnect(self, close_code):
-        logger.error("[WS] WebSocket disconnected")
-        self.connection_closed = True
-        
+    async def _cleanup_recording(self):
+        logger.info("[WS] Cleanup called")
         try:
             if self.audio_recording_task:
                 self.audio_recording_task.cancel()
                 await self.audio_recording_task
         except asyncio.CancelledError:
-            logger.warning(f"[DISCONNECT] Cancelled background task during disconnect")
+            logger.warning(f"[DISCONNECT] Cancelled background task during cleanup")
         
         if self.wave is not None:
             self.wave.close()
         if self.audio_file is not None and not self.audio_file.closed:
             self.audio_file.flush()
             self.audio_file.close()
-
+                
+        if self.recording_state == RecordingState.RECORDING:
+            self.recording_state = RecordingState.IDLE
+    
+    
+    async def disconnect(self, close_code):
+        logger.error("[WS] WebSocket disconnected")
+        self.connection_closed = True
+        await self._cleanup_recording()
 
     def _unpack_audio_chunk_from_b64(self, audio_b64): 
         audio_bytes = base64.b64decode(audio_b64)
@@ -207,6 +213,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
                     "type": "error",
                     "message": f"Błąd transkrypcji: {str(e)}"
                 }))
+                await self._cleanup_recording()
                 
             
     async def receive(self, text_data=None, bytes_data=None):
@@ -215,32 +222,38 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 raise ValueError("Raw bytes data not supported. Send JSON.")
             
             msg = json.loads(text_data)
-
-            if "control" in msg and msg["control"] == "stop_recording":
+            _type = msg.get("type")
+            
+            logger.info(f"[WS MESSAGE TYPE RECEIVED]: {_type}")
+            
+            if _type == "stop_recording":
                 logger.info("[CTRL] Stop recording")
                 await self._finalize_transcription()
                 return
 
-            if msg.get("type") in ("metadata", "metadata_update"):
+            if _type in ("metadata", "metadata_update"):
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
                 return
 
-            if msg.get("type") == "recording_start":
+            if _type == "recording_start":
                 await self._setup()
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
                 logger.info(f"[WS] Recording started...")
                 
-            if msg.get("type") == "recording_end":
+            if _type == "recording_end":
                 metadata = msg.get("metadata", {})
                 if metadata:
                     self.patient_metadata.update(metadata)
                 return
+            
+            if _type == "error":
+                await self._cleanup_recording()
 
-            if (msg.get("type") == "audio_chunk" and msg.get("data") 
+            if (_type == "audio_chunk" and msg.get("data") 
                     and self.recording_state == RecordingState.RECORDING):
                 metadata = msg.get("metadata", {})
                 if metadata:
