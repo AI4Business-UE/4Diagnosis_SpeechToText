@@ -1,10 +1,5 @@
 import { PatientMetadata } from "./metadata";
 
-export type ConnectionState = {
-  isConnected: boolean;
-  ws: WebSocket | null;
-};
-
 export type WebSocketOutgoingMessage = {
   type:
     | "metadata"

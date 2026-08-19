@@ -1,4 +1,3 @@
-import { AudioStreamProcessor } from "@/lib/audio/AudioStreamProcessor";
 import { audioStreamManager } from "@/lib/managers/AudioStreamManager";
 import React, { useEffect, useSyncExternalStore } from "react";
 
@@ -51,5 +50,5 @@ export default function useVisualizer(
             ctx.clearRect(0, 0, 200, 50);
             audioCtx.close();
         };
-    }, [canvasRef.current, stream]);
+    }, [stream]);
 }

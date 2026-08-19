@@ -1,5 +1,4 @@
 import { AUDIO_CONFIG, AUDIO_WORKLET_URL } from "@/config";
-import { AudioStreamProcessor } from "@/lib/audio/AudioStreamProcessor";
 import { GenericManager } from "./GenericManager";
 import { WavEncoder } from "../audio/WavEncoder";
 
@@ -33,23 +32,26 @@ export class AudioStreamManager extends EventTarget implements GenericManager {
                     noiseSuppression: { ideal: AUDIO_CONFIG.noiseSuppression },
                 },
             });
-            this.emitChange();
             await this.startProcessing(this.stream);
+            this.emitChange();
             this.dispatchEvent(new CustomEvent('stream_open'));
         } catch (e) {
             console.log("Error occurred during creation of AudioStreamProcessor");
+            await this.stopProcessing();
+            await this.stopStream();
+            this.emitChange();
             this.dispatchEvent(new CustomEvent('stream_error'));
         }
     }
 
     public stopStream = async () => {
+        await this.stopProcessing();
         if (this.stream) {
-            await this.stopProcessing();
             this.stream.getTracks().forEach(track => track.stop());
             this.stream = null;
-            this.dispatchEvent(new CustomEvent('stream_closed'));
-            this.emitChange();
         }
+        this.dispatchEvent(new CustomEvent('stream_closed'));
+        this.emitChange();
     }
 
     public subscribe = (callback: () => void) => {

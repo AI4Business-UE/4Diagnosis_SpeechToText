@@ -1,19 +1,17 @@
-import { useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Mic, Play, Square, Wifi, WifiOff } from "lucide-react";
 import SpinnerLoader from "@/components/ui/SpinnerLoader";
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { AUDIO_CONFIG } from "../../config";
-import { createAudioUtilities } from "../../utils/audio";
 import AudioVisualizer from "../../components/AudioVisualizer";
 import useRecordingState from "../../hooks/useRecordingState";
+import usePatientMetadata from "@/hooks/usePatientMetadata";
 
 export default function Recorder() { 
   const { 
     timer,
-    isConnected,
+    connectionState,
     recordingState,
     metadata,
     handleConnect, 
@@ -21,18 +19,16 @@ export default function Recorder() {
     startRecording, 
     finalizeTranscription,
     handleFieldUpdate
-  } =
-    useRecordingState();
+  } = useRecordingState();
 
   const time = timer.timerState;
   const patientMetadata = metadata;
-  const { isRecording, isFinalizingTranscription } = recordingState;
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 min-h-screen w-full">
       <div className="mb-6 p-4 bg-white/90 rounded-lg shadow-md">
         <div className="flex items-center gap-3">
-          {isConnected ? (
+          {connectionState === 'connected' ? (
             <>
               <Wifi className="text-green-600" size={20} />
               <span className="text-green-600 font-medium">
@@ -63,7 +59,7 @@ export default function Recorder() {
         <Card className="flex-1 p-8 bg-white/90 shadow-xl">
           <div className="flex flex-col items-center gap-6">
             <div
-              className={`bg-blue-500 rounded-full p-8 shadow-lg ${isRecording ? "animate-pulse" : ""
+              className={`bg-blue-500 rounded-full p-8 shadow-lg ${recordingState === 'recording' ? "animate-pulse" : ""
                 }`}
             >
               <Mic size={48} className="text-white" />
@@ -80,7 +76,7 @@ export default function Recorder() {
             <div className="flex gap-4">
               <Button
                 onClick={startRecording}
-                disabled={!isConnected || isRecording || isFinalizingTranscription}
+                disabled={connectionState !== 'connected' || recordingState !== 'idle'}
                 size="lg"
                 className="bg-green-500 hover:bg-green-600"
               >
@@ -90,7 +86,7 @@ export default function Recorder() {
 
               <Button
                 onClick={finalizeTranscription}
-                disabled={!isRecording}
+                disabled={recordingState !== 'recording'}
                 size="lg"
                 variant="destructive"
               >
@@ -99,7 +95,7 @@ export default function Recorder() {
               </Button>
             </div>
 
-            {isRecording && (
+            {recordingState === 'recording' && (
               <div className="flex items-center gap-2 text-red-600">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                 <span className="font-medium">Nagrywanie i streaming...</span>
@@ -109,7 +105,7 @@ export default function Recorder() {
         </Card>
 
         <Card className="relative flex-1 p-6 bg-white/90 shadow-xl">
-          {isFinalizingTranscription && isConnected ?
+          {recordingState === 'finalizing' && connectionState === 'connected' ?
             <div className="absolute inset-0 bg-black/50 rounded-xl transition-opacity duration-300">
               <div className="flex flex-col items-center justify-center h-full gap-4">
                 <SpinnerLoader />

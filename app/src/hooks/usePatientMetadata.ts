@@ -24,31 +24,29 @@ export const updateMetadataField = (
 export const clearDescription = (metadata: PatientMetadata): PatientMetadata =>
   updateMetadataField(metadata, "description", "");
 
+const PATIENT_META_KEY = 'selectedPatient';
 
-export default function usePatientMetadata(sendMessage: (message: WebSocketOutgoingMessage) => boolean) {
-  const calculateAge = (dateOfBirth: string) => {
-    const today = new Date();
-    const birth = new Date(dateOfBirth);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age.toString();
-  };
+const updatePatientStoredMetadata = (metadata: PatientMetadata, value: string) => {
+  localStorage.setItem(PATIENT_META_KEY, JSON.stringify(metadata));
+}
 
+const clearPatientStoredMetadata = () => {
+  localStorage.removeItem(PATIENT_META_KEY);
+};
+
+export default function usePatientMetadata() {
   const [metadata, setMetadata] = useState<PatientMetadata>(() => {
     // Pobierz dane pacjenta z localStorage
-    const savedPatient = localStorage.getItem('selectedPatient');
+    const savedPatient = localStorage.getItem(PATIENT_META_KEY);
     if (savedPatient) {
       try {
         const patient = JSON.parse(savedPatient);
         const initialMetadata = {
-          organ: "",
-          name: `${patient.firstName} ${patient.lastName}`,
-          age: patient.dateOfBirth ? calculateAge(patient.dateOfBirth) : "",
+          organ: patient.organ,
+          name: patient.name,
+          age: patient.age ?? "",
           pesel: patient.pesel || "",
-          description: "",
+          description: patient.description,
         };
         return initialMetadata;
       } catch (error) {
@@ -59,31 +57,41 @@ export default function usePatientMetadata(sendMessage: (message: WebSocketOutgo
     return createEmptyMetadata();
   });
 
+  const sendMessage = useCallback((message: WebSocketOutgoingMessage) => {
+    try {
+      wsManager.sendMessage(message);
+    } catch (e) {
+      // intentionall pass through to ignore connection errors;
+    }
+  }, []);
 
   const updateField = useCallback(
     (field: keyof PatientMetadata, value: string) => {
       setMetadata((prevMetadata) => {
         const newMetadata = updateMetadataField(prevMetadata, field, value);
-        wsManager.sendMessage(createMetadataUpdateMessage(newMetadata));
+        sendMessage(createMetadataUpdateMessage(newMetadata));
+        // updatePatientStoredMetadata(newMetadata, value);
         return newMetadata;
       });
+
     },
-    []
+    [sendMessage]
   );
 
   const clearDescriptionField = useCallback(() => {
     setMetadata((prevMetadata) => {
       const newMetadata = clearDescription(prevMetadata);
-      wsManager.sendMessage(createMetadataUpdateMessage(newMetadata));
+      sendMessage(createMetadataUpdateMessage(newMetadata));
       return newMetadata;
     });
-  }, []);
+
+    //clearPatientStoredMetadata();
+  }, [sendMessage]);
 
   return {
     metadata,
     updateField,
     clearDescriptionField,
-    setDescription: (description: string) =>
-      updateField("description", description),
+    setDescription: (description: string) => updateField("description", description),
   };
 };

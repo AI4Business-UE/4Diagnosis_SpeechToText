@@ -32,5 +32,4 @@ def get_llm_client() -> OpenAI:
 
     raise RuntimeError(
         "Brak klucza API. Ustaw OPENROUTER_API_KEY lub OPENAI_API_KEY w pliku .env. "
-        "Jeśli nie masz klucza, pipeline użyje TTT fallback (stary serwis TTT)."
     )

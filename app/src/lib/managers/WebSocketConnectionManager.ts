@@ -3,6 +3,9 @@ import { WebSocketIncomingMessage, WebSocketOutgoingMessage } from "@/types/webs
 import { createMessage } from "@/utils/messages";
 import { GenericManager } from "./GenericManager";
 
+type WebSocketEventType = 'open' | 'close' | 'error' | 'message';
+type WebSocketEventCallback = (() => Promise<void>) | ((message: CustomEventInit<WebSocketIncomingMessage>) => Promise<void>);
+
 class WebSocketConnectionManager extends EventTarget implements GenericManager {
     private state = {
         isConnected: false
@@ -66,11 +69,10 @@ class WebSocketConnectionManager extends EventTarget implements GenericManager {
             this.ws?.send(
                 JSON.stringify(message)
             );
-
-            return true;
+            return;
         }
 
-        return false;
+        throw new Error('Trying to send websocket message without connection established');
     }
 
     public connect = () => {
@@ -82,6 +84,14 @@ class WebSocketConnectionManager extends EventTarget implements GenericManager {
             this.ws.addEventListener('error', this.onError);
             this.ws.addEventListener('message', this.onMessage);
         }
+    }
+
+    public subscribeToClass = (type: WebSocketEventType, callback: WebSocketEventCallback) => {
+        this.addEventListener(type, callback);
+    }
+
+    public deleteSubscriptionToClass = (type: WebSocketEventType, callback: WebSocketEventCallback) => {
+        this.removeEventListener(type, callback);
     }
 
     public disconnect = () => { 
