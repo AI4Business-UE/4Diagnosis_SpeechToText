@@ -3,6 +3,8 @@ import { GenericManager } from "../managers/GenericManager";
 import { wsManager } from "../managers/WebSocketConnectionManager";
 import { audioStreamManager } from "../managers/AudioStreamManager";
 import { RecordingControllerState, ConnectionState, RecordingState } from "@/types/recordingState";
+import { errorBus } from "../managers/ErrorBus";
+import { PatientMetadata } from "@/types/metadata";
 
 class RecordingMessageController extends EventTarget implements GenericManager {
     private state: RecordingControllerState = {
@@ -62,6 +64,8 @@ class RecordingMessageController extends EventTarget implements GenericManager {
         await audioStreamManager.stopStream();
         this.updateConnectionState('disconnected');
         this.updateRecordingState('idle');
+        
+        errorBus.emitError({ severity: 'error', message: 'Wystąpił błąd polączenia z serwerem.' });
     }
 
     private onWebSocketProcessingError = async () => {
@@ -69,17 +73,21 @@ class RecordingMessageController extends EventTarget implements GenericManager {
         await audioStreamManager.stopStream();
         this.updateConnectionState('disconnected');
         this.updateRecordingState('idle');
+
+        errorBus.emitError({ severity: 'error', message: 'Wystąpił błąd podczas przetwarzania komunikatu z serwera.' })
     }
 
     private onAudioProcessingError = async () => {
         await audioStreamManager.stopStream();
         wsManager.sendMessage({ type: 'error' });
         this.updateRecordingState('idle');
+
+        errorBus.emitError({ severity: 'error', message: 'Wystąpił błąd podczas przetwarzania dźwięku.' })
     }
 
     private onAudioData = (e: CustomEventInit<string>) => {
         if (!e.detail) {
-            throw new Error('No audio data received in callback');
+            errorBus.emitError({ severity: 'warning', message: 'Procesor dźwięku nie przekazał danych wyjściowych.' });
         }
 
         wsManager.sendMessage({ type: 'audio_chunk', data: e.detail });
@@ -93,7 +101,8 @@ class RecordingMessageController extends EventTarget implements GenericManager {
         const detail = message.detail;
 
         if (!detail) {
-            throw new Error("WebSocket message received in an unexpected format!");
+            errorBus.emitError({ severity: 'error', message: 'Otrzymano wiadomość z serwera o nieprawidłowym formacie.' });
+            return;
         }
 
         try {   
@@ -107,6 +116,7 @@ class RecordingMessageController extends EventTarget implements GenericManager {
                     console.error("Server error occurred during processing");
                     await audioStreamManager.stopStream();
                     this.updateRecordingState('idle');
+                    errorBus.emitError({ severity: 'error', message: 'Wystąpił błąd serwera podczas przetwarzania audio' });
                 } break;
                 case 'form_data': {
                     this.dispatchEvent(new CustomEvent('form_data', { 
@@ -125,11 +135,10 @@ class RecordingMessageController extends EventTarget implements GenericManager {
 
     public connectToServer = () => {
         if (this.state.connectionState === 'disconnected') {
+            this.updateConnectionState('connecting');
             wsManager.connect();
             return;
         }
-
-        throw new Error('WebSocket is already connected');
     };
 
     public disconnectFromServer = () => {
@@ -137,8 +146,6 @@ class RecordingMessageController extends EventTarget implements GenericManager {
             wsManager.disconnect();
             return;
         }
-
-        throw new Error('WebSocket is not connected');
     }
 
     public finalizeTranscription = async () => {
@@ -155,9 +162,6 @@ class RecordingMessageController extends EventTarget implements GenericManager {
             wsManager.sendMessage({ type: 'recording_start' });
             return;
         }
-
-        throw new Error(`Trying to start recording with invalid controller state: 
-            recordingState: ${this.state.recordingState}; connectionState: ${this.state.connectionState}`);
     }
 };
 

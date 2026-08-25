@@ -7,6 +7,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import AudioVisualizer from "../../components/AudioVisualizer";
 import useRecordingState from "../../hooks/useRecordingState";
 import usePatientMetadata from "@/hooks/usePatientMetadata";
+import ConnectionControl from "@/components/ui/ConnectionControl";
 
 export default function Recorder() { 
   const { 
@@ -28,30 +29,11 @@ export default function Recorder() {
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 min-h-screen w-full">
       <div className="mb-6 p-4 bg-white/90 rounded-lg shadow-md">
         <div className="flex items-center gap-3">
-          {connectionState === 'connected' ? (
-            <>
-              <Wifi className="text-green-600" size={20} />
-              <span className="text-green-600 font-medium">
-                Połączono z serwerem
-              </span>
-              <Button
-                onClick={handleDisconnect}
-                variant="outline"
-                size="sm"
-                className="ml-4"
-              >
-                Rozłącz
-              </Button>
-            </>
-          ) : (
-            <>
-              <WifiOff className="text-red-600" size={20} />
-              <span className="text-red-600 font-medium">Brak połączenia</span>
-              <Button onClick={handleConnect} size="sm" className="ml-4">
-                Połącz
-              </Button>
-            </>
-          )}
+          <ConnectionControl 
+            connectionState={connectionState} 
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+          />
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { errorBus } from "@/lib/managers/ErrorBus";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 
 export type ToastMessage = {
@@ -37,14 +38,25 @@ export function ToastProvider({ children }: React.PropsWithChildren) {
 
            toast.style.animation = 'fade-out 0.3s ease-in-out';
            toast.style.animationFillMode = 'forwards';
-           console.log('animation added');
            setTimeout(() => {
                 filterFromMessageArray(toastId);
-                console.log('filtered from array');
            }, 1000);
         }, 2000);
     }, [filterFromMessageArray]);
     
+    useEffect(() => {
+        const unsubscribe = errorBus.subscribe((error) => {
+            addMessage({
+                type: error.severity,
+                message: error.message
+            });
+        });
+
+        return () => { 
+            unsubscribe(); 
+        };
+    }, [addMessage]);
+
     return (
         <ToastContext value={{
             toasts: toastMessages,

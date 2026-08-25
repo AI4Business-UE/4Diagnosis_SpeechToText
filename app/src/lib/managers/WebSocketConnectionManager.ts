@@ -2,6 +2,7 @@ import { WEBSOCKET_URL } from "@/config";
 import { WebSocketIncomingMessage, WebSocketOutgoingMessage } from "@/types/websocket";
 import { createMessage } from "@/utils/messages";
 import { GenericManager } from "./GenericManager";
+import { errorBus } from "./ErrorBus";
 
 type WebSocketEventType = 'open' | 'close' | 'error' | 'message';
 type WebSocketEventCallback = (() => Promise<void>) | ((message: CustomEventInit<WebSocketIncomingMessage>) => Promise<void>);
@@ -50,6 +51,7 @@ class WebSocketConnectionManager extends EventTarget implements GenericManager {
             this.dispatchEvent(new CustomEvent('message', { detail: incommingMessage }));
         } catch (e) {
             console.error("Error parsing WebSocket message.");
+            errorBus.emitError({ severity: 'warning', message: 'Otrzymano nieoczekiwany komunikat z serwera.' });
         }
     }
 
@@ -83,7 +85,11 @@ class WebSocketConnectionManager extends EventTarget implements GenericManager {
             this.ws.addEventListener('close', this.onClose);
             this.ws.addEventListener('error', this.onError);
             this.ws.addEventListener('message', this.onMessage);
+
+            return;
         }
+
+        errorBus.emitError({ severity: 'warning', message: 'Połączenie zostało już otwarte.' });
     }
 
     public subscribeToClass = (type: WebSocketEventType, callback: WebSocketEventCallback) => {
@@ -97,7 +103,10 @@ class WebSocketConnectionManager extends EventTarget implements GenericManager {
     public disconnect = () => { 
         if (this.ws) {
             this.ws.close();
+            return;
         }
+
+        errorBus.emitError({ severity: 'warning', message: 'Połączenie zostało już zakończone.' });
     }
 
     private emitChange = () => {

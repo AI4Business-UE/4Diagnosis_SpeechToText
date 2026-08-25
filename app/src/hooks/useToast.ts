@@ -1,5 +1,6 @@
 import { ToastContext } from "@/contexts/ToastContext";
-import { useContext } from "react"
+import { errorBus } from "@/lib/managers/ErrorBus";
+import { useContext, useEffect, useRef } from "react"
 
 export function useToast() {
     const context = useContext(ToastContext);
