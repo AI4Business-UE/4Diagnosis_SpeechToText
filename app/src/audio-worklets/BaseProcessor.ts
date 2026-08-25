@@ -76,6 +76,12 @@ class BaseProcessor extends AudioWorkletProcessor {
         if (!inputChannel || inputChannel.length === 0) {
             return true;
         }
+
+        if (this.ratio === 1) {
+            this.port.postMessage(inputChannel, [inputChannel.buffer.slice(0)]);
+            return true;
+        }
+
         const workingBuffer = new Float32Array(this.historySize + inputChannel.length);
         workingBuffer.set(this.historyBuffer, 0);
         workingBuffer.set(inputChannel, this.historySize);
