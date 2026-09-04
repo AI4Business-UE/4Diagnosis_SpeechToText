@@ -25,6 +25,7 @@ def build_sanity_record(sanity_result: dict[str, Any]) -> dict[str, Any]:
         if isinstance(issue, dict)
     ]
     metrics = sanity_result.get("metrics", {})
+    repair = sanity_result.get("repair", {})
 
     return {
         "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -44,6 +45,10 @@ def build_sanity_record(sanity_result: dict[str, Any]) -> dict[str, Any]:
         "issues": issues,
         "transcript_length": metrics.get("transcript_length", 0),
         "description_length": metrics.get("description_length", 0),
+        "repair_ran": repair.get("ran", False),
+        "repair_applied": repair.get("applied", False),
+        "repair_change_count": repair.get("change_count", 0),
+        "repair_changed_fields": repair.get("changed_fields", []) or [],
     }
 
 

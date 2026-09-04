@@ -54,6 +54,8 @@ class PipelineConfig:
     # ── Sanity guardrails ────────────────────────────────────────────────────
     enable_sanity_check: bool = True
     sanity_mode: str = "rules"
+    apply_sanity_repair: bool = False
+    sanity_repair_scope: str = "all"
 
     # ── RAG ────────────────────────────────────────────────────
     macro_descs_collection = "macro_descriptions"

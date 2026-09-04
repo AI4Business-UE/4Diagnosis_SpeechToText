@@ -83,6 +83,7 @@ class Pipeline:
             preprocessing – metadata dict from AudioPreprocessor
             retrieved_templates - templates retrieved from vector database
             form_data    - frontend form payload derived from entities and corrected transcript
+            original_form_data - form payload before optional sanity repair
             sanity_result - optional guardrail result, or None when disabled
         """
         logger.info("PIPELINE: Beginning audio preprocessing...")
@@ -113,18 +114,28 @@ class Pipeline:
             entities
         )
         entities_dict = entities.model_dump()
-        form_data = build_form_data_from_entities(
+        original_form_data = build_form_data_from_entities(
             entities_dict,
             corrected_transcript,
             patient_metadata,
         )
+        form_data = original_form_data
         sanity_result = None
         if self.config.enable_sanity_check:
             sanity_result = run_data_sanity_check(
                 corrected_transcript,
                 form_data,
                 mode=self.config.sanity_mode,
+                repair_scope=self.config.sanity_repair_scope,
             )
+            repair = sanity_result.get("repair", {})
+            repaired_form_data = repair.get("repaired_form_data")
+            if (
+                self.config.apply_sanity_repair
+                and repair.get("applied") is True
+                and isinstance(repaired_form_data, dict)
+            ):
+                form_data = repaired_form_data
 
         return {
             "transcript": transcript,
@@ -132,6 +143,7 @@ class Pipeline:
             "preprocessing": preprocessing_meta,
             "retrieved_templates": templates,
             "corrected_transcript": corrected_transcript,
+            "original_form_data": original_form_data,
             "form_data": form_data,
             "sanity_result": sanity_result,
         }

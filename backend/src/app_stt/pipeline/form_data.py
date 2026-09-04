@@ -3,30 +3,39 @@ from datetime import datetime
 from app_stt.services.utils import extract_organs, extract_patient_data
 
 
-def _calculate_age_from_pesel(pesel: str) -> int | None:
+_PESEL_CENTURY = {0: 1900, 20: 2000, 40: 2100, 60: 2200, 80: 1800}
+
+
+def _pesel_birth_date(pesel: str) -> datetime | None:
     if not pesel or len(pesel) != 11 or not pesel.isdigit():
         return None
 
     try:
         year = int(pesel[0:2])
-        month = int(pesel[2:4])
+        month_raw = int(pesel[2:4])
         day = int(pesel[4:6])
-
-        if 1 <= month <= 12:
-            century = 1900
-        elif 21 <= month <= 32:
-            century = 2000
-            month -= 20
-        else:
+        century = _PESEL_CENTURY.get((month_raw // 20) * 20)
+        month = month_raw % 20
+        if century is None or not (1 <= month <= 12):
             return None
-
         birth_date = datetime(century + year, month, day)
-        today = datetime.today()
-        return today.year - birth_date.year - (
-            (today.month, today.day) < (birth_date.month, birth_date.day)
-        )
     except (ValueError, IndexError):
         return None
+
+    return birth_date
+
+
+def _calculate_age_from_pesel(pesel: str) -> int | None:
+    birth_date = _pesel_birth_date(pesel)
+    if birth_date is None:
+        return None
+
+    today = datetime.today()
+    if birth_date > today:
+        return None
+    return today.year - birth_date.year - (
+        (today.month, today.day) < (birth_date.month, birth_date.day)
+    )
 
 
 def build_form_data_from_entities(
