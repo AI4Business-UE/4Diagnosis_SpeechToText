@@ -24,7 +24,7 @@ class WhisperLocal(WhisperBase):
         self._condition_on_prev_tokens = condition_on_prev_tokens
         self._no_repeat_ngram_size = no_repeat_ngram_size
         
-        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        self.device = self._select_device()
         self.processor = self._load_processor()
         self.model = self._load_model()
         self.pipe = pipeline(
@@ -58,6 +58,14 @@ class WhisperLocal(WhisperBase):
     def _load_processor(self) -> WhisperProcessor:
         print(f"Loading Whisper processor ({self.model_id})...")
         return WhisperProcessor.from_pretrained(self.model_id)
+
+    @staticmethod
+    def _select_device() -> str:
+        if torch.cuda.is_available():
+            return "cuda:0"
+        if torch.backends.mps.is_available():
+            return "mps"
+        return "cpu"
 
 
 # backward compat alias

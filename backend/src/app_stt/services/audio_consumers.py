@@ -7,13 +7,12 @@ import tempfile
 import json
 import traceback
 import struct
-from datetime import datetime
 
 import numpy as np
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from logging_config import logger
-from app_stt.services.utils import extract_organs, extract_patient_data
+from app_stt.services.sanity_logging import append_sanity_record
 from app_stt.pipeline import get_pipeline
 
 class RecordingState(enum.Enum):
@@ -134,63 +133,30 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 await asyncio.to_thread(self._write_chunks_to_wav, chunks, 16000, self.audio_file.name)
          
             
-    def _calculate_age_from_pesel(self, pesel):
-        if not pesel or len(pesel) != 11 or not pesel.isdigit():
-            return None
-            
-        try:
-            year = int(pesel[0:2])
-            month = int(pesel[2:4])
-            day = int(pesel[4:6])
-
-            if 1 <= month <= 12:
-                century = 1900
-            elif 21 <= month <= 32:
-                century = 2000
-                month -= 20
-            else:
-                return None
-
-            birth_date = datetime(century + year, month, day)
-            today = datetime.today()
-            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-            return age
-        except (ValueError, IndexError):
-            return None
-        
-        
     async def _run_pipeline_and_send(self, audio_path, patient_metadata): 
         try:
             logger.info(f"[FINALIZE] Running pipeline on audio")
             pipeline_results = await asyncio.to_thread(
-                self.pipeline.run, audio_path
+                self.pipeline.run, audio_path, patient_metadata
             )
              
             corrected_text = pipeline_results['corrected_transcript']
             logger.info(f"[FINALIZE] Corrected transcription: {corrected_text}")
-            
-            patient_data = extract_patient_data(pipeline_results['entities'])
-            organs = extract_organs(pipeline_results['entities'])
-            full_name = (f"{patient_data['first_name']} {patient_data['last_name']}"
-                        if patient_data['first_name'] and patient_data['last_name']
-                        else '')
-            if not full_name and patient_metadata.get("name"):
-                full_name = patient_metadata.get("name", "")
-                
-            calculated_age = (
-                patient_data['age'] or self._calculate_age_from_pesel(patient_data['pesel'])
-            )
-            if calculated_age is None and patient_metadata.get("age"):
-                calculated_age = patient_metadata.get("age", "")
-            
-            logger.info(f"Dane pacjenta: {patient_data}")
-            form_data = {
-                "name": full_name or patient_metadata.get("name", ""),
-                "organ": organs,
-                "age": str(calculated_age) if calculated_age is not None else patient_metadata.get("age", ""),
-                "pesel": patient_data['pesel'] or patient_metadata.get("pesel", ""),
-                "description": corrected_text
-            }
+            form_data = pipeline_results["form_data"]
+
+            try:
+                sanity_result = pipeline_results.get("sanity_result")
+                if sanity_result is not None:
+                    sanity_record = await asyncio.to_thread(append_sanity_record, sanity_result)
+                    logger.info(
+                        "[SANITY_CHECK] status=%s score=%s issues=%s codes=%s",
+                        sanity_record["status"],
+                        sanity_record["score"],
+                        sanity_record["issue_count"],
+                        ",".join(sanity_record["issue_codes"]),
+                    )
+            except Exception as sanity_error:
+                logger.warning(f"[SANITY_CHECK] Failed to write runtime QA log: {sanity_error}")
              
             logger.info(f"[FINALIZE] Sending form data: {form_data}")
             

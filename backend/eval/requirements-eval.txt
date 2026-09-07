@@ -1,3 +1,7 @@
+# Zależności EWALUACJI — instalowane NA WIERZCHU backend/requirements.txt.
+# Eval importuje app_stt.pipeline (STT/NER/preprocessing), więc wymaga też pakietów z
+# backend/requirements.txt (torch, transformers, qdrant-client, sentence-transformers, fastembed itd.).
+# Instalacja:  pip install -r backend/requirements.txt -r backend/eval/requirements-eval.txt
 pandas>=2.2
 openpyxl>=3.1
 noisereduce>=3.0

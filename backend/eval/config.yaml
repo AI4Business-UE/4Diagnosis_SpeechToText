@@ -1,60 +1,84 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# Konfiguracja evala. Edytujesz ten plik i odpalasz: python backend/eval/run_eval.py
-# Ścieżki są względne do folderu backend/eval/.
+# Konfiguracja evala. Edytujesz ten plik i odpalasz (z katalogu głównego repo):
+#   PYTHONPATH=backend/src:backend/eval python3 backend/eval/run_eval.py
+# Ścieżki w tym pliku są względne do folderu backend/eval/. Pełna instrukcja: EVAL.md.
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Które etapy pipeline'u przetestować. Najczęściej wystarczy end_to_end:
-#   end_to_end – domyślny eval całości: audio → STT → NER → formularz → sanity check.
-#                Jeśli gold ma referencje, liczy też metryki STT/NER z prefiksami stt_/ner_.
+#   end_to_end – domyślny eval całości: audio → STT → NER → RAG/answerer → formularz → sanity check.
+#                Domyślne wejście (samples_metadata.xlsx) daje metryki STT (stt_); jakość NER
+#                mierzysz osobno w etapie ner (ner_ pojawi się tu tylko przy wejściu z expected_entities).
 #   stt    – diagnostyka samej transkrypcji: audio → preprocessing → STT.
 #            Metryki STT (WER/CER, liczby, wymiary, terminy medyczne, PESEL).
 #   ner    – diagnostyka samego NER: transkrypt gold → NER, bez audio i błędów STT.
 #            Metryki NER (precision/recall/f1 per encja).
 # Uwaga: [stt, ner, end_to_end] uruchamia STT/NER także osobno, więc jest droższe i częściowo
 # redundantne. Używaj tego tylko do pełnej diagnostyki.
-stages: [end_to_end]
+stages: [ner, end_to_end]
 
-# Ile próbek na etap (null = wszystkie). Trzymaj mało na start — STT i NER są kosztowne.
-limit: 10
+# Ile nagrań audio brać na KAŻDĄ kombinację (nie łącznie).
+# Np. limit: 10 = 10 nagrań dla każdej kombinacji (model × preprocessing × NER × tryb sanity);
+# null = wszystkie 80 nagrań. Trzymaj mało na start — STT i NER są kosztowne.
+limit: Null
+
+# Co ile gotowych wierszy zapisywać częściowy CSV (0 = tylko na końcu).
+# Przy długim pełnym evalu zostaw 1, żeby nie tracić wyników po przerwaniu.
+checkpoint_every: 1
+
+# Wznawianie: przy starcie pomija kombinacje już obecne w results/*.csv i dokłada tylko
+# brakujące (klucz: próbka + model + preprocessing + strategia + tryb sanity). Dzięki temu
+# możesz odpalać „po trochu" i wznawiać po blokadzie/Ctrl+C bez liczenia od nowa.
+# false (lub flaga --no-resume) = licz od zera i nadpisz wyniki.
+resume: true
 
 # ── STT / pełny pipeline ────────────────────────────────────────────────────
-# whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3
-models: [whisper-small]
+# whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3, whisper-large-v3-turbo
+models: [whisper-small, whisper-medium, whisper-medical-pl]
 # baseline, volume_norm, vad, noise_reduction, bandpass
-preprocessing: [baseline]
+preprocessing: [baseline, volume_norm, vad, noise_reduction, bandpass]
 
 # ── NER / pełny pipeline ────────────────────────────────────────────────────
 # chained: Patient → Component → Lesion → FluidSample (z kontekstem komponentów)
 # split:   cztery ekstrakcje niezależnie na surowym transkrypcie
-ner_strategies: [chained]
-# model LLM dla NER i LLM-review (przez OpenRouter; wymaga klucza w backend/env)
+ner_strategies: [chained, split]
+# model LLM dla NER (przez OpenRouter; wymaga klucza w backend/env)
 llm_model: openai/gpt-4o
 
-# ── Sanity ──────────────────────────────────────────────────────────────────
-# rules         – tylko heurystyki (bez sieci/klucza)
-# rules_and_llm – przepływ produkcyjny (reguły + LLM-review gdy reguły coś znalazły)
-# llm_only      – sam LLM-review z kontekstem reguł
-# all           – trzy tryby obok siebie
-sanity_mode: rules
+# ── Data sanity check ───────────────────────────────────────────────────────
+# rules: deterministic baseline, bez sieci.
+# rules_and_llm: rules + opcjonalny LLM review (wymaga klucza API i może kosztować).
+# review_and_repair: rules + opcjonalna poprawa formularza przez LLM.
+# Do porównania ustaw np. [rules, rules_and_llm, review_and_repair].
+sanity_modes: [rules] # rules nie używa LLM w sanity; end_to_end nadal używa LLM w NER/answererze
+# Zakresy używane tylko dla review_and_repair: patient_data, description, all.
+sanity_repair_scopes: [all]
+
+# Issue automatycznie wyciszane w raporcie dla próbek oznaczonych `synthetic` w metadanych
+# (audio TTS z fikcyjnym PESEL-em — walidacja PESEL/wieku to wtedy szum, nie błąd pipeline'u).
+# Format: `code:field|code:field`. Zostaw domyślne, jeśli nie wiesz.
+synthetic_ignored_issues: invalid_pesel_length:pesel|invalid_pesel_format:pesel|invalid_pesel_checksum:pesel|invalid_pesel_date:pesel|age_pesel_mismatch:age
 
 # ── Ścieżki (względne do backend/eval/) ─────────────────────────────────────
 paths:
-  # etap stt + end_to_end(audio): manifest z audio + tekstem referencyjnym.
-  # Budowany automatycznie z metadata + audio_dir, jeśli nie istnieje.
+  # audio_dir + metadata: źródło próbek audio (nagrania + tekst referencyjny). Używane przez
+  # stt i end_to_end. manifest: cache CSV etapu stt, budowany z metadata + audio_dir gdy nie
+  # istnieje. end_to_end czyta metadata (xlsx) bezpośrednio — tego pliku nie używa.
   audio_dir: data/audio_samples
   metadata: data/metadata/samples_metadata.xlsx
   manifest: results/stt_manifest.csv
 
-  # etap ner: gold z kolumnami transcript + expected_entities
+  # etap ner (teksty BEZ audio): OSOBNY zestaw, niezależny od audio.
+  # JSONL z liniami: {sample_id, transcript, expected_entities}.
   ner_gold: data/gold_ner.jsonl
 
   # etap end_to_end: wejście pipeline'u. Format wykrywany automatycznie:
-  #   - CSV z kolumną audio_path        → pełny pipeline (audio → ... → sanity)
+  #   - XLSX (samples_metadata)          → pełny pipeline z audio (+ metryki STT vs tekst referencyjny)
+  #   - CSV z kolumną audio_path         → pełny pipeline (audio → ... → RAG/answerer → sanity)
   #   - JSONL z polem form_data          → sam sanity check na gotowym formularzu (offline)
   #   - JSONL/CSV z expected_entities    → rekonstrukcja formularza z gold-encji (offline)
-  # data/gold_audio.csv ma expected_entities + ref_transcript → liczy też STT + NER.
-  # Dla samego sanity offline użyj data/plausibility_fixture.jsonl.
-  end_to_end_input: data/gold_audio.csv
+  # Domyślnie end_to_end idzie z samples_metadata.xlsx (mamy do tych próbek audio); jakość NER
+  # oceniamy osobno w etapie ner (ner_gold). Dla samego sanity offline użyj sanity_guardrail_eval_gold.jsonl.
+  end_to_end_input: data/metadata/samples_metadata.xlsx
 
   # tu lądują wszystkie wyniki (per etap: stt_results.csv, ner_results.csv, end_to_end_results.csv)
   output_dir: results

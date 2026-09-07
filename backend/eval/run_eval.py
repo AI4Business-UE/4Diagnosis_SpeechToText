@@ -1,13 +1,13 @@
-"""Jeden eval dla całego pipeline'u 4Diagnosis: audio → STT → NER → sanity check.
+"""Jeden eval dla całego pipeline'u 4Diagnosis: audio → STT → NER → RAG/answerer → sanity check.
 
 Które etapy odpalić i z jakimi parametrami wybierasz w config.yaml (obok tego pliku).
 Uruchomienie:
 
-    backend/venv/bin/python backend/eval/run_eval.py
-    backend/venv/bin/python backend/eval/run_eval.py --config backend/eval/config.yaml
+    PYTHONPATH=backend/src:backend/eval python3 backend/eval/run_eval.py
+    PYTHONPATH=backend/src:backend/eval python3 backend/eval/run_eval.py --config backend/eval/config.yaml
 
 Etapy (config `stages`):
-    end_to_end – domyślny eval całego przepływu: audio → STT → NER → formularz → sanity check
+    end_to_end – domyślny eval całego przepływu: audio → STT → NER → RAG/answerer → formularz → sanity check
                  (metryki STT + NER, jeśli gold ma referencje, + status/score/issues)
     stt    – diagnostyka samej transkrypcji: audio → preprocessing → STT (metryki STT)
     ner    – diagnostyka samego NER: transkrypt gold → NER, bez audio (metryki NER)
@@ -25,6 +25,7 @@ import csv
 import json
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -35,11 +36,18 @@ EVAL_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = EVAL_ROOT.parents[1]
 SRC_ROOT = REPO_ROOT / "backend/src"
 DEFAULT_CONFIG = EVAL_ROOT / "config.yaml"
+VALID_SANITY_REPAIR_SCOPES = {"patient_data", "description", "all"}
+
+# Domyślne issue wyciszane dla próbek oznaczonych jako syntetyczne (audio TTS z fikcyjnym
+# PESEL-em): walidacja PESEL/wieku to wtedy szum, nie realny błąd pipeline'u. Konfigurowalne
+# przez `synthetic_ignored_issues` w config.yaml. Format: `code:field|code:field`.
+DEFAULT_SYNTHETIC_IGNORED_ISSUES = (
+    "invalid_pesel_length:pesel|invalid_pesel_format:pesel|"
+    "invalid_pesel_checksum:pesel|invalid_pesel_date:pesel|age_pesel_mismatch:age"
+)
 
 sys.path.insert(0, str(EVAL_ROOT))
 from metrics import compare_entities, compute_stt_metrics, flatten_metrics, parse_entities  # noqa: E402
-
-SANITY_MODES = ["rules", "rules_and_llm", "llm_only"]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -57,19 +65,76 @@ def resolve_path(value: str | Path) -> Path:
     return path if path.is_absolute() else (EVAL_ROOT / path)
 
 
-def write_rows(rows: list[dict[str, Any]], path: Path, leading: tuple[str, ...] = ()) -> None:
+def write_rows(rows: list[dict[str, Any]], path: Path, leading: tuple[str, ...] = (), announce: bool = True) -> None:
     if not rows:
-        print(f"  (brak wierszy — nic nie zapisano do {path.name})")
+        if announce:
+            print(f"  (brak wierszy — nic nie zapisano do {path.name})")
         return
 
     path.parent.mkdir(parents=True, exist_ok=True)
     all_keys = {key for row in rows for key in row}
     ordered = [key for key in leading if key in all_keys] + sorted(all_keys - set(leading))
-    with path.open("w", newline="", encoding="utf-8") as output_file:
+    tmp_path = path.with_name(f".{path.name}.tmp")
+    with tmp_path.open("w", newline="", encoding="utf-8") as output_file:
         writer = csv.DictWriter(output_file, fieldnames=ordered)
         writer.writeheader()
         writer.writerows(rows)
-    print(f"  zapisano {len(rows)} wierszy → {path}")
+    tmp_path.replace(path)
+    if announce:
+        print(f"  zapisano {len(rows)} wierszy → {path}")
+
+
+def _checkpoint_every(config: dict[str, Any]) -> int:
+    value = config.get("checkpoint_every", 1)
+    if value in (None, False, 0, "0"):
+        return 0
+    return max(1, int(value))
+
+
+def write_checkpoint(
+    config: dict[str, Any],
+    rows: list[dict[str, Any]],
+    path: Path,
+    leading: tuple[str, ...] = (),
+) -> None:
+    every = _checkpoint_every(config)
+    if every and rows and len(rows) % every == 0:
+        write_rows(rows, path, leading=leading, announce=False)
+
+
+# ── Wznawianie (resume): pomijaj kombinacje już policzone w wynikowym CSV ─────
+
+def _resume_enabled(config: dict[str, Any]) -> bool:
+    return bool(config.get("resume", True))
+
+
+def _load_existing_rows(path: Path) -> list[dict[str, Any]]:
+    """Wczytuje wcześniejsze wyniki jako listę dictów (puste komórki → \"\", nie NaN)."""
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as input_file:
+        return [dict(record) for record in csv.DictReader(input_file)]
+
+
+def _row_key(row: dict[str, Any], key_fields: tuple[str, ...]) -> tuple:
+    """Klucz jednostki pracy — porównywalny między pamięcią a CSV (wszystko jako str)."""
+    return tuple(str(row.get(field, "") or "").strip() for field in key_fields)
+
+
+def _resume_state(
+    config: dict[str, Any],
+    output_path: Path,
+    key_fields: tuple[str, ...],
+) -> tuple[list[dict[str, Any]], set]:
+    """Zwraca (rows_seed, done_keys): już zapisane wiersze (gdy resume) oraz zbiór
+    kluczy jednostek już policzonych. Bez resume — puste, czyli liczymy od zera."""
+    if not _resume_enabled(config):
+        return [], set()
+    existing = _load_existing_rows(output_path)
+    done = {_row_key(record, key_fields) for record in existing}
+    if existing:
+        print(f"  wznawianie: {len(existing)} wierszy w {output_path.name} — pomijam je")
+    return existing, done
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -112,12 +177,28 @@ def load_data_sanity_check():
     return data_sanity_check
 
 
-def build_pipeline_config(model: str, preprocessing: str, ner_strategy: str, llm_model: str, preprocessing_output_dir: Path):
+def build_pipeline_config(
+    model: str,
+    preprocessing: str,
+    ner_strategy: str,
+    llm_model: str,
+    preprocessing_output_dir: Path,
+    sanity_mode: str = "rules",
+    enable_sanity_check: bool = True,
+    apply_sanity_repair: bool = False,
+    sanity_repair_scope: str = "all",
+):
     PipelineConfig, _ = load_pipeline_classes()
     config = PipelineConfig(
+        stt_model="whisper_local",
         whisper_model=model,
         ner_strategy=ner_strategy,
-        llm_model=llm_model,
+        ner_llm_model=llm_model,
+        answerer_llm_model=llm_model,
+        sanity_mode=sanity_mode,
+        enable_sanity_check=enable_sanity_check,
+        apply_sanity_repair=apply_sanity_repair,
+        sanity_repair_scope=sanity_repair_scope,
         preprocessing_output_dir=str(preprocessing_output_dir),
     )
 
@@ -155,11 +236,17 @@ def build_manifest(metadata_path: Path, audio_dir: Path) -> pd.DataFrame:
         if pd.isna(file_name) or pd.isna(reference):
             continue
         audio_path = audio_dir / str(file_name)
+        ignored = row.get("ignored_sanity_issues")
         rows.append({
             "sample_id": row.get("id", ""),
             "audio_file": str(file_name),
             "audio_path": str(audio_path),
             "ref_transcript": str(reference),
+            # Opcjonalne kolumny gold sanity (patrz _sample_sanity_flags):
+            #  - synthetic: audio TTS z fikcyjnym PESEL-em → auto-wyciszenie issue PESEL/wieku.
+            #  - ignored_sanity_issues: jawna lista issue do pominięcia w raporcie (code:field|...).
+            "synthetic": _is_truthy_flag(row.get("synthetic")),
+            "ignored_sanity_issues": "" if ignored is None or pd.isna(ignored) else str(ignored),
             "source": "local_stt_dataset",
             "speaker": row.get("twórca", ""),
             "format": row.get("format", ""),
@@ -216,9 +303,22 @@ def run_stt(config: dict[str, Any], output_dir: Path) -> None:
 
     AudioPreprocessor, WhisperLocal = load_stt_components()
     preprocessed_dir = output_dir / "preprocessed_audio" / "stt"
-    rows = []
+    output_path = output_dir / "stt_results.csv"
+    leading = ("sample_id", "audio_file", "model", "preprocessing", "status")
+    key_fields = ("sample_id", "model", "preprocessing")
+    rows, done = _resume_state(config, output_path, key_fields)
 
     for model in config["models"]:
+        # Nie ładuj modelu Whisper, jeśli wszystkie jego kombinacje są już policzone.
+        model_keys = [
+            (str(sample.get("sample_id", "")), model, preprocessing)
+            for preprocessing in config["preprocessing"]
+            for _, sample in manifest.iterrows()
+        ]
+        if all(key in done for key in model_keys):
+            print(f"  [{model}] wszystko już policzone — pomijam")
+            continue
+
         model_config = build_pipeline_config(model, "baseline", config["ner_strategies"][0], config["llm_model"], preprocessed_dir)
         stt_model = WhisperLocal(model_id=model_config.whisper_hf_id)
 
@@ -230,6 +330,9 @@ def run_stt(config: dict[str, Any], output_dir: Path) -> None:
             preprocessor = AudioPreprocessor(pipeline_config)
 
             for _, sample in manifest.iterrows():
+                key = (str(sample.get("sample_id", "")), model, preprocessing)
+                if key in done:
+                    continue
                 row = {
                     "sample_id": sample.get("sample_id", ""),
                     "audio_file": sample["audio_file"],
@@ -259,8 +362,10 @@ def run_stt(config: dict[str, Any], output_dir: Path) -> None:
                 except Exception as exc:  # noqa: BLE001
                     row.update({"status": "error", "error": str(exc)})
                 rows.append(row)
+                done.add(key)
+                write_checkpoint(config, rows, output_path, leading=leading)
 
-    write_rows(rows, output_dir / "stt_results.csv", leading=("sample_id", "audio_file", "model", "preprocessing", "status"))
+    write_rows(rows, output_path, leading=leading)
     _summarize_stt(rows)
 
 
@@ -270,8 +375,9 @@ def _summarize_stt(rows: list[dict[str, Any]]) -> None:
     frame = pd.DataFrame(rows)
     ok = frame[frame["status"] == "ok"]
     errors = len(frame) - len(ok)
-    mean_wer = round(ok["wer"].mean(), 4) if "wer" in ok and len(ok) else None
-    critical = int(ok["has_critical_error"].sum()) if "has_critical_error" in ok and len(ok) else 0
+    wer = pd.to_numeric(ok["wer"], errors="coerce") if "wer" in ok and len(ok) else pd.Series(dtype=float)
+    mean_wer = round(wer.mean(), 4) if len(wer.dropna()) else None
+    critical = int(_truthy_series(ok["has_critical_error"]).sum()) if "has_critical_error" in ok and len(ok) else 0
     print(f"  podsumowanie: {len(ok)} ok, {errors} błędów, mean WER={mean_wer}, próbki krytyczne={critical}")
 
 
@@ -302,18 +408,29 @@ def _read_ner_gold(path: Path, limit: int | None) -> list[dict[str, Any]]:
 def run_ner(config: dict[str, Any], output_dir: Path) -> None:
     print("[ner] transkrypt → NER")
     samples = _read_ner_gold(resolve_path(config["paths"]["ner_gold"]), config.get("limit"))
-    rows = []
+    output_path = output_dir / "ner_results.csv"
+    leading = ("sample_id", "strategy", "model", "status")
+    key_fields = ("sample_id", "strategy", "model")
+    rows, done = _resume_state(config, output_path, key_fields)
+    llm_model = config["llm_model"]
 
     for strategy_name in config["ner_strategies"]:
-        strategy = load_ner_strategy(strategy_name, config["llm_model"])
+        strategy_keys = [(str(sample.get("sample_id", "")), strategy_name, llm_model) for sample in samples]
+        if all(key in done for key in strategy_keys):
+            print(f"  [{strategy_name}] wszystko już policzone — pomijam")
+            continue
+        strategy = load_ner_strategy(strategy_name, llm_model)
 
         for sample in samples:
+            key = (str(sample.get("sample_id", "")), strategy_name, llm_model)
+            if key in done:
+                continue
             expected = parse_entities(sample["expected_entities"])
             transcript = str(sample["transcript"])
             row = {
                 "sample_id": sample.get("sample_id", ""),
                 "strategy": strategy_name,
-                "model": config["llm_model"],
+                "model": llm_model,
                 "transcript": transcript,
                 "expected_entities": json.dumps(expected, ensure_ascii=False, sort_keys=True),
                 "predicted_entities": "",
@@ -335,8 +452,10 @@ def run_ner(config: dict[str, Any], output_dir: Path) -> None:
                     "duration_seconds": round(time.perf_counter() - start, 4),
                 })
             rows.append(row)
+            done.add(key)
+            write_checkpoint(config, rows, output_path, leading=leading)
 
-    write_rows(rows, output_dir / "ner_results.csv", leading=("sample_id", "strategy", "model", "status"))
+    write_rows(rows, output_path, leading=leading)
     _summarize_ner(rows)
 
 
@@ -346,12 +465,13 @@ def _summarize_ner(rows: list[dict[str, Any]]) -> None:
     frame = pd.DataFrame(rows)
     ok = frame[frame["status"] == "ok"]
     errors = len(frame) - len(ok)
-    mean_f1 = round(ok["overall_f1"].mean(), 4) if "overall_f1" in ok and len(ok) else None
+    f1 = pd.to_numeric(ok["overall_f1"], errors="coerce") if "overall_f1" in ok and len(ok) else pd.Series(dtype=float)
+    mean_f1 = round(f1.mean(), 4) if len(f1.dropna()) else None
     print(f"  podsumowanie: {len(ok)} ok, {errors} błędów, mean overall_f1={mean_f1}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Etap sanity — pełny pipeline audio → STT → NER → formularz → sanity check
+# Etap sanity — pełny pipeline audio → STT → NER → RAG/answerer → formularz → sanity check
 # (oraz warianty offline: gotowy formularz / rekonstrukcja z gold-encji)
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -435,9 +555,19 @@ def build_form_data(expected_entities: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def _read_end_to_end_input(path: Path, limit: int | None) -> tuple[list[dict[str, Any]], str]:
+def _read_end_to_end_input(path: Path, limit: int | None, audio_dir: Path | None = None) -> tuple[list[dict[str, Any]], str]:
     """Wykrywa format wejścia i zwraca (próbki, format).
     Format: 'audio' (audio_path), 'form' (form_data), 'entities' (expected_entities)."""
+    # Metadane .xlsx → gold audio (audio_path + ref_transcript + expected_entities/expected_output).
+    # Dzięki temu cały eval end_to_end idzie wprost z samples_metadata.xlsx, bez pośrednich CSV.
+    if path.suffix.lower() in (".xlsx", ".xls"):
+        if audio_dir is None:
+            audio_dir = path.parent.parent / "audio_samples"
+        frame = build_manifest(path, audio_dir)
+        frame = frame[frame["audio_exists"].astype(bool)]
+        samples = frame.to_dict("records")
+        return (samples[:limit] if limit is not None else samples), "audio"
+
     if path.suffix.lower() == ".csv":
         frame = pd.read_csv(path)
         records = frame.to_dict("records")
@@ -469,45 +599,215 @@ def _issue_counts(issues: list[dict[str, Any]]) -> dict[str, int]:
         "warning_count": sum(1 for issue in issues if issue.get("severity") == "warning"),
         "error_count": sum(1 for issue in issues if issue.get("severity") == "error"),
         "rules_issue_count": sum(1 for issue in issues if issue.get("source") == "rules"),
-        "llm_issue_count": sum(1 for issue in issues if issue.get("source") == "llm_review"),
     }
 
 
-def _run_rules_only(data_sanity_check, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
-    original_llm_review = data_sanity_check.check_with_llm
-    data_sanity_check.check_with_llm = lambda transcript, form_data, rule_issues: {
-        "ran": False, "issues": [], "reason": "disabled",
-    }
-    try:
-        return data_sanity_check.run_data_sanity_check(transcript, form_data)
-    finally:
-        data_sanity_check.check_with_llm = original_llm_review
+def _present_form_fields(form_data: dict[str, Any]) -> list[str]:
+    hidden_fields = {"name", "pesel"}
+    return sorted(
+        field
+        for field, value in form_data.items()
+        if field not in hidden_fields and str(value or "").strip()
+    )
 
 
-def _run_llm_only(data_sanity_check, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
-    rule_result = _run_rules_only(data_sanity_check, transcript, form_data)
-    llm = data_sanity_check.check_with_llm(transcript, form_data, rule_result.get("issues", []))
-    issues = llm["issues"]
+def _entity_counts(entities: dict[str, Any]) -> dict[str, int]:
     return {
-        "status": data_sanity_check.derive_status(issues),
-        "score": data_sanity_check.calculate_score(issues),
-        "issues": issues,
-        "llm_review": {"ran": llm["ran"], "reason": llm["reason"], "issue_count": len(issues)},
-        "metrics": {
-            "transcript_length": len(transcript or ""),
-            "description_length": len(str(form_data.get("description", "") or "")),
-        },
+        "components": len(entities.get("components") or []),
+        "lesions": len(entities.get("lesions") or []),
+        "fluid_samples": len(entities.get("fluid_samples") or []),
     }
 
 
-def _run_sanity_mode(data_sanity_check, mode: str, transcript: str, form_data: dict[str, str]) -> dict[str, Any]:
-    if mode == "rules":
-        return _run_rules_only(data_sanity_check, transcript, form_data)
-    if mode == "rules_and_llm":
-        return data_sanity_check.run_data_sanity_check(transcript, form_data)
-    if mode == "llm_only":
-        return _run_llm_only(data_sanity_check, transcript, form_data)
-    raise ValueError(f"Nieznany tryb sanity: {mode}")
+def _template_count(templates: Any) -> int:
+    if isinstance(templates, list):
+        return len(templates)
+    if isinstance(templates, dict):
+        return len(templates)
+    return 0
+
+
+def _flatten_pipe_values(values: list[Any]) -> list[str]:
+    flattened = []
+    for value in values:
+        for item in str(value or "").split("|"):
+            item = item.strip()
+            if item:
+                flattened.append(item)
+    return flattened
+
+
+def _nonempty_value_counts(frame: pd.DataFrame, column: str) -> dict[str, int]:
+    if column not in frame:
+        return {}
+    values = frame[column].dropna().astype(str).str.strip()
+    values = values[values != ""]
+    return values.value_counts().to_dict()
+
+
+def infer_suspected_stage(
+    *,
+    pipeline_status: str = "",
+    transcript_length: int | None = None,
+    entity_counts: dict[str, int] | None = None,
+    template_count: int | None = None,
+    corrected_length: int | None = None,
+    present_fields: list[str] | None = None,
+    sanity_status: str = "",
+) -> dict[str, str]:
+    """Heuristic v1 diagnosis of the earliest suspicious pipeline stage."""
+    if pipeline_status == "error":
+        return {"suspected_stage": "pipeline", "stage_warning_reason": "pipeline_error"}
+    if transcript_length == 0:
+        return {"suspected_stage": "stt", "stage_warning_reason": "empty_transcript"}
+
+    counts = entity_counts or {}
+    if counts and all(value == 0 for value in counts.values()):
+        return {"suspected_stage": "ner", "stage_warning_reason": "no_entities"}
+    if template_count == 0:
+        return {"suspected_stage": "rag", "stage_warning_reason": "no_templates"}
+    if corrected_length == 0:
+        return {"suspected_stage": "answerer", "stage_warning_reason": "empty_corrected_text"}
+
+    if present_fields is not None and not {"organ", "description"}.issubset(set(present_fields)):
+        return {"suspected_stage": "form_data", "stage_warning_reason": "missing_form_fields"}
+    if sanity_status == "critical":
+        return {"suspected_stage": "sanity", "stage_warning_reason": "sanity_critical"}
+    if sanity_status == "warning":
+        return {"suspected_stage": "sanity", "stage_warning_reason": "sanity_warning"}
+    return {"suspected_stage": "ok", "stage_warning_reason": ""}
+
+
+def _diagnose_pipeline_result(
+    eval_sample: dict[str, Any],
+    pipeline_result: dict[str, Any] | None,
+    sanity_status: str = "",
+) -> dict[str, str]:
+    if eval_sample.get("pipeline_status") == "error":
+        return infer_suspected_stage(pipeline_status="error")
+
+    pipeline_result = pipeline_result or {}
+    return infer_suspected_stage(
+        pipeline_status=str(eval_sample.get("pipeline_status", "")),
+        transcript_length=len(pipeline_result.get("transcript", "") or ""),
+        entity_counts=_entity_counts(pipeline_result.get("entities", {})),
+        template_count=_template_count(pipeline_result.get("retrieved_templates", [])),
+        corrected_length=len(pipeline_result.get("corrected_transcript", "") or ""),
+        present_fields=_present_form_fields(pipeline_result.get("form_data", {})),
+        sanity_status=sanity_status,
+    )
+
+
+def _diagnose_offline_sanity(status: str) -> dict[str, str]:
+    if status == "critical":
+        return {"suspected_stage": "sanity", "stage_warning_reason": "sanity_critical"}
+    if status == "warning":
+        return {"suspected_stage": "sanity", "stage_warning_reason": "sanity_warning"}
+    if status == "ok":
+        return {"suspected_stage": "ok", "stage_warning_reason": ""}
+    return {"suspected_stage": "", "stage_warning_reason": ""}
+
+
+def _score_bucket(status: str, score: Any, issue_count: int) -> str:
+    if status == "critical":
+        return "critical"
+
+    try:
+        score_value = float(score)
+    except (TypeError, ValueError):
+        return ""
+
+    if issue_count == 0 and score_value == 1.0:
+        return "ok"
+    if score_value < 0.6:
+        return "critical"
+    if score_value < 0.8:
+        return "major"
+    if score_value < 1.0:
+        return "minor"
+    return "ok"
+
+
+def _parse_expected_issue_codes(value: Any) -> set[str]:
+    if value is None or value == "":
+        return set()
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return set()
+        if value.startswith("["):
+            try:
+                parsed = json.loads(value)
+                if isinstance(parsed, list):
+                    return {str(code).strip() for code in parsed if str(code).strip()}
+            except json.JSONDecodeError:
+                pass
+        return {code.strip() for code in value.split("|") if code.strip()}
+    if isinstance(value, (list, tuple, set)):
+        return {str(code).strip() for code in value if str(code).strip()}
+    return {str(value).strip()}
+
+
+def _is_truthy_flag(value: Any) -> bool:
+    """Truthy z komórki xlsx/CSV: 1/true/tak/x/yes. NaN i puste → False."""
+    if value is None:
+        return False
+    return str(value).strip().lower() in {"1", "true", "tak", "x", "yes", "y", "prawda"}
+
+
+def _truthy_series(series: pd.Series) -> pd.Series:
+    return series.map(_is_truthy_flag)
+
+
+def _synthetic_ignored_issues(config: dict[str, Any]) -> str:
+    """Lista issue auto-wyciszanych dla próbek syntetycznych (config lub domyślne kody PESEL)."""
+    value = config.get("synthetic_ignored_issues", DEFAULT_SYNTHETIC_IGNORED_ISSUES)
+    if isinstance(value, (list, tuple)):
+        return "|".join(str(item) for item in value)
+    return str(value or "")
+
+
+def _sample_sanity_flags(sample: dict[str, Any], config: dict[str, Any]) -> tuple[bool, str]:
+    """Zwraca (synthetic, ignored_sanity_issues) dla próbki audio. Jawna kolumna
+    `ignored_sanity_issues` ma pierwszeństwo; w jej braku syntetyczna próbka dostaje
+    domyślne wyciszenie PESEL/wieku."""
+    synthetic = _is_truthy_flag(sample.get("synthetic"))
+    explicit = str(sample.get("ignored_sanity_issues") or "").strip()
+    if explicit:
+        return synthetic, explicit
+    if synthetic:
+        return True, _synthetic_ignored_issues(config)
+    return synthetic, ""
+
+
+def _parse_ignored_sanity_issues(value: Any) -> set[tuple[str, str]]:
+    if value is None or value == "":
+        return set()
+    if isinstance(value, str):
+        tokens = []
+        for part in value.split("|"):
+            part = part.strip()
+            if part:
+                tokens.append(part)
+    elif isinstance(value, (list, tuple, set)):
+        tokens = [str(item).strip() for item in value if str(item).strip()]
+    else:
+        tokens = [str(value).strip()]
+
+    ignored = set()
+    for token in tokens:
+        code, _, field = token.partition(":")
+        code = code.strip()
+        field = field.strip()
+        if code:
+            ignored.add((code, field))
+    return ignored
+
+
+def _issue_matches_ignore(issue: dict[str, Any], ignored: set[tuple[str, str]]) -> bool:
+    code = str(issue.get("code", "") or "")
+    field = str(issue.get("field", "") or "")
+    return (code, field) in ignored or (code, "") in ignored
 
 
 def _filter_synthetic_patient_issues(issues: list[dict[str, Any]], sample: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
@@ -524,9 +824,26 @@ def _filter_synthetic_patient_issues(issues: list[dict[str, Any]], sample: dict[
     return kept, filtered
 
 
-def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], sample: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
-    issues, filtered_synthetic_issues = _filter_synthetic_patient_issues(result.get("issues", []), sample)
-    if filtered_synthetic_issues:
+def _build_sanity_row(data_sanity_check, result: dict[str, Any], sample: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
+    raw_issues = result.get("issues", [])
+    raw_issue_codes = sorted({str(issue.get("code", "")) for issue in raw_issues if issue.get("code")})
+    raw_issue_fields = sorted({str(issue.get("field", "")) for issue in raw_issues if issue.get("field")})
+    issues, filtered_synthetic_issues = _filter_synthetic_patient_issues(raw_issues, sample)
+    ignored_sanity_issues = _parse_ignored_sanity_issues(sample.get("ignored_sanity_issues", ""))
+    if ignored_sanity_issues:
+        kept_issues = []
+        ignored_sanity_issue_count = 0
+        for issue in issues:
+            if _issue_matches_ignore(issue, ignored_sanity_issues):
+                ignored_sanity_issue_count += 1
+                continue
+            kept_issues.append(issue)
+        issues = kept_issues
+    else:
+        ignored_sanity_issue_count = 0
+    llm_review = result.get("llm_review", {})
+    repair = result.get("repair", {})
+    if filtered_synthetic_issues or ignored_sanity_issue_count:
         status = data_sanity_check.derive_status(issues)
         score = data_sanity_check.calculate_score(issues)
     else:
@@ -539,7 +856,29 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
         str(issue.get("field", "")) for issue in issues
         if issue.get("code") == "missing_required_field" and issue.get("field")
     })
-    llm_review = result.get("llm_review", {})
+
+    # Zgodność z gold: predicted = sanity coś zgłosił (status != ok). flag_match liczymy tylko gdy
+    # gold ma bool expected_flag (fixture); dla audio bez etykiety zostaje puste.
+    expected_flag = sample.get("expected_flag", "")
+    predicted_flag = status != "ok"
+    flag_match = (predicted_flag == expected_flag) if isinstance(expected_flag, bool) else ""
+    bucket = _score_bucket(status, score, len(issues))
+    expected_severity = sample.get("expected_severity", "")
+    severity_match = bucket == expected_severity if expected_severity else ""
+    expected_issue_codes = _parse_expected_issue_codes(sample.get("expected_issue_codes"))
+    actual_issue_codes = set(issue_codes)
+    missing_expected_issue_codes = sorted(expected_issue_codes - actual_issue_codes)
+    unexpected_issue_codes = sorted(actual_issue_codes - expected_issue_codes)
+    issue_code_match = expected_issue_codes.issubset(actual_issue_codes) if expected_issue_codes else ""
+    diagnosis = {
+        "suspected_stage": sample.get("suspected_stage", ""),
+        "stage_warning_reason": sample.get("stage_warning_reason", ""),
+    }
+    if not diagnosis["suspected_stage"]:
+        if sample.get("pipeline_status") == "error":
+            diagnosis = infer_suspected_stage(pipeline_status="error")
+        else:
+            diagnosis = _diagnose_offline_sanity(status)
 
     row = {
         "sample_id": str(sample.get("sample_id", "")),
@@ -550,19 +889,45 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
         "pipeline_status": sample.get("pipeline_status", ""),
         "pipeline_error": sample.get("pipeline_error", ""),
         "pipeline_duration_seconds": sample.get("pipeline_duration_seconds", ""),
-        "mode": mode,
+        "suspected_stage": diagnosis["suspected_stage"],
+        "stage_warning_reason": diagnosis["stage_warning_reason"],
+        "sanity_mode": sample.get("sanity_mode", ""),
+        "repair_scope": sample.get("repair_scope", ""),
         "status": status,
         "score": score,
         "issue_count": len(issues),
+        "raw_issue_codes": "|".join(raw_issue_codes),
+        "raw_issue_fields": "|".join(raw_issue_fields),
         "issue_codes": "|".join(issue_codes),
         "issue_fields": "|".join(issue_fields),
         "missing_fields": "|".join(missing_fields),
         **_issue_counts(issues),
-        "llm_ran": llm_review.get("ran", ""),
-        "llm_reason": llm_review.get("reason", ""),
         "gold_has_patient": sample.get("gold_has_patient", ""),
         "filtered_synthetic_issues": filtered_synthetic_issues,
-        "expected_flag": sample.get("expected_flag", ""),
+        "ignored_sanity_issues": sample.get("ignored_sanity_issues", ""),
+        "ignored_sanity_issue_count": ignored_sanity_issue_count,
+        "expected_flag": expected_flag,
+        "predicted_flag": predicted_flag,
+        "flag_match": flag_match,
+        "expected_severity": expected_severity,
+        "score_bucket": bucket,
+        "severity_match": severity_match,
+        "expected_issue_codes": "|".join(sorted(expected_issue_codes)),
+        "issue_code_match": issue_code_match,
+        "expected_issue_codes_covered": issue_code_match,
+        "missing_expected_issue_codes": "|".join(missing_expected_issue_codes),
+        "unexpected_issue_codes": "|".join(unexpected_issue_codes) if expected_issue_codes else "",
+        "llm_ran": llm_review.get("ran", ""),
+        "llm_reason": llm_review.get("reason", ""),
+        "llm_issue_count": llm_review.get("issue_count", ""),
+        "repair_ran": repair.get("ran", ""),
+        "repair_reason": repair.get("reason", ""),
+        "repair_applied": repair.get("applied", ""),
+        "repair_change_count": repair.get("change_count", ""),
+        "repair_changed_fields": "|".join(repair.get("changed_fields", []) or []),
+        "original_status": result.get("original_status", ""),
+        "original_score": result.get("original_score", ""),
+        "original_issue_count": result.get("original_issue_count", ""),
         "note": sample.get("note", ""),
         "description_length": result.get("metrics", {}).get("description_length", ""),
         "transcript_length": result.get("metrics", {}).get("transcript_length", ""),
@@ -575,11 +940,55 @@ def _build_sanity_row(data_sanity_check, mode: str, result: dict[str, Any], samp
     return row
 
 
-def _run_sanity_modes(data_sanity_check, sample: dict[str, Any], transcript: str, form_data: dict[str, str], modes: list[str], extra: dict[str, Any]) -> list[dict[str, Any]]:
-    return [
-        _build_sanity_row(data_sanity_check, mode, _run_sanity_mode(data_sanity_check, mode, transcript, form_data), sample, extra)
-        for mode in modes
-    ]
+def _empty_sanity_result() -> dict[str, Any]:
+    return {
+        "status": "",
+        "score": "",
+        "issues": [],
+        "metrics": {},
+        "llm_review": {},
+    }
+
+
+def _run_sanity(data_sanity_check, sample: dict[str, Any], transcript: str, form_data: dict[str, str], extra: dict[str, Any]) -> dict[str, Any]:
+    result = data_sanity_check.run_data_sanity_check(
+        transcript,
+        form_data,
+        mode=sample.get("sanity_mode", "rules"),
+        repair_scope=sample.get("repair_scope") or "all",
+    )
+    return _build_sanity_row(data_sanity_check, result, sample, extra)
+
+
+def _sanity_modes(config: dict[str, Any]) -> list[str]:
+    modes = config.get("sanity_modes") or ["rules"]
+    if isinstance(modes, str):
+        modes = [modes]
+    return list(modes)
+
+
+def _sanity_repair_scopes(config: dict[str, Any]) -> list[str]:
+    scopes = config.get("sanity_repair_scopes") or ["all"]
+    if isinstance(scopes, str):
+        scopes = [scopes]
+    unknown = sorted(set(scopes) - VALID_SANITY_REPAIR_SCOPES)
+    if unknown:
+        raise ValueError(
+            "Unknown sanity_repair_scopes: "
+            f"{', '.join(unknown)}. Supported: {', '.join(sorted(VALID_SANITY_REPAIR_SCOPES))}."
+        )
+    return list(scopes)
+
+
+def _sanity_runs(config: dict[str, Any]) -> list[dict[str, str]]:
+    runs = []
+    for mode in _sanity_modes(config):
+        if mode == "review_and_repair":
+            for scope in _sanity_repair_scopes(config):
+                runs.append({"sanity_mode": mode, "repair_scope": scope})
+        else:
+            runs.append({"sanity_mode": mode, "repair_scope": ""})
+    return runs
 
 
 def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict[str, Any]) -> dict[str, Any]:
@@ -591,91 +1000,221 @@ def _audio_extra_metrics(sample: dict[str, Any], transcript: str, entities: dict
         extra.update({f"stt_{key}": value for key, value in compute_stt_metrics(reference, transcript).items()})
 
     expected_raw = sample.get("expected_entities")
-    if isinstance(expected_raw, str) and expected_raw.strip() or isinstance(expected_raw, dict) and expected_raw:
+    has_expected_entities = (
+        (isinstance(expected_raw, str) and bool(expected_raw.strip()))
+        or (isinstance(expected_raw, dict) and bool(expected_raw))
+    )
+    if has_expected_entities:
         expected = parse_entities(expected_raw)
         extra.update({f"ner_{key}": value for key, value in flatten_metrics(compare_entities(expected, entities)).items()})
     return extra
 
 
-def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[dict[str, Any]], modes: list[str], output_dir: Path) -> list[dict[str, Any]]:
-    _, Pipeline = load_pipeline_classes()
+def _run_sanity_audio(config: dict[str, Any], data_sanity_check, samples: list[dict[str, Any]], output_dir: Path) -> list[dict[str, Any]]:
+    _PipelineConfig, Pipeline = load_pipeline_classes()
     preprocessed_dir = output_dir / "preprocessed_audio" / "sanity"
-    rows = []
+    sanity_runs = _sanity_runs(config)
+    output_path = output_dir / "end_to_end_results.csv"
+    leading = ("sample_id", "audio_file", "sanity_mode", "repair_scope", "status", "score")
+    key_fields = ("sample_id", "pipeline_model", "preprocessing", "ner_strategy", "sanity_mode", "repair_scope")
+    rows, done = _resume_state(config, output_path, key_fields)
+
+    def _sr_key(sample, model, preprocessing, ner_strategy, sanity_run):
+        return (
+            str(sample.get("sample_id", "")), model, preprocessing, ner_strategy,
+            sanity_run.get("sanity_mode", ""), sanity_run.get("repair_scope", ""),
+        )
 
     for model in config["models"]:
         for preprocessing in config["preprocessing"]:
             for ner_strategy in config["ner_strategies"]:
-                pipeline = Pipeline(build_pipeline_config(model, preprocessing, ner_strategy, config["llm_model"], preprocessed_dir / preprocessing))
+                # Pomiń budowę pipeline'u (ładowanie Whisper/NER), jeśli cała kombinacja jest już policzona.
+                combo_keys = [
+                    _sr_key(sample, model, preprocessing, ner_strategy, sanity_run)
+                    for sample in samples for sanity_run in sanity_runs
+                ]
+                if all(key in done for key in combo_keys):
+                    print(f"  [{model}/{preprocessing}/{ner_strategy}] wszystko już policzone — pomijam")
+                    continue
+
+                pipeline_config = build_pipeline_config(
+                    model,
+                    preprocessing,
+                    ner_strategy,
+                    config["llm_model"],
+                    preprocessed_dir / preprocessing,
+                    enable_sanity_check=False,
+                )
+                try:
+                    pipeline = Pipeline(pipeline_config)
+                except Exception as exc:  # noqa: BLE001
+                    for sample in samples:
+                        synthetic, ignored = _sample_sanity_flags(sample, config)
+                        base_sample = {
+                            **sample,
+                            "pipeline_model": model,
+                            "preprocessing": preprocessing,
+                            "ner_strategy": ner_strategy,
+                            "pipeline_status": "error",
+                            "pipeline_error": str(exc),
+                            "pipeline_duration_seconds": 0,
+                            "synthetic": synthetic,
+                            "ignored_sanity_issues": ignored,
+                            "gold_has_patient": "",
+                        }
+                        for sanity_run in sanity_runs:
+                            key = _sr_key(sample, model, preprocessing, ner_strategy, sanity_run)
+                            if key in done:
+                                continue
+                            rows.append(_build_sanity_row(
+                                data_sanity_check,
+                                _empty_sanity_result(),
+                                {**base_sample, **sanity_run},
+                                {},
+                            ))
+                            done.add(key)
+                            write_checkpoint(config, rows, output_path, leading=leading)
+                    continue
 
                 for sample in samples:
-                    eval_sample = {
+                    # Pomiń kosztowny pipeline.run, jeśli wszystkie warianty sanity dla tej próbki są gotowe.
+                    pending_runs = [
+                        sanity_run for sanity_run in sanity_runs
+                        if _sr_key(sample, model, preprocessing, ner_strategy, sanity_run) not in done
+                    ]
+                    if not pending_runs:
+                        continue
+
+                    synthetic, ignored = _sample_sanity_flags(sample, config)
+                    base_sample = {
                         **sample,
                         "pipeline_model": model,
                         "preprocessing": preprocessing,
                         "ner_strategy": ner_strategy,
                         "pipeline_status": "ok",
                         "pipeline_error": "",
-                        "synthetic": False,
+                        "synthetic": synthetic,
+                        "ignored_sanity_issues": ignored,
                         "gold_has_patient": "",
                     }
                     start = time.perf_counter()
                     try:
-                        result = pipeline.run(str(sample["audio_path"]))
-                        transcript = str(result.get("transcript") or "")
-                        entities = result.get("entities") or {}
-                        form_data = build_form_data(entities)
-                        eval_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
+                        pipeline_result = pipeline.run(str(sample["audio_path"]))
+                        transcript = pipeline_result.get("transcript", "")
+                        corrected_transcript = pipeline_result.get("corrected_transcript", transcript)
+                        entities = pipeline_result.get("entities", {})
+                        form_data = pipeline_result.get("form_data", {})
+                        base_sample["pipeline_duration_seconds"] = round(time.perf_counter() - start, 4)
                         extra = _audio_extra_metrics(sample, transcript, entities)
+
+                        for sanity_run in pending_runs:
+                            sanity_row = _run_sanity(
+                                data_sanity_check,
+                                {**base_sample, **sanity_run},
+                                corrected_transcript,
+                                form_data,
+                                extra,
+                            )
+                            diagnosis = _diagnose_pipeline_result(
+                                base_sample,
+                                pipeline_result,
+                                sanity_status=str(sanity_row.get("status", "")),
+                            )
+                            sanity_row.update(diagnosis)
+                            rows.append(sanity_row)
+                            done.add(_sr_key(sample, model, preprocessing, ner_strategy, sanity_run))
+                            write_checkpoint(config, rows, output_path, leading=leading)
+
                     except Exception as exc:  # noqa: BLE001
-                        transcript = ""
-                        form_data = build_form_data({})
-                        eval_sample.update({
+                        base_sample.update({
                             "pipeline_status": "error",
                             "pipeline_error": str(exc),
                             "pipeline_duration_seconds": round(time.perf_counter() - start, 4),
                         })
-                        extra = {}
-
-                    rows.extend(_run_sanity_modes(data_sanity_check, eval_sample, transcript, form_data, modes, extra))
+                        for sanity_run in pending_runs:
+                            rows.append(_build_sanity_row(
+                                data_sanity_check,
+                                _empty_sanity_result(),
+                                {**base_sample, **sanity_run},
+                                {},
+                            ))
+                            done.add(_sr_key(sample, model, preprocessing, ner_strategy, sanity_run))
+                            write_checkpoint(config, rows, output_path, leading=leading)
     return rows
 
 
 def run_end_to_end(config: dict[str, Any], output_dir: Path) -> None:
-    print("[end_to_end] audio → STT → NER → formularz → sanity check")
+    print("[end_to_end] audio → STT → NER → RAG/answerer → formularz → sanity check")
     data_sanity_check = load_data_sanity_check()
 
     input_path = config["paths"].get("end_to_end_input") or config["paths"].get("sanity_input")
     if not input_path:
         raise SystemExit("Brak paths.end_to_end_input w configu.")
 
-    samples, fmt = _read_end_to_end_input(resolve_path(input_path), config.get("limit"))
+    audio_dir = resolve_path(config["paths"]["audio_dir"]) if config["paths"].get("audio_dir") else None
+    samples, fmt = _read_end_to_end_input(resolve_path(input_path), config.get("limit"), audio_dir)
+    output_path = output_dir / "end_to_end_results.csv"
+    leading = ("sample_id", "audio_file", "sanity_mode", "repair_scope", "status", "score")
     if not samples:
-        write_rows([], output_dir / "end_to_end_results.csv")
+        write_rows([], output_path)
         return
 
-    mode = config.get("sanity_mode", "rules")
-    modes = SANITY_MODES if mode == "all" else [mode]
-
+    sanity_runs = _sanity_runs(config)
+    offline_key_fields = ("sample_id", "sanity_mode", "repair_scope")
     if fmt == "audio":
-        rows = _run_sanity_audio(config, data_sanity_check, samples, modes, output_dir)
+        rows = _run_sanity_audio(config, data_sanity_check, samples, output_dir)
     elif fmt == "form":
-        rows = []
+        rows, done = _resume_state(config, output_path, offline_key_fields)
         for sample in samples:
             form_data = sample.get("form_data") or {}
             if isinstance(form_data, str):
                 form_data = json.loads(form_data)
+            # Uodpornienie na time-drift: dla ok-case (expected_flag False) licz wiek z PESEL-a,
+            # żeby age_pesel_mismatch nie zależał od dzisiejszej daty. Bad-case zostają nietknięte.
+            if sample.get("expected_flag") is False:
+                pesel_age = data_sanity_check._age_from_pesel(form_data.get("pesel", ""))
+                if pesel_age is not None:
+                    form_data = {**form_data, "age": str(pesel_age)}
             sample = {**sample, "synthetic": False, "gold_has_patient": ""}
-            rows.extend(_run_sanity_modes(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, modes, {}))
+            for sanity_run in sanity_runs:
+                key = _row_key({**sample, **sanity_run}, offline_key_fields)
+                if key in done:
+                    continue
+                rows.append(_run_sanity(
+                    data_sanity_check,
+                    {**sample, **sanity_run},
+                    str(sample.get("transcript") or ""),
+                    form_data,
+                    {},
+                ))
+                done.add(key)
+                write_checkpoint(config, rows, output_path, leading=leading)
     else:  # entities — rekonstrukcja formularza z gold-encji (offline)
-        rows = []
+        rows, done = _resume_state(config, output_path, offline_key_fields)
         for sample in samples:
             expected = parse_entities(sample.get("expected_entities") or {})
             sample = {**sample, "synthetic": True, "gold_has_patient": bool(expected.get("patient"))}
             form_data = build_form_data(expected)
-            rows.extend(_run_sanity_modes(data_sanity_check, sample, str(sample.get("transcript") or ""), form_data, modes, {}))
+            for sanity_run in sanity_runs:
+                key = _row_key({**sample, **sanity_run}, offline_key_fields)
+                if key in done:
+                    continue
+                rows.append(_run_sanity(
+                    data_sanity_check,
+                    {**sample, **sanity_run},
+                    str(sample.get("transcript") or ""),
+                    form_data,
+                    {},
+                ))
+                done.add(key)
+                write_checkpoint(config, rows, output_path, leading=leading)
 
-    print(f"  format wejścia: {fmt}, tryby: {', '.join(modes)}")
-    write_rows(rows, output_dir / "end_to_end_results.csv", leading=("sample_id", "audio_file", "mode", "status", "score"))
+    sanity_run_labels = [
+        run["sanity_mode"] if not run.get("repair_scope") else f"{run['sanity_mode']}:{run['repair_scope']}"
+        for run in sanity_runs
+    ]
+    print(f"  format wejścia: {fmt}, sanity_modes={','.join(sanity_run_labels)}")
+    write_rows(rows, output_path, leading=leading)
     _summarize_sanity(rows)
 
 
@@ -683,9 +1222,62 @@ def _summarize_sanity(rows: list[dict[str, Any]]) -> None:
     if not rows:
         return
     frame = pd.DataFrame(rows)
-    distribution = frame["status"].value_counts().to_dict()
-    mean_score = round(pd.to_numeric(frame["score"], errors="coerce").mean(), 4)
-    print(f"  podsumowanie: {len(rows)} wierszy, statusy={distribution}, mean score={mean_score}")
+    if "sanity_mode" in frame and "repair_scope" in frame:
+        mode_groups = frame.groupby(["sanity_mode", "repair_scope"], dropna=False)
+    elif "sanity_mode" in frame:
+        mode_groups = frame.groupby("sanity_mode", dropna=False)
+    else:
+        mode_groups = [("", frame)]
+
+    for group_key, group in mode_groups:
+        if isinstance(group_key, tuple):
+            sanity_mode, repair_scope = group_key
+        else:
+            sanity_mode, repair_scope = group_key, ""
+        distribution = group["status"].value_counts().to_dict()
+        pipeline_distribution = _nonempty_value_counts(group, "pipeline_status")
+        stage_distribution = _nonempty_value_counts(group, "suspected_stage")
+        reason_distribution = dict(Counter(_flatten_pipe_values(group["stage_warning_reason"].tolist())).most_common(10)) if "stage_warning_reason" in group else {}
+        issue_codes = _flatten_pipe_values(group["issue_codes"].dropna().tolist()) if "issue_codes" in group else []
+        mean_score = round(pd.to_numeric(group["score"], errors="coerce").mean(), 4)
+        bucket_distribution = group["score_bucket"].value_counts().to_dict() if "score_bucket" in group else {}
+        label = sanity_mode or "rules"
+        if repair_scope:
+            label = f"{label}:{repair_scope}"
+        print(
+            f"  [{label}] podsumowanie: {len(group)} wierszy, statusy={distribution}, "
+            f"score_bucket={bucket_distribution}, mean score={mean_score}"
+        )
+        if pipeline_distribution:
+            print(f"  [{label}] pipeline_status={pipeline_distribution}")
+        if stage_distribution:
+            print(f"  [{label}] suspected_stage={stage_distribution}")
+        if reason_distribution:
+            print(f"  [{label}] stage_warning_reason={reason_distribution}")
+        if issue_codes:
+            print(f"  [{label}] najczęstsze issue_codes={dict(Counter(issue_codes).most_common(10))}")
+
+        evaluable = [row for row in group.to_dict("records") if isinstance(row.get("expected_flag"), bool)]
+        if evaluable:
+            tp = sum(1 for row in evaluable if row["expected_flag"] and row["status"] != "ok")
+            tn = sum(1 for row in evaluable if not row["expected_flag"] and row["status"] == "ok")
+            fp = sum(1 for row in evaluable if not row["expected_flag"] and row["status"] != "ok")
+            fn = sum(1 for row in evaluable if row["expected_flag"] and row["status"] == "ok")
+            print(f"  [{label}] zgodność z expected_flag: {tp + tn}/{len(evaluable)} (TP={tp} TN={tn} FP={fp} FN={fn})")
+
+        severity_evaluable = [row for row in group.to_dict("records") if row.get("expected_severity")]
+        if severity_evaluable:
+            matches = sum(1 for row in severity_evaluable if bool(row.get("severity_match")))
+            print(f"  [{label}] zgodność z expected_severity: {matches}/{len(severity_evaluable)}")
+
+        issue_code_evaluable = [row for row in group.to_dict("records") if row.get("expected_issue_codes")]
+        if issue_code_evaluable:
+            matches = sum(
+                1
+                for row in issue_code_evaluable
+                if bool(row.get("expected_issue_codes_covered", row.get("issue_code_match")))
+            )
+            print(f"  [{label}] pokrycie expected_issue_codes: {matches}/{len(issue_code_evaluable)}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -699,6 +1291,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Eval całego pipeline'u 4Diagnosis (konfiguracja w config.yaml).")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG, help="ścieżka do config.yaml")
     parser.add_argument("--stages", nargs="+", default=None, help="nadpisuje stages z configu (stt / ner / end_to_end)")
+    parser.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="policz od zera (domyślnie: wznawiaj, pomijając wiersze już obecne w results/*.csv)",
+    )
     return parser.parse_args()
 
 
@@ -708,12 +1305,15 @@ def main() -> None:
         raise SystemExit(f"Brak pliku config: {args.config}")
 
     config = load_config(args.config)
+    if args.no_resume:
+        config["resume"] = False
     stages = args.stages if args.stages is not None else config.get("stages", [])
     output_dir = resolve_path(config["paths"]["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Config: {args.config}")
-    print(f"Etapy: {', '.join(stages) or '(brak)'}\n")
+    print(f"Etapy: {', '.join(stages) or '(brak)'}")
+    print(f"Wznawianie: {'włączone' if _resume_enabled(config) else 'wyłączone (od zera)'}\n")
 
     for stage in stages:
         runner = STAGE_RUNNERS.get(stage)
