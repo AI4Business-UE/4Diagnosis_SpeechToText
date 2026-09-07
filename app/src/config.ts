@@ -1,6 +1,8 @@
-import { AudioConfig } from "./types";
+import type { AudioConfig } from "./types/config";
 
 export const WEBSOCKET_URL = "ws://localhost:8000/ws/audio/";
+
+export const AUDIO_WORKLET_URL = "/audio-worklets/BaseProcessor.js";
 
 export const AUDIO_CONFIG: AudioConfig = {
   sampleRate: 16000,
