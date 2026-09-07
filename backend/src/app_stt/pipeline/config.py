@@ -18,7 +18,7 @@ from .stages.rag.qdrant.client import QdrantClientMode
 @dataclass
 class PipelineConfig:
     # ── STT ──────────────────────────────────────────────────────────────────
-    # whisper_local | whisper hosted
+    # whisper_local | whisper_hosted
     stt_model: str = "whisper_hosted"
 
     # HuggingFace model ID for local whisper

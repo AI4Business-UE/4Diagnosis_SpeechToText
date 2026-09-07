@@ -32,7 +32,13 @@ cd 4Diagnosis_SpeechRecorder
 Utwórz plik `.env` w katalogu `backend` z następującą zawartością:
 
 ```bash
-OPENAI_KEY='twoj_klucz_openai'
+OPENROUTER_API_KEY='twoj_klucz_openrouter'
+```
+
+lub:
+
+```bash
+OPENAI_API_KEY='twoj_klucz_openai'
 ```
 
 #### 3. Frontend (React + Bun)
@@ -112,14 +118,14 @@ curl http://localhost:8000
 ### 🔧 Konfiguracja
 
 #### Frontend
-Konfiguracja API znajduje się w `app/src/lib/apiService.ts` (domyślnie `http://localhost:8000/api`).
+Konfiguracja WebSocket i Audio znajduje się w:
+- `app/src/config.ts`
 
-Konfiguracja WebSocket znajduje się w:
-- `app/src/pages/RecordDescription/config.ts`
-- `app/src/hooks/useAudioRecorder.ts`
-- `app/src/pages/WebSocketRecordingPage.tsx`
+Dodatkowa konfiguracja dotycząca resamplingu jest w:
+- `app/src/audio-worklets/BaseProcessor.ts`
 
-Wszystkie są skonfigurowane do używania portu 8000.
+Aplikacja jest domyślnie skonfigurowana do używania portu 8000 dla backendu.
+W przypadku wysyłania audio, frontend normalizuje sample rate do 16000 Hz.
 
 #### Backend
 Główne ustawienia w `backend/src/stt/settings.py`:
@@ -133,10 +139,14 @@ Główne ustawienia w `backend/src/stt/settings.py`:
 4Diagnosis_SpeechRecorder/
 ├── app/                    # Frontend (React + Bun)
 │   ├── src/
-│   │   ├── components/     # Komponenty React
+|   |   ├── audio-worklets # Worklety do grafu przetwarzania dźwięku
+│   │   ├── components/    # Komponenty React
 │   │   ├── pages/         # Strony aplikacji
-│   │   ├── lib/           # Utility functions
-│   │   └── contexts/      # React contexts
+│   │   ├── lib/           # Logika biznesowa
+│   │   ├── contexts/      # React contexts
+|   |   ├── utils/         # Funkcjonalności pomocnicze
+|   |   ├── types/         # Typy TypeScript
+|   |   └── hooks/         # Custom hooki Reacta
 │   ├── package.json
 │   └── tsconfig.json
 ├── backend/               # Backend (Django)
@@ -154,7 +164,7 @@ Główne ustawienia w `backend/src/stt/settings.py`:
 
 ### Nagrywanie i transkrypcja
 - Strumieniowe nagrywanie audio przez WebSocket
-- Automatyczna transkrypcja w czasie rzeczywistym (Whisper)
+- Ekstrakcja Named-Entity Recognition elementów badania
 - Korygowanie tekstu przez LLM
 - Generowanie strukturalnych opisów makroskopowych
 
