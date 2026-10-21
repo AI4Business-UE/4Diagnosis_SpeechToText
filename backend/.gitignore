@@ -3,3 +3,14 @@ __pycache__
 
 *.env
 *.sqlite3
+preprocessed_audio/*
+
+src/app_stt/data/tmp_audio
+# Temporary audio files
+src/app_stt/data/tmp_audio/*.wav
+src/app_stt/data/tmp_audio/*.converted.wav
+app_stt/data/tmp_audio/
+app_stt/data/tmp_audio/*.wav
+app_stt/data/tmp_audio/*.converted.wav
+src/app_stt/data/tmp_audio
+src/preprocessed_audio
