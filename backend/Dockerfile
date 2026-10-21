@@ -20,6 +20,6 @@ RUN python3 -m pip install --upgrade pip \
 
 COPY . /app/
 
-EXPOSE 8010
+EXPOSE 8000
 
-CMD ["bash", "-c", "PYTHONPATH=src daphne -b 0.0.0.0 -p 8010 stt.asgi:application"]
+CMD ["bash", "-c", "PYTHONPATH=src daphne -b 0.0.0.0 -p 8000 stt.asgi:application"]
