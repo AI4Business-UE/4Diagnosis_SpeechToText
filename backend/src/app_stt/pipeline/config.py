@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -89,4 +90,4 @@ class PipelineConfig:
     vad_min_silence_duration_ms: int = 100
     vad_speech_pad_ms: int = 200
 
-    preprocessing_output_dir: str = "./preprocessed_audio"
+    preprocessing_output_dir: str = (Path(__file__).parent.parent / "data" / "preprocessed_audio").absolute()
