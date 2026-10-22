@@ -21,8 +21,7 @@ PROMPT = """
     6. FORMATOWANIE DAT I WYMIARÓW:
         - Wymiary zapisuj w formacie cyfrowym z symbolem 'x', np.: "2 x 1,5 x 3 cm" (zamiast "dwa na jeden i pół na trzy").
         - Zadbaj o poprawną kapitalizację akronimów medycznych.
-    7. FORMATOWANIE DANYCH OSOBOWYCH: Imiona i nazwiska podawaj zawsze z dużej litery. Nie traktuj przedstawiania danych osobowych pacjenta jako szumu.
-    8. FORMATOWANIE NUMERÓW PESEL: Numery PESEL przedstawiaj w postaci jednej liczby, np. 89010512347. Jeśli pojawią się w postaci rozdzielonej (np. "89, 01, 05..." albo "8901. 05123. ...", lub "89-01-05..."), to złącz je w jedną liczbę.
+    7. NIE ZAŁĄCZAJ DANYCH OSOBOWYCH I PESELU: Pomiń dane osobowe pacjenta w oraz numer PESEL w poprawionej transkrypcji.
 
     ## Kontekst pomocniczy
     Aby ułatwić Ci zadanie, otrzymujesz poniżej wyekstraktowane jednostki (NER) - które przedstawiają kluczowe komponenty badania, np. organy i zmiany. Traktuj je jako drogowskaz i upewnij się, że nie zmieniasz przypisanych do nich faktów.
