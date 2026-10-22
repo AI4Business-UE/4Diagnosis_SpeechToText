@@ -13,4 +13,5 @@ app_stt/data/tmp_audio/
 app_stt/data/tmp_audio/*.wav
 app_stt/data/tmp_audio/*.converted.wav
 src/app_stt/data/tmp_audio
+src/app_stt/data/preprocessed_audio
 src/preprocessed_audio
