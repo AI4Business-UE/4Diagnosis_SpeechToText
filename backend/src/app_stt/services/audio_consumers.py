@@ -8,6 +8,7 @@ import json
 import traceback
 import struct
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -48,7 +49,11 @@ class AudioConsumer(AsyncWebsocketConsumer):
             self.recording_state = RecordingState.RECORDING
             
             # Readonly IO
-            self.audio_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav", dir=self.tmp_dir)
+            self.audio_file = tempfile.NamedTemporaryFile(
+                delete=False, 
+                suffix=".wav", 
+                dir=self.tmp_dir
+            )
             # Write interface for received chunks
             self.wave = wave.open(self.audio_file.name, 'wb')
             self.wave.setnchannels(1)
@@ -82,9 +87,17 @@ class AudioConsumer(AsyncWebsocketConsumer):
         
         if self.wave is not None:
             self.wave.close()
-        if self.audio_file is not None and not self.audio_file.closed:
-            self.audio_file.flush()
-            self.audio_file.close()
+            self.wave = None
+        if self.audio_file is not None:
+            if not self.audio_file.closed:
+                self.audio_file.flush()
+                self.audio_file.close()
+            
+            audio_file_path = Path(self.audio_file.name)
+            if audio_file_path.is_file():
+                audio_file_path.unlink()
+               
+            self.audio_file = None
                 
         if self.recording_state == RecordingState.RECORDING:
             self.recording_state = RecordingState.IDLE
@@ -213,7 +226,9 @@ class AudioConsumer(AsyncWebsocketConsumer):
                     "type": "error",
                     "message": f"Błąd transkrypcji: {str(e)}"
                 }))
-                await self._cleanup_recording()
+        finally:
+            self.pipeline.cleanup(audio_path)
+            await self._cleanup_recording()
                 
             
     async def receive(self, text_data=None, bytes_data=None):
@@ -320,8 +335,7 @@ class AudioConsumer(AsyncWebsocketConsumer):
                 self.audio_recording_task = None
             
             self.wave.close()
-            self.audio_file.close()
-            
+            self.audio_file.close()   
             
             await self._run_pipeline_and_send(
                 self.audio_file.name, self.patient_metadata.copy()

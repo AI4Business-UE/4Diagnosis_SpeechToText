@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import logging
+from pathlib import Path
 
 from .config import PipelineConfig
 from .stages.preprocessing import AudioPreprocessor
@@ -121,9 +122,18 @@ class Pipeline:
             "retrieved_templates": templates,
             "corrected_transcript": corrected_transcript
         }
+        
+    def cleanup(self, audio_path: str | Path):
+        """
+        Cleans up resources created by pipeline.
+        Finds the preprocessed audio file by `audio_path`.
+        The original temporary audio file 
+        should be cleaned up by the caller.
+        """
+        self.preprocessor.cleanup(audio_path)
 
     # ── private ───────────────────────────────────────────────────────────────
-
+    
     def _build_stt(self):
         model = self.config.stt_model
         if model == "whisper_local":
