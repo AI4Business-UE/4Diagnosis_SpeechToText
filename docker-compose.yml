@@ -5,12 +5,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend/src:/app
     env_file:
       - ./backend/.env
     environment:
       - PYTHONUNBUFFERED=1
       - DOCKERENV=1
+      - HF_HUB_DISABLE_PROGRESS_BARS=1
     depends_on:
       - qdrant
 

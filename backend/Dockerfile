@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
 RUN apt update && apt install -y \
     python3 \
@@ -11,15 +12,14 @@ RUN apt update && apt install -y \
     redis-tools \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-COPY requirements.txt /app/
+COPY requirements.txt /tmp/requirements.txt
 
 RUN python3 -m pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r /tmp/requirements.txt
 
-COPY . /app/
+COPY src /app
+WORKDIR /app
 
 EXPOSE 8000
 
-CMD ["bash", "-c", "PYTHONPATH=src daphne -b 0.0.0.0 -p 8000 stt.asgi:application"]
+ENTRYPOINT ["daphne", "-b", "0.0.0.0", "-p", "8000", "stt.asgi:application"]
