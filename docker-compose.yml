@@ -12,6 +12,7 @@ services:
       - PYTHONUNBUFFERED=1
       - DOCKERENV=1
       - HF_HUB_DISABLE_PROGRESS_BARS=1
+    platform: linux/amd64
     depends_on:
       - qdrant
 
