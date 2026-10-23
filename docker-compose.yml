@@ -41,17 +41,6 @@ services:
         target: /qdrant/config/production.yaml
     volumes:
       - ./qdrant_data:/qdrant/storage
-    healthcheck:
-      restart: always
-      image: curlimages/curl:latest
-      entrypoint: ["/bin/sh", "-c", "--", "while true; do sleep 30; done;"]
-      depends_on:
-        - qdrant
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://qdrant:6333/readyz"]
-        interval: 10s
-        timeout: 2s
-        retries: 5
 
 configs:
   qdrant_config:
