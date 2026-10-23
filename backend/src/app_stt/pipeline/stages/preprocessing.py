@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -8,6 +9,7 @@ import numpy as np
 if TYPE_CHECKING:
     from ..config import PipelineConfig
 
+logger = logging.getLogger(__name__)
 
 class AudioPreprocessor:
     """
@@ -105,11 +107,30 @@ class AudioPreprocessor:
             "status": "ok",
             "error": None,
         }
+        
+    def cleanup(self, audio_file_path: str | Path):
+        """
+        Should be called after finished processing preprocessed 
+        audio file to delete it from disk.
+        """
+        path = Path(audio_file_path)
+        name = path.name
+        
+        audio_file = self.output_dir / name
+        
+        if audio_file.is_file():
+            audio_file.unlink()
+            logger.debug(f"Preprocessed audio file: {audio_file.stem} deleted.")
+            return
+
+        logger.warning(
+            f"Preprocessed audio file: {audio_file.stem} not found in {self.output_dir} during cleanup."
+        )
 
     # ── private helpers ───────────────────────────────────────────────────────
 
     def _build_output_path(self, input_path: Path) -> Path:
-        suffixes = []
+        """suffixes = []
         if self.cfg.use_volume_normalization:
             suffixes.append("norm")
         if self.cfg.use_bandpass_filter:
@@ -118,8 +139,9 @@ class AudioPreprocessor:
             suffixes.append("denoise")
         if self.cfg.use_vad:
             suffixes.append("vad")
-        suffix_str = "_" + "_".join(suffixes) if suffixes else ""
-        name = f"{input_path.stem}_16khz_mono{suffix_str}.wav"
+        suffix_str = "_" + "_".join(suffixes) if suffixes else """""
+        #name = f"{input_path.stem}_16khz_mono{suffix_str}.wav"
+        name = f"{input_path.stem}.wav"
         return self.output_dir / name
 
     def _normalize_peak(self, audio: np.ndarray) -> tuple[np.ndarray, dict]:
@@ -217,3 +239,4 @@ class AudioPreprocessor:
         self._vad_model = model
         self._vad_utils = (get_speech_timestamps, collect_chunks)
         return model, get_speech_timestamps, collect_chunks
+    

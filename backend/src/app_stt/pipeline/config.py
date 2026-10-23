@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -14,6 +16,8 @@ import qdrant_client.models as qdrant_models
 
 from .stages.rag.qdrant.client import QdrantClientMode
 
+
+DOCKER_ENV = os.environ.get('DOCKERENV')
 
 @dataclass
 class PipelineConfig:
@@ -53,7 +57,7 @@ class PipelineConfig:
 
     # ── RAG ────────────────────────────────────────────────────
     macro_descs_collection = "macro_descriptions"
-    qdrant_connection_string = "localhost:6333"
+    qdrant_connection_string = "qdrant" if DOCKER_ENV else "localhost:6333"
     vector_db_provider: str = "qdrant"
     dense_encoder_model: str = "intfloat/multilingual-e5-large"
     sparse_encoder_model: str = "Qdrant/bm25"
@@ -86,4 +90,4 @@ class PipelineConfig:
     vad_min_silence_duration_ms: int = 100
     vad_speech_pad_ms: int = 200
 
-    preprocessing_output_dir: str = "./preprocessed_audio"
+    preprocessing_output_dir: str = (Path(__file__).parent.parent / "data" / "preprocessed_audio").absolute()
