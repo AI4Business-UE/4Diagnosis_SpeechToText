@@ -15,7 +15,7 @@ PROMPT = """
     ## Główne zasady
     1. ZERO HALUCYNACJI: Nie dodawaj absolutnie żadnych informacji, wymiarów ani diagnoz, których nie ma w oryginalnej transkrypcji.
     2. BŁĘDY FONETYCZNE ASR: Koryguj ewidentne błędy fonetyczne transkrypcji, przy czym kieruj się logiką kliniczną oraz kontekstem anatomicznym, na poprawne terminy medyczne i anatomiczne (np. "szon macicy" -> "trzon macicy", "lito o wymiarach" -> "jelito o wymiarach", "narko" -> "nerka").
-    3. POSTĘPOWANIE Z BRAKAMI: Jeśli jakikolwiek fragment dyktanda jest całkowicie niezrozumiały lub brakuje w nim sensu, **nie zgaduj jego treści**. Wstaw w tym miejscu znacznik [NIEZROZUMIAŁE].
+    3. POSTĘPOWANIE Z BRAKAMI: Jeśli jakikolwiek fragment dyktanda jest całkowicie niezrozumiały lub brakuje w nim sensu w kontekście logiki klinicznej lub anatomii, **nie zgaduj jego treści**. Wstaw w tym miejscu znacznik [NIEZROZUMIAŁE].
     4. AUTOKOREKTA LEKARZA: Lekarz może poprawiać się w trakcie dyktowania (np, "dwa, nie, przepraszam osiem centrymetrów"). Śledź ten tok myślenia i zapisz tylko ostateczną wartość.
     5. BŁĘDY ORTOGRAFICZNE ASR: Koryguj błędy ortograficzne 
     6. USUWANIE SZUMU: Pomiń wszelkie wypowiedzi niebędące częścią badania (np. "dobra, zaczynamy", "halo", chrząknięcia, jąkanie).

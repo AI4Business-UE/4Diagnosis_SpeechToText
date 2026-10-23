@@ -165,7 +165,7 @@ export default function Recorder() {
                 onChange={(e) => handleFieldUpdate("description", e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 rows={6}
-                placeholder="Transkrypcja pojawi się tutaj automatycznie podczas nagrywania..."
+                placeholder="Transkrypcja pojawi się tutaj automatycznie po zakończeniu nagrywania..."
               />
             </div>
 
