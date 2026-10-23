@@ -22,10 +22,10 @@ DOCKER_ENV = os.environ.get('DOCKERENV')
 @dataclass
 class PipelineConfig:
     # ── STT ──────────────────────────────────────────────────────────────────
-    # whisper_local | whisper_hosted
-    stt_model: str = "whisper_hosted"
+    # whisper_local | whisper_hosted | gpt-transcribe
+    stt_model: str = "gpt-transcribe"
 
-    # HuggingFace model ID for local whisper
+    # HuggingFace model ID for local/hosted whisper
     # choices: whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3, whisper-large-v3-turbo
     whisper_model: str = "whisper-large-v3"
     

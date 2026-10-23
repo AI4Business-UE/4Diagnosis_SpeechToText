@@ -1,4 +1,4 @@
-[
+MEDICAL_KEYWORDS = [
   "bioptat",
   "brodawka",
   "brodawkowaty",

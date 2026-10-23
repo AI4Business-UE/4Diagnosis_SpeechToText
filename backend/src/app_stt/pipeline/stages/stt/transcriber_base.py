@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class WhisperBase(ABC):
+class TranscriberBase(ABC):
     LANGUAGE = "pl"
     
     @abstractmethod

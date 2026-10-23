@@ -4,9 +4,9 @@ import torch
 import librosa
 from transformers import WhisperForConditionalGeneration, WhisperProcessor, pipeline
 
-from .whisper_base import WhisperBase
+from .transcriber_base import TranscriberBase
 
-class WhisperLocal(WhisperBase):
+class WhisperLocal(TranscriberBase):
     """
     Local Whisper STT model via HuggingFace Transformers.
 
