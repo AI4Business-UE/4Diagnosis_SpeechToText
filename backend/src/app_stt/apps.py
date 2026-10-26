@@ -1,3 +1,4 @@
+import os
 from django.apps import AppConfig
 
 
@@ -6,10 +7,11 @@ class AppSttConfig(AppConfig):
     name = 'app_stt'
 
     def ready(self): 
-        import logging
-        from app_stt.pipeline import get_pipeline
-        logger = logging.getLogger(__name__)
-        
-        logger.info("Initializing ML Pipeline into memory...")
-        get_pipeline()
-        logger.info("ML Pipeline ready.")
+        if not os.environ.get("TESTING"):
+            import logging
+            from app_stt.pipeline import get_pipeline
+            logger = logging.getLogger(__name__)
+            
+            logger.info("Initializing ML Pipeline into memory...")
+            get_pipeline()
+            logger.info("ML Pipeline ready.")
