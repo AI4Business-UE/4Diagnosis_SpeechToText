@@ -12,7 +12,7 @@ class GPTTranscribe(TranscriberBase):
             result = client.audio.transcriptions.create(
                 model="gpt-transcribe",
                 file=f,
-                prompt="Nagranie badania patomorfologicznego w języku polskim.",
+                prompt="Nagranie badania patomorfologicznego w języku polskim. Lekarz mówiący może okazjonalnie się poprawiać, np. poprawnie 'torbielowaty, nie, litowy', zamiast 'torbielowaty, nielitowy.'",
                 extra_body={
                     "keywords": MEDICAL_KEYWORDS,
                     "languages": ["pl"]

@@ -50,7 +50,7 @@ ZASADY:
 2. Jeśli wartość nie jest podana, użyj null.
 3. Nie zgaduj imienia, nazwiska, wieku ani PESEL-u.
 4. NIE WYLICZAJ WIEKU Z PESEL-u - Ekstraktuj wiek WYŁĄCZNIE jeśli pojawi się w treści transkrypcji.
-5. PESEL zwróć jako tekst z samymi cyframi (11 cyfr). Jeśli PESEL nie jest pełny (nie ma 11 cyfr) to wstaw null. Jeśli PESEL pojawi się w formie cyfr odzielonych spacją lub w formie tekstu, to złącz go w jeden znakowy łańcuch cyfr. 
+5. PESEL zwróć jako tekst z samymi cyframi (11 cyfr). Jeśli PESEL pojawi się w formie cyfr odzielonych spacją lub w formie tekstu, to złącz go w jeden znakowy łańcuch cyfr. Jeśli w transkrypcji nie pojawi się 11 cyfr (słownie bądź numerycznie) w kontekście peselu, to wstaw null.
 6. Ignoruj informacje o materiale, narządach, zmianach, wymiarach i kolorach.
 7. Zwróć wyłącznie poprawny JSON zgodny ze schematem.
 8. Imię i nazwisko zwróć w podstawowej nieodmienionej formie.
@@ -64,6 +64,9 @@ Odpowiedź: {{"patient": {{"first_name": null, "last_name": null, "pesel": null,
 
 Tekst: "Mamy pacjenta Tomasza Wiśniewskiego PESEL 6 4 0 siedem dwa osiem jeden dwa trzy cztery pięć lat 60."
 Odpowiedź: {{"patient": {{"first_name": "Tomasz", "last_name": "Wiśniewski", "pesel": "64072812345", "age": 60}}}}
+
+Tekst: "Mamy pacjenta Marcina Jakuszewskiego PESEL 64 07 28 12 34 5 lat 23."
+Odpowiedź: {{"patient": {{"first_name": "Marcin", "last_name": "Jakuszewski", "pesel": "64072812345", "age": 23}}}}
 
 SCHEMAT JSON:
 {json.dumps(_schema, ensure_ascii=False, indent=2)}
