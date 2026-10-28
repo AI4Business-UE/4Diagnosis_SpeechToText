@@ -21,6 +21,7 @@ export default function KeywordDictionary(
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const requestRef = useRef(false);
     const fetchKeywords = async () => {
+        setKeywordsList([]);
         try {
             const result = await fetch(`${API_URL}/keyword/list`);
             const body = await result.json();
@@ -62,7 +63,14 @@ export default function KeywordDictionary(
               <h2 className="text-2xl font-semibold text-center mb-4">Słownik</h2>
               { errorMessage !== null && <h2 className="text-red-500 font-semibold text-center">{errorMessage}</h2> }
               <ul className="flex flex-col gap-4 max-h-[80%] overflow-x-auto">
-                {keywordsList.map(keyword => <Keyword key={keyword.id} text={keyword.text} />)}
+                {keywordsList.map(
+                    keyword => <Keyword 
+                        key={keyword.id} 
+                        id={keyword.id} 
+                        text={keyword.text}
+                        onKeywordDelete={fetchKeywords}
+                    />
+                )}
               </ul>
             </Card>
         </div>
