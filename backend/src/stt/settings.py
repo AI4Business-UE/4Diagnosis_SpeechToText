@@ -43,12 +43,13 @@ if SECRET_KEY == 'django-insecure-CHANGE_ME_IN_DEVELOPMENT':
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
-
+CORS_ALLOWED_ORIGINS = ['http://localhost:3010']
 
 # Application definition
 
 INSTALLED_APPS = [
     'app_stt',
+    'corsheaders',
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
