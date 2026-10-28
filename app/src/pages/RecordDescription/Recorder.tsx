@@ -29,7 +29,7 @@ export default function Recorder() {
   const [isDictionaryVisible, setDictionaryVisibile] = useState(false);
 
   return (
-    <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 min-h-screen w-full">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 min-h-screen w-full">
       <KeywordDictionary isDictionaryVisible={isDictionaryVisible} onDialogClose={() => setDictionaryVisibile(false)} />
       <div className="absolute top-10 right-21">
         <Button onClick={() => setDictionaryVisibile(true)} variant="outline" size="lg">
