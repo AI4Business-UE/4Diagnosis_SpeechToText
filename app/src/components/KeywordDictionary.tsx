@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { useEffect, useRef, useState } from "react";
 import { API_URL } from "@/config";
+import { Keyword } from "./ui/Keyword";
 
 type KeywordList = { id: number; text: string; }[];
 
@@ -52,16 +53,16 @@ export default function KeywordDictionary(
                 className="absolute bg-slate-800 opacity-50 inset-0"
                 onClick={onDialogClose}
             ></div>
-            <Card className="absolute max-w-6xl w-[90%] h-100 lg:w-[35%] top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 z-10 p-4 flex flex-col">
+            <Card className="absolute max-w-6xl w-[90%] h-100 lg:w-[25%] top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 z-10 p-4 flex flex-col">
               <div className="absolute top-4 right-4">
-                <Button variant="destructive" size="icon" onClick={onDialogClose}>
+                <Button variant="outline" size="icon" onClick={onDialogClose}>
                   <X />
                 </Button>
               </div>
               <h2 className="text-2xl font-semibold text-center mb-4">Słownik</h2>
               { errorMessage !== null && <h2 className="text-red-500 font-semibold text-center">{errorMessage}</h2> }
-              <ul className="max-h-[80%] overflow-x-auto">
-                {keywordsList.map(keyword => <li key={keyword.id}>{keyword.text}</li>)}
+              <ul className="flex flex-col gap-4 max-h-[80%] overflow-x-auto">
+                {keywordsList.map(keyword => <Keyword key={keyword.id} text={keyword.text} />)}
               </ul>
             </Card>
         </div>
