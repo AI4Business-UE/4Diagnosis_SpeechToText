@@ -39,6 +39,10 @@ export default function KeywordDictionary(
             fetchKeywords();
             requestRef.current = true;
         }
+
+        return () => {
+            requestRef.current = false;
+        }
     }, [isDictionaryVisible]);
 
     return (
@@ -48,7 +52,7 @@ export default function KeywordDictionary(
                 className="absolute bg-slate-800 opacity-50 inset-0"
                 onClick={onDialogClose}
             ></div>
-            <Card className="absolute max-w-6xl w-[90%] lg:w-[35%] top-1/2 right-1/2 translate-x-1/2 translate-y-[-200%] z-10 p-4 flex flex-col">
+            <Card className="absolute max-w-6xl w-[90%] h-100 lg:w-[35%] top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 z-10 p-4 flex flex-col">
               <div className="absolute top-4 right-4">
                 <Button variant="destructive" size="icon" onClick={onDialogClose}>
                   <X />
@@ -56,7 +60,7 @@ export default function KeywordDictionary(
               </div>
               <h2 className="text-2xl font-semibold text-center mb-4">Słownik</h2>
               { errorMessage !== null && <h2 className="text-red-500 font-semibold text-center">{errorMessage}</h2> }
-              <ul>
+              <ul className="max-h-[80%] overflow-x-auto">
                 {keywordsList.map(keyword => <li key={keyword.id}>{keyword.text}</li>)}
               </ul>
             </Card>
