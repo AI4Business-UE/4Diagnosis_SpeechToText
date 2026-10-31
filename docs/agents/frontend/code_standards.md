@@ -13,3 +13,7 @@ class (kept in `app/src/lib/controllers`) can be introduced
 which orchestrates their work. In this casethe managers 
 should extend `EventTarget` interface 
 and communicate in Subscriber-Publisher pattern.
+
+### Testing
+
+Tests should live in `tests/<testedPackageName>/<testedArtifactName.test.tsx>`.
