@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from app_stt.models import Keyword
 from app_stt.data.medical_keywords import MEDICAL_KEYWORDS
@@ -9,6 +9,11 @@ class Command(BaseCommand):
     
     
     def handle(self, *args, **kwargs):
+        if Keyword.objects.exists():
+            raise CommandError(
+                "Katalog zawiera już hasła. Polecenie można uruchomić tylko dla pustej bazy."
+            )
+
         self.stdout.write(
             self.style.NOTICE(f'COMMAND: Indexing keywords...')
         )

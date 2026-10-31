@@ -38,7 +38,7 @@ class KeywordCreateApiTests(TestCase):
         errors = response.json()['detail']
 
         self.assertIn("text", errors)
-        self.assertIn("Keyword with this Text already exists.", errors["text"])
+        self.assertIn("Hasło o takiej nazwie już istnieje.", errors["text"])
 
 
     def test_returns_400_if_empty_keyword(self):
@@ -54,7 +54,7 @@ class KeywordCreateApiTests(TestCase):
         errors = response.json()['detail']
 
         self.assertIn("text", errors)
-        self.assertIn("This field cannot be blank.", errors["text"])
+        self.assertIn("Hasło nie może być puste.", errors["text"])
 
 
     def test_returns_400_if_none_keyword(self):

@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Mic, Play, Square, Wifi, WifiOff, Book, X } from "lucide-react";
+import { Mic, Play, Square, Book } from "lucide-react";
 import SpinnerLoader from "@/components/ui/SpinnerLoader";
 import TextareaAutosize from 'react-textarea-autosize';
 
 import AudioVisualizer from "../../components/AudioVisualizer";
 import useRecordingState from "../../hooks/useRecordingState";
 import ConnectionControl from "@/components/ui/ConnectionControl";
-import { useState } from "react";
-import KeywordDictionary from "../../components/KeywordDictionary";
+import { Link } from "react-router-dom";
 
 export default function Recorder() { 
   const { 
@@ -26,16 +25,13 @@ export default function Recorder() {
   const time = timer.timerState;
   const patientMetadata = metadata;
 
-  const [isDictionaryVisible, setDictionaryVisibile] = useState(false);
-
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 min-h-screen w-full">
-      <KeywordDictionary isDictionaryVisible={isDictionaryVisible} onDialogClose={() => setDictionaryVisibile(false)} />
-      <div className="absolute top-10 right-21">
-        <Button onClick={() => setDictionaryVisibile(true)} variant="outline" size="lg">
+      <div className="absolute top-10 right-6 sm:right-10">
+        <Link to="/keywords" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-6 text-sm font-medium shadow-sm hover:bg-slate-50">
           <Book />
           Słownik
-        </Button>
+        </Link>
       </div>
       <div className="mb-6 p-4 bg-white/90 rounded-lg shadow-md">
         <div className="flex items-center gap-3">

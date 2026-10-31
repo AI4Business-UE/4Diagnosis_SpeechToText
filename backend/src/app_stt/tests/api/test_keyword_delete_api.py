@@ -22,3 +22,4 @@ class KeywordDeleteApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+        self.assertIn("Nie znaleziono hasła", response.json()["detail"])

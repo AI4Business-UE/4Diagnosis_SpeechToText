@@ -1,78 +1,126 @@
-import { X } from "lucide-react";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { useEffect, useRef, useState } from "react";
-import { API_URL } from "@/config";
-import { Keyword } from "./ui/Keyword";
+import { ArrowLeft, Plus, Search } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useState, type FormEvent } from "react";
 
-type KeywordList = { id: number; text: string; }[];
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import useKeywordCatalog, { type KeywordEntry } from "@/hooks/useKeywordCatalog";
+import useKeywordSearch from "@/hooks/useKeywordSearch";
+import { Keyword } from "@/components/Keyword";
 
-export default function KeywordDictionary(
-    { 
-        isDictionaryVisible, 
-        onDialogClose
-    }: 
-    { 
-        isDictionaryVisible: boolean;
-        onDialogClose: () => void;
+export default function KeywordDictionary() {
+  const { keywords, error, isLoading, create, update, remove } = useKeywordCatalog();
+  const { query, setQuery, visibleKeywords } = useKeywordSearch(keywords);
+  const [newKeyword, setNewKeyword] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+
+  async function handleCreate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const created = await create(newKeyword);
+    if (created) {
+      setNewKeyword("");
+      setIsAdding(false);
     }
-) {
-    const [keywordsList, setKeywordsList] = useState<KeywordList>([]);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const requestRef = useRef(false);
-    const fetchKeywords = async () => {
-        setKeywordsList([]);
-        try {
-            const result = await fetch(`${API_URL}/keyword/list`);
-            const body = await result.json();
-            if (result.ok && Array.isArray(body)) {
-                setKeywordsList(body);
-            } else {
-                const errors = Object.values(body);
-                if (errors.length > 0)  setErrorMessage(errors[0] as string);
-            }
-        } catch (err) {
-            setErrorMessage("Nie udało się wysłać żądania.");
-        }
-    };
+  }
 
-    useEffect(() => {
-        if (!requestRef.current && isDictionaryVisible) {
-            fetchKeywords();
-            requestRef.current = true;
-        }
+  async function handleDelete(keyword: KeywordEntry) {
+    if (!window.confirm(`Czy na pewno chcesz usunąć hasło „${keyword.text}”?`)) return;
+    await remove(keyword.id);
+  }
 
-        return () => {
-            requestRef.current = false;
-        }
-    }, [isDictionaryVisible]);
+  return (
+    <main className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-8">
+      <div className="mx-auto w-full max-w-4xl">
+        <Link
+          to="/record-description"
+          className="mb-6 inline-flex items-center gap-2 rounded-md px-2 py-2 text-blue-800 hover:bg-white/70 focus-visible:outline focus-visible:outline-2"
+        >
+          <ArrowLeft size={18} />
+          Wróć do nagrywania
+        </Link>
 
-    return (
-        isDictionaryVisible && 
-        <div className="fixed inset-0 z-50">
-            <div 
-                className="absolute bg-slate-800 opacity-50 inset-0"
-                onClick={onDialogClose}
-            ></div>
-            <Card className="absolute max-w-6xl w-[90%] h-100 lg:w-[25%] top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 z-10 p-4 flex flex-col">
-              <div className="absolute top-4 right-4">
-                <Button variant="outline" size="icon" onClick={onDialogClose}>
-                  <X />
+        <Card className="p-5 shadow-xl sm:p-8">
+          <header className="mb-6">
+            <h1 className="text-center text-3xl font-semibold">Słownik</h1>
+            <p className="mt-2 text-center text-slate-600">
+              Hasła są używane podczas każdej nowej transkrypcji. ({keywords.length}/200)
+            </p>
+          </header>
+
+          <label className="relative mb-5 block">
+            <span className="sr-only">Szukaj haseł</span>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <input
+              aria-label="Szukaj haseł"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Szukaj haseł"
+              className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </label>
+
+          {error && <p role="alert" className="mb-4 text-center font-medium text-red-700">{error}</p>}
+
+          {isLoading ? (
+            <p className="py-8 text-center text-slate-600">Wczytywanie Słownika…</p>
+          ) : (
+            <ul aria-label="Lista haseł" className="flex max-h-[55vh] flex-col gap-3 overflow-y-auto px-1">
+              {visibleKeywords.map((keyword) => (
+                <Keyword
+                  key={keyword.id}
+                  text={keyword.text}
+                  onKeywordUpdate={(text) => update(keyword.id, text)}
+                  onKeywordDelete={() => handleDelete(keyword)}
+                />
+              ))}
+              {visibleKeywords.length === 0 && (
+                <li className="py-8 text-center text-slate-600">
+                  {keywords.length === 0 ? "Słownik jest pusty." : "Brak haseł pasujących do wyszukiwania."}
+                </li>
+              )}
+            </ul>
+          )}
+
+          {isAdding ? (
+            <form onSubmit={handleCreate} className="mt-5 flex flex-col gap-3 rounded-xl border border-slate-200 p-3 shadow-sm sm:flex-row">
+              <label className="flex-1">
+                <span className="sr-only">Nowe hasło</span>
+                <input
+                  autoFocus
+                  aria-label="Nowe hasło"
+                  type="text"
+                  maxLength={50}
+                  value={newKeyword}
+                  onChange={(event) => setNewKeyword(event.target.value)}
+                  placeholder="Wpisz hasło"
+                  className="w-full rounded-lg border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+              </label>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" aria-label="Anuluj dodawanie" onClick={() => setIsAdding(false)}>
+                  <ArrowLeft />
+                  Anuluj
+                </Button>
+                <Button type="submit" disabled={keywords.length >= 200} className="bg-blue-600 text-white hover:bg-blue-700">
+                  <Plus />
+                  Zapisz hasło
                 </Button>
               </div>
-              <h2 className="text-2xl font-semibold text-center mb-4">Słownik</h2>
-              { errorMessage !== null && <h2 className="text-red-500 font-semibold text-center">{errorMessage}</h2> }
-              <ul className="flex flex-col gap-4 max-h-[80%] overflow-x-auto">
-                {keywordsList.map(
-                    keyword => <Keyword 
-                        key={keyword.id} 
-                        id={keyword.id} 
-                        text={keyword.text}
-                        onKeywordDelete={fetchKeywords}
-                    />
-                )}
-              </ul>
-            </Card>
-        </div>
-    )
+            </form>
+          ) : (
+            <Button
+              className="mt-5 w-full"
+              variant="secondary"
+              disabled={keywords.length >= 200}
+              onClick={() => setIsAdding(true)}
+            >
+              <Plus />
+              Dodaj nowe hasło
+            </Button>
+          )}
+        </Card>
+      </div>
+    </main>
+  );
 }
