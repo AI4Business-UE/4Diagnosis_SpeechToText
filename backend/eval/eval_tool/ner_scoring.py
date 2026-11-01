@@ -7,10 +7,9 @@ from typing import Any
 
 from scipy.optimize import linear_sum_assignment
 
-from .reference_schema import NER_CATEGORIES
+from .reference_schema import NER_CATEGORIES, NER_MEASUREMENT_FIELDS
 
 _CATEGORIES = NER_CATEGORIES
-_MEASUREMENT_FIELDS = {"dim_x", "dim_y", "dim_z", "length", "diameter"}
 
 
 def score_ner(expected: Mapping[str, Any], actual: Mapping[str, Any]) -> dict[str, Any]:
@@ -222,7 +221,7 @@ def _values_equal(field: str, expected: Any, actual: Any, expected_entity: Mappi
 def _normalize(field: str, value: Any, entity: Mapping[str, Any]) -> Any:
     if value is None:
         return None
-    if field in _MEASUREMENT_FIELDS and isinstance(value, (int, float)):
+    if field in NER_MEASUREMENT_FIELDS and isinstance(value, (int, float)):
         unit = entity.get("unit")
         normalized = float(value) * 10 if unit == "cm" else float(value)
         return round(normalized, 6)

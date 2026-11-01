@@ -2,15 +2,6 @@ from types import SimpleNamespace
 
 import pytest
 from eval_tool.cli import main
-from openpyxl import Workbook
-
-
-def _metadata(path):
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.append(["id", "format", "nazwa pliku", "tekst referencyjny"])
-    sheet.append([1, "wav", "001.wav", "Tekst referencyjny."])
-    workbook.save(path)
 
 
 def test_cli_requires_explicit_external_data_authorization_before_runtime(tmp_path):
@@ -26,10 +17,10 @@ def test_cli_requires_explicit_external_data_authorization_before_runtime(tmp_pa
     assert runtime_calls == []
 
 
-def test_cli_can_create_local_ner_template_without_external_authorization(tmp_path):
+def test_cli_can_create_local_ner_template_without_external_authorization(tmp_path, write_metadata):
     metadata = tmp_path / "samples.xlsx"
     references = tmp_path / "ner_references.json"
-    _metadata(metadata)
+    write_metadata(metadata, [(1, "wav", "001.wav", "Tekst referencyjny.")])
 
     status = main(
         ["--init-ner-references", "--metadata", str(metadata), "--ner-references", str(references)],
@@ -37,6 +28,34 @@ def test_cli_can_create_local_ner_template_without_external_authorization(tmp_pa
 
     assert status == 0
     assert '"reviewed": false' in references.read_text(encoding="utf-8")
+
+
+def test_cli_validates_references_without_external_authorization(tmp_path):
+    validator_calls = []
+
+    status = main(
+        ["--validate-ner-references"],
+        reference_validator=lambda *_args, **_kwargs: validator_calls.append(True) or 80,
+        runtime_factory=lambda _args: pytest.fail("validation must not initialize a runtime"),
+    )
+
+    assert status == 0
+    assert validator_calls == [True]
+
+
+def test_cli_keeps_detailed_reports_inside_the_ignored_results_directory(tmp_path):
+    with pytest.raises(SystemExit) as error:
+        main(
+            [
+                "--allow-external-data",
+                "--no-judge",
+                "--include-details",
+                "--output",
+                str(tmp_path / "clinical-details.json"),
+            ]
+        )
+
+    assert error.value.code == 2
 
 
 def test_cli_runs_no_judge_mode_with_injected_runtime_and_writes_aggregate_report(tmp_path):

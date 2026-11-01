@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import enum
-import logging
 import os
 import sys
 from dataclasses import dataclass
@@ -12,20 +11,14 @@ from typing import Any, Callable
 
 from dotenv import load_dotenv
 
-from .dataset import initialize_reference_template, load_dataset
+from .dataset import (initialize_reference_template, load_dataset,
+                      validate_ner_references)
 from .report import default_report_path, save_report
 from .runner import run_evaluation
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 EVAL_DIR = BACKEND_DIR / "eval"
 DATA_DIR = EVAL_DIR / "data" / "golden_dataset"
-_WHISPER_MODELS = (
-    "whisper-small",
-    "whisper-medium",
-    "whisper-medical-pl",
-    "whisper-large-v3",
-    "whisper-large-v3-turbo",
-)
 
 
 @dataclass(frozen=True)
@@ -41,12 +34,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--metadata", type=Path, default=DATA_DIR / "samples_metadata.xlsx")
     parser.add_argument("--audio-dir", type=Path, default=DATA_DIR)
     parser.add_argument("--ner-references", type=Path, default=DATA_DIR / "ner_references.json")
-    parser.add_argument("--init-ner-references", action="store_true", help="Utwórz lokalny szablon adnotacji NER i zakończ.")
+    reference_action = parser.add_mutually_exclusive_group()
+    reference_action.add_argument(
+        "--init-ner-references",
+        action="store_true",
+        help="Utwórz lokalny szablon adnotacji NER i zakończ.",
+    )
+    reference_action.add_argument(
+        "--validate-ner-references",
+        action="store_true",
+        help="Sprawdź lokalne referencje NER bez uruchamiania pipeline'u.",
+    )
     parser.add_argument("--samples", type=_parse_sample_ids, help="Lista identyfikatorów, np. 001,004,020; domyślnie wszystkie.")
     parser.add_argument("--stt-model", choices=("whisper_local", "whisper_hosted", "gpt-transcribe"))
     parser.add_argument(
         "--whisper-model",
-        choices=_WHISPER_MODELS,
         help="Id modelu Whisper używany przy modelach Whisper.",
     )
     parser.add_argument("--ner-strategy", choices=("chained", "split"))
@@ -66,6 +68,7 @@ def main(
     argv: list[str] | None = None,
     *,
     dataset_loader: Callable[..., Any] | None = None,
+    reference_validator: Callable[..., int] | None = None,
     runtime_factory: Callable[[argparse.Namespace], EvaluationRuntime] | None = None,
     evaluator: Callable[..., dict[str, Any]] | None = None,
     report_writer: Callable[..., Path] | None = None,
@@ -89,6 +92,16 @@ def main(
         output("Uzupełnij adnotacje i ustaw reviewed=true dla każdego sprawdzonego rekordu.")
         return 0
 
+    if args.validate_ner_references:
+        try:
+            validator = reference_validator or validate_ner_references
+            count = validator(args.metadata, args.ner_references, sample_ids=args.samples)
+        except Exception as error:
+            error_output(_safe_error(error))
+            return 1
+        output(f"Sprawdzono referencje NER dla {count} próbek.")
+        return 0
+
     if not args.allow_external_data:
         parser.error(
             "Pełna ewaluacja wysyła audio i tekst kliniczny do skonfigurowanych usług. "
@@ -99,6 +112,11 @@ def main(
     judge_enabled = not args.no_judge
     if judge_enabled and not args.judge_model:
         parser.error("Ocena LLM wymaga jawnego modelu: ustaw EVAL_JUDGE_MODEL lub podaj --judge-model.")
+    if args.include_details:
+        results_dir = (EVAL_DIR / "results").resolve()
+        output_path = (args.output or default_report_path(EVAL_DIR)).resolve()
+        if not output_path.is_relative_to(results_dir):
+            parser.error("Raport szczegółowy musi być zapisany w ignorowanym katalogu eval/results/.")
 
     try:
         loader = dataset_loader or load_dataset
@@ -169,7 +187,10 @@ def prepare_runtime(args: argparse.Namespace) -> EvaluationRuntime:
         if value is not None:
             config_values[field] = value
     config = PipelineConfig(**config_values)
-    whisper_hf_id = config.whisper_hf_id
+    try:
+        whisper_hf_id = config.whisper_hf_id
+    except KeyError as error:
+        raise ValueError(f"Nieznany model Whisper: {config.whisper_model}") from error
 
     if not (os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")):
         raise ValueError("Brak klucza OPENROUTER_API_KEY lub OPENAI_API_KEY.")

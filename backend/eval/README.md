@@ -10,6 +10,7 @@ Uruchom z katalogu `backend`. Wymagane są również zależności projektu z `re
 python -m pip install -r requirements.txt
 python -m pip install -r eval/requirements.txt
 python eval/run.py --init-ner-references
+python eval/run.py --validate-ner-references
 ```
 
 Polecenie tworzy ignorowany przez Git plik `eval/data/golden_dataset/ner_references.json`, bez kopiowania tekstu klinicznego z arkusza. Uzupełnij go ręcznie, sprawdzając kolumnę `oczekiwany output` w `samples_metadata.xlsx`. Zapis powinien mieć postać:
@@ -60,3 +61,5 @@ python eval/run.py --allow-external-data --include-details --output eval/results
 WER i CER porównują surowy transkrypt z `tekst referencyjny`; raportowany jest wynik pooled dla całego wybranego zbioru. NER porównuje wynik pipeline'u z lokalnymi adnotacjami JSON. Sędzia ocenia wierność `corrected_transcript` wobec tekstu referencyjnego w skali 0–4, bez niezależnej oceny poprawności medycznej.
 
 Raport zbiorczy trafia domyślnie do `eval/results/` (ignorowanego przez Git). Teksty próbek, dane encji i uzasadnienia sędziego są zapisywane tylko z `--include-details`; taki raport zawiera dane kliniczne i powinien pozostać lokalny. Błędy pojedynczych próbek nie zatrzymują zbioru, ale niekompletna ewaluacja kończy się kodem 1. Wyniki nie mają obecnie progów zaliczenia.
+
+Raport szczegółowy można zapisać wyłącznie pod `eval/results/`, aby nie trafił przypadkowo do śledzonych plików.

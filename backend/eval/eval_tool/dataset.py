@@ -8,41 +8,10 @@ from typing import Any
 
 from openpyxl import load_workbook
 
-from .reference_schema import NER_ENTITY_FIELDS
+from .reference_schema import (NER_ENTITY_FIELDS, NER_FIELD_TYPES,
+                               NER_MEASUREMENT_FIELDS)
 
 _REQUIRED_COLUMNS = ("id", "format", "nazwa pliku", "tekst referencyjny")
-_FIELD_TYPES = {
-    "first_name": str,
-    "last_name": str,
-    "pesel": str,
-    "age": int,
-    "name": str,
-    "count": int,
-    "dim_x": (int, float),
-    "dim_y": (int, float),
-    "dim_z": (int, float),
-    "length": (int, float),
-    "diameter": (int, float),
-    "unit": str,
-    "description": str,
-    "type": str,
-    "color": str,
-    "structure": str,
-    "features": list,
-    "infiltration": str,
-    "location_description": str,
-    "organ": str,
-    "shape": str,
-    "borders": str,
-    "additional_notes": str,
-    "component_index": int,
-    "source": str,
-    "material_type": str,
-    "volume_ml": (int, float),
-    "clarity": str,
-    "consistency": str,
-    "fixation": str,
-}
 
 
 @dataclass(frozen=True)
@@ -62,18 +31,12 @@ def load_dataset(
     """Load selected recordings and require reviewed NER references for each."""
     metadata = _read_metadata(Path(metadata_path))
     selected_ids = _select_ids(metadata, sample_ids)
-    references = _read_ner_references(Path(ner_references_path))
+    references = _validated_references(metadata, selected_ids, Path(ner_references_path))
     audio_root = Path(audio_dir)
 
     samples: list[EvaluationSample] = []
-    missing_references: list[str] = []
     for sample_id in selected_ids:
         row = metadata[sample_id]
-        reference_entry = references.get(sample_id)
-        if reference_entry is None:
-            missing_references.append(sample_id)
-            continue
-        ner_reference = _validate_reference(sample_id, reference_entry)
         audio_path = _audio_path(audio_root, sample_id, row["filename"], row["format"])
         if not audio_path.is_file():
             raise ValueError(f"Nie znaleziono pliku audio dla próbki {sample_id}: {audio_path}")
@@ -82,17 +45,23 @@ def load_dataset(
                 sample_id=sample_id,
                 audio_path=audio_path,
                 reference_text=row["reference_text"],
-                ner_reference=ner_reference,
+                ner_reference=references[sample_id],
             )
         )
 
-    if missing_references:
-        missing = ", ".join(missing_references)
-        raise ValueError(
-            f"Brak sprawdzonych referencji NER dla próbek: {missing}. "
-            "Utwórz lokalny szablon poleceniem eval CLI i uzupełnij go przed uruchomieniem."
-        )
     return samples
+
+
+def validate_ner_references(
+    metadata_path: str | Path,
+    ner_references_path: str | Path,
+    sample_ids: list[str] | None = None,
+) -> int:
+    """Validate reviewed NER coverage without requiring audio or contacting services."""
+    metadata = _read_metadata(Path(metadata_path))
+    selected_ids = _select_ids(metadata, sample_ids)
+    _validated_references(metadata, selected_ids, Path(ner_references_path))
+    return len(selected_ids)
 
 
 def initialize_reference_template(
@@ -178,6 +147,27 @@ def _read_ner_references(path: Path) -> dict[str, Any]:
     return normalized
 
 
+def _validated_references(
+    metadata: dict[str, dict[str, str]],
+    selected_ids: list[str],
+    reference_path: Path,
+) -> dict[str, dict[str, Any]]:
+    references = _read_ner_references(reference_path)
+    unknown_ids = sorted(references.keys() - metadata.keys())
+    if unknown_ids:
+        raise ValueError(f"Nieznane identyfikatory w referencjach NER: {', '.join(unknown_ids)}")
+    missing_ids = [sample_id for sample_id in selected_ids if sample_id not in references]
+    if missing_ids:
+        raise ValueError(
+            f"Brak sprawdzonych referencji NER dla próbek: {', '.join(missing_ids)}. "
+            "Utwórz lokalny szablon poleceniem eval CLI i uzupełnij go przed uruchomieniem."
+        )
+    return {
+        sample_id: _validate_reference(sample_id, references[sample_id])
+        for sample_id in selected_ids
+    }
+
+
 def _validate_reference(sample_id: str, entry: Any) -> dict[str, Any]:
     if not isinstance(entry, dict) or entry.get("reviewed") is not True:
         raise ValueError(f"Referencja NER dla próbki {sample_id} nie jest oznaczona jako sprawdzona")
@@ -229,7 +219,7 @@ def _validate_reference(sample_id: str, entry: Any) -> dict[str, Any]:
             if category in {"components", "lesions"}:
                 has_measurement = any(
                     value.get(field) is not None
-                    for field in ("dim_x", "dim_y", "dim_z", "length", "diameter")
+                    for field in NER_MEASUREMENT_FIELDS
                 )
                 if has_measurement and value.get("unit") not in {"cm", "mm"}:
                     raise ValueError(
@@ -242,7 +232,7 @@ def _validate_reference(sample_id: str, entry: Any) -> dict[str, Any]:
 def _validate_field_value(sample_id: str, category: str, index: int, field: str, value: Any) -> None:
     if value is None:
         return
-    expected_type = _FIELD_TYPES[field]
+    expected_type = NER_FIELD_TYPES[category][field]
     valid = isinstance(value, expected_type) and not (
         isinstance(value, bool) and expected_type != bool
     )
