@@ -42,8 +42,8 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.wave = None
         self.audio_file = None
         
-        self.tmp_dir = os.path.join(os.getcwd(), "app_stt", "data", "tmp_audio")
-        os.makedirs(self.tmp_dir, exist_ok=True)
+        self.tmp_dir = Path(__file__).parent.parent / "data" / "tmp_audio"
+        self.tmp_dir.mkdir(exist_ok=True)
  
 
     async def _setup(self):
