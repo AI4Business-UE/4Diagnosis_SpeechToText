@@ -1,0 +1,3 @@
+data/golden_dataset/*.m4a
+data/golden_dataset/*.wav
+data/golden_dataset/*.mp3
