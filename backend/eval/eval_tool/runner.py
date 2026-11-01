@@ -10,6 +10,7 @@ from .ner_scoring import aggregate_ner_scores, score_ner
 from .transcript_scoring import aggregate_transcript_scores, score_transcript
 
 _STAGE_LABELS = {
+    "pipeline_setup": "inicjalizacji pipeline'u",
     "pipeline": "pełnego pipeline'u",
     "cleanup": "czyszczenia audio",
     "transcript_scoring": "oceny transkrypcji",
@@ -37,9 +38,31 @@ def run_evaluation(
     if judge_enabled and judge is None:
         judge = evaluate_fidelity
 
-    pipeline = pipeline_factory()
     started_at = datetime.now(timezone.utc).isoformat()
-    errors: list[dict[str, str]] = []
+    try:
+        pipeline = pipeline_factory()
+    except Exception as error:
+        errors = [_error(None, "pipeline_setup", error)]
+        details = (
+            [{"sample_id": sample.sample_id, "status": "failed"} for sample in selected_samples]
+            if include_details
+            else None
+        )
+        return _build_report(
+            selected_samples,
+            started_at,
+            0,
+            errors,
+            [],
+            [],
+            [],
+            judge_enabled,
+            judge_model,
+            resolved_config,
+            details,
+        )
+
+    errors: list[dict[str, str | None]] = []
     transcript_scores: list[dict[str, Any]] = []
     ner_scores: list[dict[str, Any]] = []
     judgements: list[Mapping[str, Any]] = []
@@ -119,6 +142,34 @@ def run_evaluation(
                 detail["status"] = "incomplete"
             details.append(detail)
 
+    return _build_report(
+        selected_samples,
+        started_at,
+        pipeline_samples_completed,
+        errors,
+        transcript_scores,
+        ner_scores,
+        judgements,
+        judge_enabled,
+        judge_model,
+        resolved_config,
+        details if include_details else None,
+    )
+
+
+def _build_report(
+    selected_samples: list[EvaluationSample],
+    started_at: str,
+    pipeline_samples_completed: int,
+    errors: list[dict[str, str | None]],
+    transcript_scores: list[dict[str, Any]],
+    ner_scores: list[dict[str, Any]],
+    judgements: list[Mapping[str, Any]],
+    judge_enabled: bool,
+    judge_model: str | None,
+    resolved_config: Mapping[str, Any] | None,
+    details: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
     report: dict[str, Any] = {
         "status": "complete" if not errors else "incomplete",
         "started_at": started_at,
@@ -134,12 +185,12 @@ def run_evaluation(
             "model": judge_model if judge_enabled else None,
         },
     }
-    if include_details:
+    if details is not None:
         report["details"] = details
     return report
 
 
-def _error(sample_id: str, stage: str, error: Exception) -> dict[str, str]:
+def _error(sample_id: str | None, stage: str, error: Exception) -> dict[str, str | None]:
     # Exception messages can contain provider payloads or clinical text; keep the
     # default aggregate report limited to safe identifiers and exception types.
     return {

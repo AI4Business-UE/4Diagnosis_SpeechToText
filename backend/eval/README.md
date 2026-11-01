@@ -39,6 +39,8 @@ Polecenie tworzy ignorowany przez Git plik `eval/data/golden_dataset/ner_referen
 
 Uzupełnij wszystkie identyfikatory wybrane do danego uruchomienia i ustaw `reviewed` na `true` dopiero po sprawdzeniu adnotacji. Klucze encji odpowiadają schematowi pipeline'u. Pole pominięte w obiekcie encji oznacza **nieznane/nieoceniane**; jawne `null` oznacza znany brak wartości; pusta lista oznacza brak encji w danej kategorii. Nie wyciągaj informacji, których nie ma w oczekiwanym output. Każda próbka musi zawierać kategorie `patient`, `components`, `lesions` i `fluid_samples`.
 
+Literalne `Brak` w oczekiwanym output mapuj na wszystkie pola pacjenta ustawione na `null` albo — dla kategorii encji — na pustą listę.
+
 Numerowane sekcje komponentów i zmian zapisuj jako osobne obiekty na listach; numer sekcji nie jest `count` ani `component_index`. Gdy wymiar jest uzupełniony, podaj również jednostkę `cm` lub `mm`.
 
 ## Uruchomienie

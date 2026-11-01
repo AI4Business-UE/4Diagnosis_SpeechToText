@@ -109,3 +109,25 @@ def test_judge_failure_marks_run_incomplete_without_discarding_stt_scores():
     assert report["status"] == "incomplete"
     assert report["transcript"]["wer"] == 0
     assert report["errors"][0]["stage"] == "judge"
+
+
+def test_pipeline_factory_failure_returns_an_incomplete_report():
+    def failing_factory():
+        raise RuntimeError("pipeline setup failed")
+
+    report = run_evaluation(
+        [_sample("001"), _sample("002")],
+        pipeline_factory=failing_factory,
+        judge_enabled=False,
+        include_details=True,
+    )
+
+    assert report["status"] == "incomplete"
+    assert report["samples_requested"] == 2
+    assert report["pipeline_samples_completed"] == 0
+    assert report["errors"][0]["stage"] == "pipeline_setup"
+    assert report["errors"][0]["sample_id"] is None
+    assert report["errors"][0]["error_type"] == "RuntimeError"
+    assert "pipeline setup failed" not in report["errors"][0]["message"]
+    assert report["transcript"]["wer"] is None
+    assert [detail["status"] for detail in report["details"]] == ["failed", "failed"]
