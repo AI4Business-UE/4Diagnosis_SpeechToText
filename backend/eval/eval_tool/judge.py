@@ -21,7 +21,11 @@ Score fidelity from 0 to 4:
 
 Return only a JSON object with integer `score`, arrays of concise strings named
 `omissions`, `additions`, and `contradictions`, and a concise `rationale`. A stylistic
-rewrite or equivalent wording is not an error when meaning is preserved."""
+rewrite or equivalent wording is not an error when meaning is preserved.
+
+Ignore if `corrected_transcript` does not contain patient data (name, age, PESEL) but it appears in `reference`.
+It is intended behavior, `corrected_transcript` should only contain specimen description.
+"""
 
 
 def evaluate_fidelity(
