@@ -19,7 +19,7 @@ class EvaluationSample:
     sample_id: str
     audio_path: Path
     reference_text: str
-    ner_reference: dict[str, Any]
+    ner_reference: dict[str, Any] | None
 
 
 def load_dataset(
@@ -27,11 +27,17 @@ def load_dataset(
     audio_dir: str | Path,
     ner_references_path: str | Path,
     sample_ids: list[str] | None = None,
+    *,
+    score_ner: bool = False,
 ) -> list[EvaluationSample]:
-    """Load selected recordings and require reviewed NER references for each."""
+    """Load selected recordings and optionally require reviewed NER references."""
     metadata = _read_metadata(Path(metadata_path))
     selected_ids = _select_ids(metadata, sample_ids)
-    references = _validated_references(metadata, selected_ids, Path(ner_references_path))
+    references = (
+        _validated_references(metadata, selected_ids, Path(ner_references_path))
+        if score_ner
+        else {}
+    )
     audio_root = Path(audio_dir)
 
     samples: list[EvaluationSample] = []
@@ -45,7 +51,7 @@ def load_dataset(
                 sample_id=sample_id,
                 audio_path=audio_path,
                 reference_text=row["reference_text"],
-                ner_reference=references[sample_id],
+                ner_reference=references.get(sample_id),
             )
         )
 

@@ -6,7 +6,7 @@ from typing import Any
 
 from .dataset import EvaluationSample
 from .judge import aggregate_judgements, evaluate_fidelity
-from .ner_scoring import aggregate_ner_scores, score_ner
+from .ner_scoring import aggregate_ner_scores, score_ner as score_ner_result
 from .transcript_scoring import aggregate_transcript_scores, score_transcript
 
 _STAGE_LABELS = {
@@ -26,6 +26,7 @@ def run_evaluation(
     judge: Callable[[str, str, str], Mapping[str, Any]] | None = None,
     judge_model: str | None = None,
     judge_enabled: bool = True,
+    score_ner: bool = False,
     include_details: bool = False,
     resolved_config: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -48,7 +49,7 @@ def run_evaluation(
             if include_details
             else None
         )
-        return _build_report(
+        report = _build_report(
             selected_samples,
             started_at,
             0,
@@ -61,12 +62,22 @@ def run_evaluation(
             resolved_config,
             details,
         )
+        report["review_rows"] = [
+            _review_row(
+                sample.sample_id,
+                ner_reference=sample.ner_reference,
+                include_ner_reference=score_ner,
+            )
+            for sample in selected_samples
+        ]
+        return report
 
     errors: list[dict[str, str | None]] = []
     transcript_scores: list[dict[str, Any]] = []
     ner_scores: list[dict[str, Any]] = []
     judgements: list[Mapping[str, Any]] = []
     details: list[dict[str, Any]] = []
+    review_rows: list[dict[str, Any]] = []
     pipeline_samples_completed = 0
 
     for sample in selected_samples:
@@ -89,6 +100,13 @@ def run_evaluation(
                 errors.append(_error(sample.sample_id, "cleanup", error))
 
         if pipeline_result is None:
+            review_rows.append(
+                _review_row(
+                    sample.sample_id,
+                    ner_reference=sample.ner_reference,
+                    include_ner_reference=score_ner,
+                )
+            )
             if include_details:
                 details.append(detail)
             continue
@@ -96,6 +114,18 @@ def run_evaluation(
         transcript = pipeline_result.get("transcript")
         corrected_transcript = pipeline_result.get("corrected_transcript")
         entities = pipeline_result.get("entities")
+        review_row = _review_row(sample.sample_id)
+        review_row.update(
+            {
+                "status": detail["status"],
+                "transcript": transcript,
+                "entities": entities,
+                "corrected_transcript": corrected_transcript,
+            }
+        )
+        if score_ner:
+            review_row["ner_reference"] = sample.ner_reference
+        review_rows.append(review_row)
 
         try:
             if not isinstance(transcript, str):
@@ -106,14 +136,17 @@ def run_evaluation(
         except Exception as error:
             errors.append(_error(sample.sample_id, "transcript_scoring", error))
 
-        try:
-            if not isinstance(entities, Mapping):
-                raise ValueError("entities is not an object")
-            ner_score = score_ner(sample.ner_reference, entities)
-            ner_scores.append(ner_score)
-            detail["ner_score"] = ner_score
-        except Exception as error:
-            errors.append(_error(sample.sample_id, "ner_scoring", error))
+        if score_ner:
+            try:
+                if not isinstance(sample.ner_reference, Mapping):
+                    raise ValueError("Gold NER reference is missing")
+                if not isinstance(entities, Mapping):
+                    raise ValueError("entities is not an object")
+                ner_score = score_ner_result(sample.ner_reference, entities)
+                ner_scores.append(ner_score)
+                detail["ner_score"] = ner_score
+            except Exception as error:
+                errors.append(_error(sample.sample_id, "ner_scoring", error))
 
         if judge_enabled:
             try:
@@ -125,6 +158,10 @@ def run_evaluation(
                 detail["judge"] = judgement
             except Exception as error:
                 errors.append(_error(sample.sample_id, "judge", error))
+
+        if len(errors) > sample_error_count:
+            review_row["status"] = "incomplete"
+            detail["status"] = "incomplete"
 
         if include_details:
             detail.update(
@@ -138,11 +175,9 @@ def run_evaluation(
                     "ner_reference": sample.ner_reference,
                 }
             )
-            if len(errors) > sample_error_count:
-                detail["status"] = "incomplete"
             details.append(detail)
 
-    return _build_report(
+    report = _build_report(
         selected_samples,
         started_at,
         pipeline_samples_completed,
@@ -155,6 +190,26 @@ def run_evaluation(
         resolved_config,
         details if include_details else None,
     )
+    report["review_rows"] = review_rows
+    return report
+
+
+def _review_row(
+    sample_id: str,
+    *,
+    ner_reference: Mapping[str, Any] | None = None,
+    include_ner_reference: bool = False,
+) -> dict[str, Any]:
+    row = {
+        "sample_id": sample_id,
+        "status": "failed",
+        "transcript": None,
+        "entities": None,
+        "corrected_transcript": None,
+    }
+    if include_ner_reference:
+        row["ner_reference"] = ner_reference
+    return row
 
 
 def _build_report(

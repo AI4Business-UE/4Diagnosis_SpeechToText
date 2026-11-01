@@ -51,17 +51,22 @@ Pełna ścieżka używa STT, NER, answerera oraz sędziego LLM. Zatwierdź użyc
 EVAL_JUDGE_MODEL=openai/gpt-4o python eval/run.py --allow-external-data
 ```
 
+Pełna ewaluacja domyślnie nie wymaga pliku Gold NER reference i pomija ocenę NER. Użyj `--score-ner`, aby włączyć walidację referencji dla wybranych próbek oraz ocenę NER. `--validate-ner-references` nadal uruchamia samodzielną kontrolę referencji bez pipeline'u.
+
 Wymagane są również istniejąca lokalna baza Django z tabelą `Keyword` oraz `OPENROUTER_API_KEY` lub `OPENAI_API_KEY`. Sędzia jest domyślnie włączony; jego model można wskazać przez `EVAL_JUDGE_MODEL` albo `--judge-model`. Aby pominąć wyłącznie ocenę sędziego, użyj `--no-judge` — pozostałe etapy nadal mogą wysyłać dane do usług zewnętrznych.
 
 Domyślnie runner przetwarza wszystkie 80 rekordów, używa konfiguracji `PipelineConfig` i izolowanego Qdrant in-memory z lokalnymi makro-szablonami. Przykładowe opcje:
 
 ```bash
 python eval/run.py --allow-external-data --samples 001,002 --stt-model whisper_local --no-judge
+python eval/run.py --allow-external-data --samples 001,002 --score-ner --no-judge
 python eval/run.py --allow-external-data --include-details --output eval/results/sample-review.json
 ```
 
-WER i CER porównują surowy transkrypt z `tekst referencyjny`; raportowany jest wynik pooled dla całego wybranego zbioru. NER porównuje wynik pipeline'u z lokalnymi adnotacjami JSON. Sędzia ocenia wierność `corrected_transcript` wobec tekstu referencyjnego w skali 0–4, bez niezależnej oceny poprawności medycznej.
+WER i CER porównują surowy transkrypt z `tekst referencyjny`; raportowany jest wynik pooled dla całego wybranego zbioru. Z `--score-ner` wynik NER jest porównywany z lokalnymi adnotacjami JSON. Sędzia ocenia wierność `corrected_transcript` wobec tekstu referencyjnego w skali 0–4, bez niezależnej oceny poprawności medycznej.
 
-Raport zbiorczy trafia domyślnie do `eval/results/` (ignorowanego przez Git). Teksty próbek, dane encji i uzasadnienia sędziego są zapisywane tylko z `--include-details`; taki raport zawiera dane kliniczne i powinien pozostać lokalny. Błędy pojedynczych próbek nie zatrzymują zbioru, ale niekompletna ewaluacja kończy się kodem 1. Wyniki nie mają obecnie progów zaliczenia.
+Każde uruchomienie zapisuje raport zbiorczy JSON oraz arkusz przeglądu `.xlsx` z datą i godziną w ignorowanym przez Git katalogu `eval/results/`. Arkusz zawiera po jednym wierszu na próbkę (także nieudaną), status, surowy transkrypt, końcowy obiekt encji NER i skorygowany transkrypt; kolumna Gold NER reference pojawia się tylko z `--score-ner`. Arkusz jest lokalnym, wrażliwym wynikiem ewaluacji — nie przenoś go poza zaufane środowisko. Błąd zapisu arkusza oznacza nieudaną ewaluację (kod 1).
+
+Teksty próbek, dane encji i uzasadnienia sędziego trafiają do raportu JSON tylko z `--include-details`; taki raport zawiera dane kliniczne i powinien pozostać lokalny. Błędy pojedynczych próbek nie zatrzymują zbioru, ale niekompletna ewaluacja kończy się kodem 1. Wyniki nie mają obecnie progów zaliczenia.
 
 Raport szczegółowy można zapisać wyłącznie pod `eval/results/`, aby nie trafił przypadkowo do śledzonych plików.

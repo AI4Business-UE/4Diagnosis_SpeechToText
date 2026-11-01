@@ -44,7 +44,7 @@ class FakePipeline:
         self.cleaned.append(str(audio_path))
 
 
-def test_evaluation_continues_after_pipeline_failure_and_keeps_aggregate_private():
+def test_evaluation_continues_after_pipeline_failure_and_captures_review_outputs():
     pipeline = FakePipeline(failures={"001"})
 
     report = run_evaluation(
@@ -60,7 +60,88 @@ def test_evaluation_continues_after_pipeline_failure_and_keeps_aggregate_private
     assert report["transcript"]["wer"] == 0
     assert pipeline.cleaned == ["001.wav", "002.wav"]
     assert "details" not in report
-    assert "kot ma psa" not in str(report)
+    assert report["review_rows"][1]["transcript"] == "kot ma psa"
+
+
+def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
+    pipeline = FakePipeline(failures={"001"})
+    failed_sample = _sample("001")
+    successful_sample = _sample("002")
+    failed_sample = EvaluationSample(
+        sample_id=failed_sample.sample_id,
+        audio_path=failed_sample.audio_path,
+        reference_text=failed_sample.reference_text,
+        ner_reference=None,
+    )
+    successful_sample = EvaluationSample(
+        sample_id=successful_sample.sample_id,
+        audio_path=successful_sample.audio_path,
+        reference_text=successful_sample.reference_text,
+        ner_reference=None,
+    )
+
+    report = run_evaluation(
+        [failed_sample, successful_sample],
+        pipeline_factory=lambda: pipeline,
+        judge_enabled=False,
+    )
+
+    assert report["ner"]["records"] == 0
+    assert report["review_rows"] == [
+        {
+            "sample_id": "001",
+            "status": "failed",
+            "transcript": None,
+            "entities": None,
+            "corrected_transcript": None,
+        },
+        {
+            "sample_id": "002",
+            "status": "complete",
+            "transcript": "kot ma psa",
+            "entities": {
+                "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},
+                "components": [],
+                "lesions": [],
+                "fluid_samples": [],
+            },
+            "corrected_transcript": "kot ma psa",
+        },
+    ]
+
+
+def test_ner_scoring_is_opt_in_and_keeps_gold_reference_for_review():
+    report = run_evaluation(
+        [_sample("001")],
+        pipeline_factory=FakePipeline,
+        judge_enabled=False,
+        score_ner=True,
+    )
+
+    assert report["ner"]["records"] == 1
+    assert report["ner"]["exact_record_rate"] == 1
+    assert report["review_rows"][0]["ner_reference"] == _sample("001").ner_reference
+
+
+def test_ner_scoring_failure_keeps_pipeline_outputs_for_review():
+    class InvalidEntitiesPipeline(FakePipeline):
+        def run(self, audio_path):
+            result = super().run(audio_path)
+            result["entities"] = {"unexpected": True}
+            return result
+
+    report = run_evaluation(
+        [_sample("001")],
+        pipeline_factory=InvalidEntitiesPipeline,
+        judge_enabled=False,
+        score_ner=True,
+    )
+
+    assert report["status"] == "incomplete"
+    assert report["errors"][0]["stage"] == "ner_scoring"
+    assert report["review_rows"][0]["status"] == "incomplete"
+    assert report["review_rows"][0]["transcript"] == "kot ma psa"
+    assert report["review_rows"][0]["entities"] == {"unexpected": True}
 
 
 def test_evaluation_runs_judge_and_includes_sensitive_details_only_on_request():
@@ -119,6 +200,7 @@ def test_pipeline_factory_failure_returns_an_incomplete_report():
         [_sample("001"), _sample("002")],
         pipeline_factory=failing_factory,
         judge_enabled=False,
+        score_ner=True,
         include_details=True,
     )
 
@@ -131,3 +213,8 @@ def test_pipeline_factory_failure_returns_an_incomplete_report():
     assert "pipeline setup failed" not in report["errors"][0]["message"]
     assert report["transcript"]["wer"] is None
     assert [detail["status"] for detail in report["details"]] == ["failed", "failed"]
+    assert [row["status"] for row in report["review_rows"]] == ["failed", "failed"]
+    assert [row["ner_reference"] for row in report["review_rows"]] == [
+        _sample("001").ner_reference,
+        _sample("002").ner_reference,
+    ]
