@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .config import PipelineConfig
 from .stages.preprocessing import AudioPreprocessor
-from .stages.stt import WhisperLocal, WhisperHosted
+from .stages.stt import WhisperLocal, WhisperHosted, GPTTranscribe
 from .stages.ner.base import NERStrategy
 from .stages.ner.split import SplitNERStrategy
 from .stages.ner.chained import ChainedNERStrategy
@@ -146,6 +146,8 @@ class Pipeline:
             return WhisperHosted(
                 model_id=self.config.whisper_hf_id
             )
+        if model == "gpt-transcribe":
+            return GPTTranscribe()
         
         raise ValueError(
             f"Unknown STT model '{model}'. "

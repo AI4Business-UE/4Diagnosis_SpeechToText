@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Mic, Play, Square, Wifi, WifiOff } from "lucide-react";
+import { Mic, Play, Square, Book } from "lucide-react";
 import SpinnerLoader from "@/components/ui/SpinnerLoader";
 import TextareaAutosize from 'react-textarea-autosize';
 
 import AudioVisualizer from "../../components/AudioVisualizer";
 import useRecordingState from "../../hooks/useRecordingState";
-import usePatientMetadata from "@/hooks/usePatientMetadata";
 import ConnectionControl from "@/components/ui/ConnectionControl";
+import { Link } from "react-router-dom";
 
 export default function Recorder() { 
   const { 
@@ -27,6 +27,12 @@ export default function Recorder() {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 min-h-screen w-full">
+      <div className="absolute top-10 right-6 sm:right-10">
+        <Link to="/keywords" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-6 text-sm font-medium shadow-sm hover:bg-slate-50">
+          <Book />
+          Słownik
+        </Link>
+      </div>
       <div className="mb-6 p-4 bg-white/90 rounded-lg shadow-md">
         <div className="flex items-center gap-3">
           <ConnectionControl 
@@ -165,7 +171,7 @@ export default function Recorder() {
                 onChange={(e) => handleFieldUpdate("description", e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 rows={6}
-                placeholder="Transkrypcja pojawi się tutaj automatycznie podczas nagrywania..."
+                placeholder="Transkrypcja pojawi się tutaj automatycznie po zakończeniu nagrywania..."
               />
             </div>
 

@@ -7,8 +7,8 @@ Aplikacja wspierająca lekarzy patomorfologów w nagrywaniu głosowych notatek i
 Projekt składa się z trzech głównych komponentów:
 
 - **Frontend**: React SPA z nowoczesnym UI (TypeScript + Tailwind CSS)
-- **Backend STT**: Django + Channels dla strumieniowej transkrypcji głosu (Whisper)
-- **REST API**: Django REST Framework dla zarządzania danymi
+- **Backend STT**: Django + Channels dla strumieniowej transkrypcji głosu
+- **REST API**: Django Ninja dla interfejsu HTTP
 
 ### Wymagania wstępne
 
@@ -99,10 +99,6 @@ PYTHONPATH=src daphne -p 8000 stt.asgi:application
 
 Backend będzie dostępny na `http://localhost:8000`
 
-**Uwaga:** Przy pierwszym uruchomieniu backend automatycznie pobierze i załaduje model Whisper (może zająć kilka minut). W logach zobaczysz komunikaty:
-- "🔄 Ładowanie processora Whisper..."
-- "🔄 Ładowanie modelu Whisper..."
-
 ### ✅ Weryfikacja działania
 
 Po uruchomieniu obu części sprawdź czy wszystko działa:
@@ -130,7 +126,6 @@ W przypadku wysyłania audio, frontend normalizuje sample rate do 16000 Hz.
 #### Backend
 Główne ustawienia w `backend/src/stt/settings.py`:
 - Baza danych: SQLite (domyślnie)
-- Redis: dla Channels/WebSocket
 - Debug mode: włączony dla developmentu
 
 ## 📁 Struktura projektu
@@ -156,8 +151,7 @@ Główne ustawienia w `backend/src/stt/settings.py`:
 │   │   └── utils/         # Narzędzia audio
 │   ├── requirements.txt
 │   └── pytest.ini
-├── README.md
-└── PROJECT_SCOPE.md       # Szczegółowy zakres projektu
+└── README.md
 ```
 
 ## 🔄 Kluczowe funkcjonalności
@@ -165,33 +159,5 @@ Główne ustawienia w `backend/src/stt/settings.py`:
 ### Nagrywanie i transkrypcja
 - Strumieniowe nagrywanie audio przez WebSocket
 - Ekstrakcja Named-Entity Recognition elementów badania
-- Korygowanie tekstu przez LLM
-- Generowanie strukturalnych opisów makroskopowych
-
-### Zarządzanie danymi
-- CRUD dla pacjentów, badań i nagrań
-- Przeszukiwalna historia nagrań
-- Zarządzanie metadanymi i plikami audio
-
-## 🧪 Testowanie
-
-### Frontend
-```bash
-cd app
-bun run build  # Sprawdź czy build przechodzi
-```
-
-### Backend
-```bash
-cd backend
-source venv/bin/activate # windows .\venv\Scripts\Activate.ps1 
-python src/manage.py test
-```
-
-## 🤝 Przyczynianie się
-
-1. Fork repozytorium
-2. Utwórz branch dla nowej funkcjonalności
-3. Zrób commit zmian
-4. Wyślij pull request
-
+- Retrieval podobnych, zatwierdzonych transkrypcji badania
+- Korygowanie tekstu przez LLM, w oparciu o NER + Retrieval

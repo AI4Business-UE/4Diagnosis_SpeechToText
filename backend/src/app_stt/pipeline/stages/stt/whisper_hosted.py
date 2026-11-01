@@ -1,8 +1,8 @@
-from .whisper_base import WhisperBase
+from .transcriber_base import TranscriberBase
 from app_stt.pipeline.utils.llm.client import get_llm_client
 
 
-class WhisperHosted(WhisperBase):
+class WhisperHosted(TranscriberBase):
     def __init__(self, model_id: str):
         self._model_id = model_id
     

@@ -7,15 +7,17 @@ import tempfile
 import json
 import traceback
 import struct
+import logging
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-from logging_config import logger
 from app_stt.services.utils import extract_organs, extract_patient_data
 from app_stt.pipeline import get_pipeline
+
+logger = logging.getLogger(__name__)
 
 class RecordingState(enum.Enum):
     IDLE = 'idle'
@@ -40,8 +42,8 @@ class AudioConsumer(AsyncWebsocketConsumer):
         self.wave = None
         self.audio_file = None
         
-        self.tmp_dir = os.path.join(os.getcwd(), "app_stt", "data", "tmp_audio")
-        os.makedirs(self.tmp_dir, exist_ok=True)
+        self.tmp_dir = Path(__file__).parent.parent / "data" / "tmp_audio"
+        self.tmp_dir.mkdir(exist_ok=True)
  
 
     async def _setup(self):

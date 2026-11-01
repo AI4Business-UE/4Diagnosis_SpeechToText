@@ -38,3 +38,5 @@ venv
 .DS_Store
 
 qdrant_data/*
+
+.vscode/*
