@@ -8,17 +8,9 @@ from typing import Any
 
 from openpyxl import load_workbook
 
+from .reference_schema import NER_ENTITY_FIELDS
+
 _REQUIRED_COLUMNS = ("id", "format", "nazwa pliku", "tekst referencyjny")
-_ENTITY_FIELDS = {
-    "patient": {"first_name", "last_name", "pesel", "age"},
-    "components": {"name", "count", "dim_x", "dim_y", "dim_z", "length", "diameter", "unit", "description"},
-    "lesions": {
-        "type", "dim_x", "dim_y", "dim_z", "diameter", "length", "unit", "color", "structure",
-        "features", "infiltration", "location_description", "organ", "shape", "borders",
-        "additional_notes", "component_index",
-    },
-    "fluid_samples": {"source", "material_type", "volume_ml", "color", "clarity", "consistency", "fixation"},
-}
 _FIELD_TYPES = {
     "first_name": str,
     "last_name": str,
@@ -192,13 +184,13 @@ def _validate_reference(sample_id: str, entry: Any) -> dict[str, Any]:
     entities = entry.get("entities")
     if not isinstance(entities, dict):
         raise ValueError(f"Referencja NER dla próbki {sample_id} nie zawiera obiektu entities")
-    missing = set(_ENTITY_FIELDS) - entities.keys()
+    missing = set(NER_ENTITY_FIELDS) - entities.keys()
     if missing:
         raise ValueError(
             f"Referencja NER dla próbki {sample_id} nie zawiera kategorii: "
             f"{', '.join(sorted(missing))}"
         )
-    extra_categories = entities.keys() - _ENTITY_FIELDS.keys()
+    extra_categories = entities.keys() - NER_ENTITY_FIELDS.keys()
     if extra_categories:
         raise ValueError(
             f"Referencja NER dla próbki {sample_id} zawiera nieznane kategorie: "
@@ -214,7 +206,7 @@ def _validate_reference(sample_id: str, entry: Any) -> dict[str, Any]:
     for category in ("components", "lesions", "fluid_samples"):
         if not isinstance(entities[category], list):
             raise ValueError(f"Kategoria {category} w referencji próbki {sample_id} musi być tablicą")
-    for category, allowed_fields in _ENTITY_FIELDS.items():
+    for category, allowed_fields in NER_ENTITY_FIELDS.items():
         values = [entities[category]] if category == "patient" else entities[category]
         for index, value in enumerate(values):
             if not isinstance(value, dict):

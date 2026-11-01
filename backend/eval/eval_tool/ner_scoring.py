@@ -5,12 +5,11 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-_CATEGORIES = ("patient", "components", "lesions", "fluid_samples")
-_PRIMARY_FIELDS = {
-    "components": ("name",),
-    "lesions": ("type", "organ"),
-    "fluid_samples": ("material_type", "source"),
-}
+from scipy.optimize import linear_sum_assignment
+
+from .reference_schema import NER_CATEGORIES
+
+_CATEGORIES = NER_CATEGORIES
 _MEASUREMENT_FIELDS = {"dim_x", "dim_y", "dim_z", "length", "diameter"}
 
 
@@ -117,7 +116,7 @@ def _score_entity_category(
     expected: list[Mapping[str, Any]],
     actual: list[Mapping[str, Any]],
 ) -> tuple[dict[str, Any], bool]:
-    pairs, unmatched_expected, unmatched_actual = _match_entities(category, expected, actual)
+    pairs, unmatched_expected, unmatched_actual = _match_entities(expected, actual)
     field_counts: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0])
     exact = len(expected) == len(actual) and not unmatched_expected and not unmatched_actual
     entity_tp = entity_fp = entity_fn = 0
@@ -159,45 +158,45 @@ def _score_entity_category(
 
 
 def _match_entities(
-    category: str,
     expected: list[Mapping[str, Any]],
     actual: list[Mapping[str, Any]],
 ) -> tuple[list[tuple[Mapping[str, Any], Mapping[str, Any]]], list[Mapping[str, Any]], list[Mapping[str, Any]]]:
-    candidates: list[tuple[int, int, int]] = []
-    for expected_index, expected_entity in enumerate(expected):
-        for actual_index, actual_entity in enumerate(actual):
-            score = sum(
-                _values_equal(field, expected_value, actual_entity.get(field), expected_entity, actual_entity)
+    if not expected or not actual:
+        return [], list(expected), list(actual)
+
+    size = max(len(expected), len(actual))
+    field_match_scale = (size + 1) ** 2
+    weights: list[list[int]] = []
+    for expected_entity in expected:
+        row_weights: list[int] = []
+        for actual_entity in actual:
+            agreements = sum(
+                int(_values_equal(field, expected_value, actual_entity.get(field), expected_entity, actual_entity))
                 for field, expected_value in expected_entity.items()
             )
-            score += 2 * sum(
-                1
-                for field in _PRIMARY_FIELDS.get(category, ())
-                if field in expected_entity
-                and _values_equal(
-                    field,
-                    expected_entity[field],
-                    actual_entity.get(field),
-                    expected_entity,
-                    actual_entity,
-                )
+            is_exact = agreements == len(expected_entity)
+            # Maximize known-field agreement first, exact-entity matches second,
+            # then the number of paired entities. Zero-weight pairs stay unmatched.
+            row_weights.append(
+                agreements * field_match_scale + int(is_exact) * (size + 1) + int(agreements > 0)
             )
-            if score:
-                candidates.append((score, expected_index, actual_index))
+        weights.append(row_weights)
 
-    matched_expected: set[int] = set()
-    matched_actual: set[int] = set()
-    pairs: list[tuple[Mapping[str, Any], Mapping[str, Any]]] = []
-    for _, expected_index, actual_index in sorted(candidates, reverse=True):
-        if expected_index in matched_expected or actual_index in matched_actual:
-            continue
-        matched_expected.add(expected_index)
-        matched_actual.add(actual_index)
-        pairs.append((expected[expected_index], actual[actual_index]))
+    expected_indexes, actual_indexes = linear_sum_assignment(weights, maximize=True)
+    assignments = {
+        int(expected_index): int(actual_index)
+        for expected_index, actual_index in zip(expected_indexes, actual_indexes)
+        if weights[int(expected_index)][int(actual_index)] > 0
+    }
+    matched_actual = set(assignments.values())
+    pairs = [
+        (expected[expected_index], actual[actual_index])
+        for expected_index, actual_index in sorted(assignments.items())
+    ]
 
     return (
         pairs,
-        [entity for index, entity in enumerate(expected) if index not in matched_expected],
+        [entity for index, entity in enumerate(expected) if index not in assignments],
         [entity for index, entity in enumerate(actual) if index not in matched_actual],
     )
 

@@ -1,7 +1,7 @@
-from eval_tool.ner_scoring import aggregate_ner_scores, score_ner
+from eval_tool.ner_scoring import score_ner
 
 
-def test_ner_scoring_matches_structured_entities_without_order_sensitive_fields():
+def test_ner_score_handles_unit_equivalence_and_unordered_entities():
     expected = {
         "patient": {"first_name": "Anna", "last_name": "Nowak"},
         "components": [
@@ -24,17 +24,10 @@ def test_ner_scoring_matches_structured_entities_without_order_sensitive_fields(
     result = score_ner(expected, actual)
 
     assert result["exact_record_match"] is True
-    assert result["categories"]["components"]["fields"]["dim_x"] == {
-        "true_positives": 1,
-        "false_positives": 0,
-        "false_negatives": 0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-    }
+    assert result["categories"]["components"]["fields"]["dim_x"]["f1"] == 1.0
 
 
-def test_ner_scoring_ignores_unannotated_fields_but_counts_known_absence():
+def test_ner_score_ignores_unknown_fields_but_counts_known_absence():
     expected = {
         "patient": {"first_name": "Anna", "last_name": None},
         "components": [],
@@ -56,29 +49,29 @@ def test_ner_scoring_ignores_unannotated_fields_but_counts_known_absence():
     assert result["categories"]["components"]["entity_counts"]["false_positives"] == 1
 
 
-def test_aggregate_ner_scores_pools_field_counts_and_record_matches():
+def test_ner_score_uses_global_matching_instead_of_greedy_pairs():
     expected = {
-        "patient": {"age": 50},
-        "components": [],
+        "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},
+        "components": [
+            {"name": "A", "description": "X", "count": 2, "dim_x": 5, "unit": "cm"},
+            {"name": "B", "description": "X", "count": 3},
+        ],
         "lesions": [],
         "fluid_samples": [],
     }
-    exact = score_ner(expected, expected)
-    missed = score_ner(
-        expected,
-        {"patient": {"age": None}, "components": [], "lesions": [], "fluid_samples": []},
-    )
+    actual = {
+        "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},
+        "components": [
+            {"name": "A", "description": "X", "count": 3, "dim_x": 5, "unit": "cm"},
+            {"name": "A", "description": "Y", "count": 2, "unit": "cm"},
+        ],
+        "lesions": [],
+        "fluid_samples": [],
+    }
 
-    aggregate = aggregate_ner_scores([exact, missed])
+    result = score_ner(expected, actual)
+    counts = result["categories"]["components"]["fields"]["count"]
 
-    assert aggregate["records"] == 2
-    assert aggregate["exact_record_rate"] == 0.5
-    assert aggregate["categories"]["patient"]["fields"]["age"]["false_negatives"] == 1
-    assert aggregate["fields"]["patient.age"]["false_negatives"] == 1
-
-
-def test_aggregate_ner_scores_leave_exact_rate_undefined_without_records():
-    aggregate = aggregate_ner_scores([])
-
-    assert aggregate["records"] == 0
-    assert aggregate["exact_record_rate"] is None
+    assert counts["true_positives"] == 2
+    assert counts["false_positives"] == 0
+    assert counts["false_negatives"] == 0

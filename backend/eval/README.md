@@ -4,9 +4,10 @@ To jest lokalny runner end-to-end dla `Pipeline.run()`. Nie uruchamia Django tes
 
 ## Instalacja i przygotowanie referencji NER
 
-Uruchom z katalogu `backend`:
+Uruchom z katalogu `backend`. Wymagane są również zależności projektu z `requirements.txt`:
 
 ```bash
+python -m pip install -r requirements.txt
 python -m pip install -r eval/requirements.txt
 python eval/run.py --init-ner-references
 ```
