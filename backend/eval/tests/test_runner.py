@@ -1,0 +1,111 @@
+from pathlib import Path
+
+from eval_tool.dataset import EvaluationSample
+from eval_tool.runner import run_evaluation
+
+
+def _sample(sample_id):
+    return EvaluationSample(
+        sample_id=sample_id,
+        audio_path=Path(f"{sample_id}.wav"),
+        reference_text="kot ma psa",
+        ner_reference={
+            "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},
+            "components": [],
+            "lesions": [],
+            "fluid_samples": [],
+        },
+    )
+
+
+class FakePipeline:
+    def __init__(self, failures=None):
+        self.failures = failures or set()
+        self.cleaned = []
+
+    def run(self, audio_path):
+        sample_id = Path(audio_path).stem
+        if sample_id in self.failures:
+            raise RuntimeError("provider failure")
+        return {
+            "transcript": "kot ma psa",
+            "corrected_transcript": "kot ma psa",
+            "entities": {
+                "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},
+                "components": [],
+                "lesions": [],
+                "fluid_samples": [],
+            },
+            "retrieved_templates": [],
+            "preprocessing": {"status": "ok"},
+        }
+
+    def cleanup(self, audio_path):
+        self.cleaned.append(str(audio_path))
+
+
+def test_evaluation_continues_after_pipeline_failure_and_keeps_aggregate_private():
+    pipeline = FakePipeline(failures={"001"})
+
+    report = run_evaluation(
+        [_sample("001"), _sample("002")],
+        pipeline_factory=lambda: pipeline,
+        judge_enabled=False,
+    )
+
+    assert report["status"] == "incomplete"
+    assert report["samples_requested"] == 2
+    assert report["pipeline_samples_completed"] == 1
+    assert report["errors"][0]["sample_id"] == "001"
+    assert report["transcript"]["wer"] == 0
+    assert pipeline.cleaned == ["001.wav", "002.wav"]
+    assert "details" not in report
+    assert "kot ma psa" not in str(report)
+
+
+def test_evaluation_runs_judge_and_includes_sensitive_details_only_on_request():
+    pipeline = FakePipeline()
+    judge_calls = []
+
+    def judge(reference, corrected, model):
+        judge_calls.append((reference, corrected, model))
+        return {
+            "score": 4,
+            "omissions": [],
+            "additions": [],
+            "contradictions": [],
+            "rationale": "Faithful.",
+        }
+
+    report = run_evaluation(
+        [_sample("001")],
+        pipeline_factory=lambda: pipeline,
+        judge=judge,
+        judge_model="judge-model",
+        include_details=True,
+    )
+
+    assert judge_calls == [("kot ma psa", "kot ma psa", "judge-model")]
+    assert report["judge"]["mean_score"] == 4
+    assert report["details"][0]["reference_text"] == "kot ma psa"
+    assert report["details"][0]["judge"]["rationale"] == "Faithful."
+    assert report["details"][0]["preprocessing"]["status"] == "ok"
+    assert report["details"][0]["ner_reference"] == _sample("001").ner_reference
+
+
+def test_judge_failure_marks_run_incomplete_without_discarding_stt_scores():
+    pipeline = FakePipeline()
+
+    def failing_judge(*_args):
+        raise RuntimeError("judge unavailable")
+
+    report = run_evaluation(
+        [_sample("001")],
+        pipeline_factory=lambda: pipeline,
+        judge=failing_judge,
+        judge_model="judge-model",
+    )
+
+    assert report["status"] == "incomplete"
+    assert report["transcript"]["wer"] == 0
+    assert report["errors"][0]["stage"] == "judge"

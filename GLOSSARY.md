@@ -11,3 +11,16 @@ _Avoid_: Prompt, instruction
 **Keyword Catalog**:
 The shared collection of keywords used to support every pathology transcription.
 _Avoid_: Per-recording vocabulary
+
+**Reference transcript**:
+The expected written account associated with a recording, used to assess how faithfully its spoken content was transcribed.
+
+**Raw transcript**:
+The text recognized from a recording before editorial correction.
+
+**Corrected transcript**:
+A revised transcription intended to preserve the recording's information while correcting recognition and formatting errors.
+
+**Gold NER reference**:
+The reviewed expected annotation of patient, component, lesion, and fluid-sample information for a recording.
+_Avoid_: Expected output
