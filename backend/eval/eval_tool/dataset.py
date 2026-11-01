@@ -12,6 +12,8 @@ from .reference_schema import (NER_ENTITY_FIELDS, NER_FIELD_TYPES,
                                NER_MEASUREMENT_FIELDS)
 
 _REQUIRED_COLUMNS = ("id", "format", "nazwa pliku", "tekst referencyjny")
+_JUDGE_ENABLED_COLUMN = "oceniaj sędzią LLM"
+_JUDGE_OPT_OUT_REASON_COLUMN = "powód pominięcia sędziego"
 
 
 @dataclass(frozen=True)
@@ -20,6 +22,8 @@ class EvaluationSample:
     audio_path: Path
     reference_text: str
     ner_reference: dict[str, Any] | None
+    judge_opt_out: bool = False
+    judge_opt_out_reason: str | None = None
 
 
 def load_dataset(
@@ -52,6 +56,8 @@ def load_dataset(
                 audio_path=audio_path,
                 reference_text=row["reference_text"],
                 ner_reference=references.get(sample_id),
+                judge_opt_out=row["judge_opt_out"],
+                judge_opt_out_reason=row["judge_opt_out_reason"],
             )
         )
 
@@ -92,7 +98,7 @@ def initialize_reference_template(
     return output
 
 
-def _read_metadata(path: Path) -> dict[str, dict[str, str]]:
+def _read_metadata(path: Path) -> dict[str, dict[str, Any]]:
     if not path.is_file():
         raise ValueError(f"Nie znaleziono arkusza metadanych: {path}")
     workbook = load_workbook(path, read_only=True, data_only=True)
@@ -107,7 +113,7 @@ def _read_metadata(path: Path) -> dict[str, dict[str, str]]:
         if missing_columns:
             raise ValueError(f"Brak wymaganych kolumn w arkuszu metadanych: {', '.join(missing_columns)}")
 
-        metadata: dict[str, dict[str, str]] = {}
+        metadata: dict[str, dict[str, Any]] = {}
         for row_number, row in enumerate(rows, start=2):
             raw_id = _cell(row, indexes["id"])
             if raw_id is None or str(raw_id).strip() == "":
@@ -119,10 +125,39 @@ def _read_metadata(path: Path) -> dict[str, dict[str, str]]:
             reference_text = _cell(row, indexes["tekst referencyjny"])
             if not isinstance(reference_text, str) or not reference_text.strip():
                 raise ValueError(f"Brak tekstu referencyjnego dla próbki {sample_id}")
+            judge_enabled = (
+                _cell(row, indexes[_JUDGE_ENABLED_COLUMN])
+                if _JUDGE_ENABLED_COLUMN in indexes
+                else None
+            )
+            if judge_enabled is not None and not isinstance(judge_enabled, bool):
+                raise ValueError(
+                    f"Kolumna '{_JUDGE_ENABLED_COLUMN}' dla próbki {sample_id} "
+                    "musi zawierać wartość logiczną lub być pusta"
+                )
+            opt_out_reason = (
+                _cell(row, indexes[_JUDGE_OPT_OUT_REASON_COLUMN])
+                if _JUDGE_OPT_OUT_REASON_COLUMN in indexes
+                else None
+            )
+            if opt_out_reason is not None and not isinstance(opt_out_reason, str):
+                raise ValueError(
+                    f"Kolumna '{_JUDGE_OPT_OUT_REASON_COLUMN}' dla próbki {sample_id} "
+                    "musi zawierać tekst lub być pusta"
+                )
+            normalized_reason = opt_out_reason.strip() if isinstance(opt_out_reason, str) else ""
+            judge_opt_out = judge_enabled is False
+            if normalized_reason and not judge_opt_out:
+                raise ValueError(
+                    f"Powód pominięcia sędziego dla próbki {sample_id} jest dozwolony "
+                    "tylko gdy próbka jest wyłączona z oceny"
+                )
             metadata[sample_id] = {
                 "format": str(_cell(row, indexes["format"]) or "").strip(),
                 "filename": str(_cell(row, indexes["nazwa pliku"]) or "").strip(),
                 "reference_text": reference_text.strip(),
+                "judge_opt_out": judge_opt_out,
+                "judge_opt_out_reason": normalized_reason or None,
             }
         if not metadata:
             raise ValueError(f"Arkusz metadanych nie zawiera próbek: {path}")

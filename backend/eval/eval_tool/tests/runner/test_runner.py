@@ -18,6 +18,18 @@ def _sample(sample_id):
     )
 
 
+def _sample_with_judge_opt_out(sample_id, reason=None):
+    sample = _sample(sample_id)
+    return EvaluationSample(
+        sample_id=sample.sample_id,
+        audio_path=sample.audio_path,
+        reference_text=sample.reference_text,
+        ner_reference=sample.ner_reference,
+        judge_opt_out=True,
+        judge_opt_out_reason=reason,
+    )
+
+
 class FakePipeline:
     def __init__(self, failures=None):
         self.failures = failures or set()
@@ -94,6 +106,13 @@ def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
             "transcript": None,
             "entities": None,
             "corrected_transcript": None,
+            "judge_status": "not_run",
+            "judge_score": None,
+            "judge_rationale": None,
+            "judge_omissions": None,
+            "judge_additions": None,
+            "judge_contradictions": None,
+            "judge_opt_out_reason": None,
         },
         {
             "sample_id": "002",
@@ -106,6 +125,13 @@ def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
                 "fluid_samples": [],
             },
             "corrected_transcript": "kot ma psa",
+            "judge_status": "disabled",
+            "judge_score": None,
+            "judge_rationale": None,
+            "judge_omissions": None,
+            "judge_additions": None,
+            "judge_contradictions": None,
+            "judge_opt_out_reason": None,
         },
     ]
 
@@ -172,6 +198,50 @@ def test_evaluation_runs_judge_and_includes_sensitive_details_only_on_request():
     assert report["details"][0]["judge"]["rationale"] == "Faithful."
     assert report["details"][0]["preprocessing"]["status"] == "ok"
     assert report["details"][0]["ner_reference"] == _sample("001").ner_reference
+
+
+def test_judge_opt_out_keeps_pipeline_results_but_excludes_sample_from_judge_aggregate():
+    pipeline = FakePipeline()
+    judge_calls = []
+
+    def judge(*args):
+        judge_calls.append(args)
+        return {
+            "score": 4,
+            "omissions": [],
+            "additions": [],
+            "contradictions": [],
+            "rationale": "Faithful.",
+        }
+
+    report = run_evaluation(
+        [_sample_with_judge_opt_out("001", "Brak zgody")],
+        pipeline_factory=lambda: pipeline,
+        judge=judge,
+        judge_model="judge-model",
+    )
+
+    assert judge_calls == []
+    assert report["status"] == "complete"
+    assert report["pipeline_samples_completed"] == 1
+    assert report["judge"]["samples"] == 0
+    assert report["judge"]["samples_opted_out"] == 1
+    assert report["judge"]["mean_score"] is None
+    assert pipeline.cleaned == ["001.wav"]
+    assert report["review_rows"][0]["judge_status"] == "opted_out"
+    assert report["review_rows"][0]["judge_opt_out_reason"] == "Brak zgody"
+    assert report["review_rows"][0]["judge_score"] is None
+
+
+def test_global_judge_disable_and_pipeline_failure_have_distinct_judge_statuses():
+    report = run_evaluation(
+        [_sample("001"), _sample_with_judge_opt_out("002", "Powód")],
+        pipeline_factory=lambda: FakePipeline(failures={"002"}),
+        judge_enabled=False,
+    )
+
+    assert [row["judge_status"] for row in report["review_rows"]] == ["disabled", "not_run"]
+    assert report["judge"]["samples_opted_out"] == 1
 
 
 def test_judge_failure_marks_run_incomplete_without_discarding_stt_scores():

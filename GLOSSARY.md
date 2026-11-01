@@ -24,3 +24,9 @@ A revised transcription intended to preserve the recording's information while c
 **Gold NER reference**:
 The reviewed expected annotation of patient, component, lesion, and fluid-sample information for a recording.
 _Avoid_: Expected output
+
+**LLM judge**:
+A language model that assesses how faithfully a corrected transcript preserves the reference transcript.
+
+**Judge opt-out**:
+A sample-level choice to exclude a recording from LLM judge assessment while retaining it in pipeline evaluation.

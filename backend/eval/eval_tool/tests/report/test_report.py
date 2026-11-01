@@ -60,6 +60,12 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
             "entities": {"components": [{"name": "nerka"}]},
             "corrected_transcript": "Skorygowany tekst",
             "ner_reference": {"components": []},
+            "judge_status": "judged",
+            "judge_score": 3,
+            "judge_rationale": "Małe pominięcie.",
+            "judge_omissions": ["lewy bok", "dolny biegun"],
+            "judge_additions": [],
+            "judge_contradictions": ["prawa strona"],
         },
         {
             "sample_id": "002",
@@ -68,6 +74,8 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
             "entities": None,
             "corrected_transcript": None,
             "ner_reference": {"components": []},
+            "judge_status": "not_run",
+            "judge_opt_out_reason": None,
         },
     ]
 
@@ -84,6 +92,13 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
         "Surowy transkrypt",
         "Wynik NER (JSON)",
         "Skorygowany transkrypt",
+        "Status sędziego LLM",
+        "Wynik sędziego LLM (0–4)",
+        "Uzasadnienie sędziego LLM",
+        "Pominięcia sędziego LLM",
+        "Dodatki sędziego LLM",
+        "Sprzeczności sędziego LLM",
+        "Powód pominięcia sędziego",
         "Referencja Gold NER (JSON)",
     )
     assert values[1] == (
@@ -92,9 +107,20 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
         "Surowy tekst",
         '{"components": [{"name": "nerka"}]}',
         "Skorygowany tekst",
+        "oceniono",
+        3,
+        "Małe pominięcie.",
+        "lewy bok\ndolny biegun",
+        None,
+        "prawa strona",
+        None,
         '{"components": []}',
     )
-    assert values[2] == ("002", "nieudana", None, None, None, '{"components": []}')
+    assert values[2] == (
+        "002", "nieudana", None, None, None,
+        "nie oceniono — błąd pipeline'u", None, None, None, None, None, None,
+        '{"components": []}',
+    )
 
 
 def test_review_workbook_omits_gold_reference_column_when_ner_scoring_is_disabled(tmp_path):
@@ -113,4 +139,43 @@ def test_review_workbook_omits_gold_reference_column_when_ner_scoring_is_disable
         "Surowy transkrypt",
         "Wynik NER (JSON)",
         "Skorygowany transkrypt",
+        "Status sędziego LLM",
+        "Wynik sędziego LLM (0–4)",
+        "Uzasadnienie sędziego LLM",
+        "Pominięcia sędziego LLM",
+        "Dodatki sędziego LLM",
+        "Sprzeczności sędziego LLM",
+        "Powód pominięcia sędziego",
     )
+
+
+def test_review_workbook_distinguishes_all_judge_statuses_and_exports_opt_out_reason(tmp_path):
+    output = tmp_path / "review.xlsx"
+    statuses = ["judged", "opted_out", "disabled", "error", "not_run"]
+    rows = [
+        {
+            "sample_id": str(index),
+            "status": "complete",
+            "judge_status": status,
+            "judge_opt_out_reason": "Powód oceny pominiętej" if status == "opted_out" else None,
+        }
+        for index, status in enumerate(statuses, start=1)
+    ]
+
+    save_review_workbook(rows, output)
+
+    workbook = load_workbook(output, read_only=True, data_only=True)
+    try:
+        values = list(workbook.active.values)
+    finally:
+        workbook.close()
+    judge_status_column = values[0].index("Status sędziego LLM")
+    reason_column = values[0].index("Powód pominięcia sędziego")
+    assert [row[judge_status_column] for row in values[1:]] == [
+        "oceniono",
+        "pominięto na poziomie próbki",
+        "sędzia wyłączony globalnie",
+        "błąd oceny sędziego",
+        "nie oceniono — błąd pipeline'u",
+    ]
+    assert values[2][reason_column] == "Powód oceny pominiętej"

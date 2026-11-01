@@ -15,11 +15,25 @@ _REVIEW_HEADERS = (
     "Surowy transkrypt",
     "Wynik NER (JSON)",
     "Skorygowany transkrypt",
+    "Status sędziego LLM",
+    "Wynik sędziego LLM (0–4)",
+    "Uzasadnienie sędziego LLM",
+    "Pominięcia sędziego LLM",
+    "Dodatki sędziego LLM",
+    "Sprzeczności sędziego LLM",
+    "Powód pominięcia sędziego",
 )
 _REVIEW_STATUS_LABELS = {
     "complete": "kompletna",
     "incomplete": "niekompletna",
     "failed": "nieudana",
+}
+_JUDGE_STATUS_LABELS = {
+    "judged": "oceniono",
+    "opted_out": "pominięto na poziomie próbki",
+    "disabled": "sędzia wyłączony globalnie",
+    "error": "błąd oceny sędziego",
+    "not_run": "nie oceniono — błąd pipeline'u",
 }
 
 def default_report_path(eval_dir: str | Path) -> Path:
@@ -74,6 +88,13 @@ def save_review_workbook(
             row.get("transcript"),
             _json_cell(row.get("entities")),
             row.get("corrected_transcript"),
+            _JUDGE_STATUS_LABELS.get(row.get("judge_status"), row.get("judge_status")),
+            row.get("judge_score"),
+            row.get("judge_rationale"),
+            _line_cell(row.get("judge_omissions")),
+            _line_cell(row.get("judge_additions")),
+            _line_cell(row.get("judge_contradictions")),
+            row.get("judge_opt_out_reason"),
         ]
         if include_ner_reference:
             values.append(_json_cell(row.get("ner_reference")))
@@ -86,3 +107,9 @@ def save_review_workbook(
 
 def _json_cell(value: Any) -> str | None:
     return None if value is None else json.dumps(value, ensure_ascii=False)
+
+
+def _line_cell(value: Any) -> str | None:
+    if not value:
+        return None
+    return "\n".join(str(item) for item in value)

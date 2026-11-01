@@ -67,6 +67,7 @@ def run_evaluation(
                 sample.sample_id,
                 ner_reference=sample.ner_reference,
                 include_ner_reference=score_ner,
+                judge_opt_out_reason=sample.judge_opt_out_reason,
             )
             for sample in selected_samples
         ]
@@ -105,6 +106,7 @@ def run_evaluation(
                     sample.sample_id,
                     ner_reference=sample.ner_reference,
                     include_ner_reference=score_ner,
+                    judge_opt_out_reason=sample.judge_opt_out_reason,
                 )
             )
             if include_details:
@@ -114,7 +116,10 @@ def run_evaluation(
         transcript = pipeline_result.get("transcript")
         corrected_transcript = pipeline_result.get("corrected_transcript")
         entities = pipeline_result.get("entities")
-        review_row = _review_row(sample.sample_id)
+        review_row = _review_row(
+            sample.sample_id,
+            judge_opt_out_reason=sample.judge_opt_out_reason,
+        )
         review_row.update(
             {
                 "status": detail["status"],
@@ -149,15 +154,23 @@ def run_evaluation(
                 errors.append(_error(sample.sample_id, "ner_scoring", error))
 
         if judge_enabled:
-            try:
-                if not isinstance(corrected_transcript, str):
-                    raise ValueError("corrected_transcript is not a string")
-                assert judge is not None and judge_model is not None
-                judgement = judge(sample.reference_text, corrected_transcript, judge_model)
-                judgements.append(judgement)
-                detail["judge"] = judgement
-            except Exception as error:
-                errors.append(_error(sample.sample_id, "judge", error))
+            if sample.judge_opt_out:
+                review_row["judge_status"] = "opted_out"
+            else:
+                try:
+                    if not isinstance(corrected_transcript, str):
+                        raise ValueError("corrected_transcript is not a string")
+                    assert judge is not None and judge_model is not None
+                    judgement = judge(sample.reference_text, corrected_transcript, judge_model)
+                    judgements.append(judgement)
+                    detail["judge"] = judgement
+                    review_row["judge_status"] = "judged"
+                    review_row.update(_review_judgement(judgement))
+                except Exception as error:
+                    review_row["judge_status"] = "error"
+                    errors.append(_error(sample.sample_id, "judge", error))
+        else:
+            review_row["judge_status"] = "disabled"
 
         if len(errors) > sample_error_count:
             review_row["status"] = "incomplete"
@@ -199,6 +212,7 @@ def _review_row(
     *,
     ner_reference: Mapping[str, Any] | None = None,
     include_ner_reference: bool = False,
+    judge_opt_out_reason: str | None = None,
 ) -> dict[str, Any]:
     row = {
         "sample_id": sample_id,
@@ -206,10 +220,27 @@ def _review_row(
         "transcript": None,
         "entities": None,
         "corrected_transcript": None,
+        "judge_status": "not_run",
+        "judge_score": None,
+        "judge_rationale": None,
+        "judge_omissions": None,
+        "judge_additions": None,
+        "judge_contradictions": None,
+        "judge_opt_out_reason": judge_opt_out_reason,
     }
     if include_ner_reference:
         row["ner_reference"] = ner_reference
     return row
+
+
+def _review_judgement(judgement: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "judge_score": judgement["score"],
+        "judge_rationale": judgement["rationale"],
+        "judge_omissions": judgement["omissions"],
+        "judge_additions": judgement["additions"],
+        "judge_contradictions": judgement["contradictions"],
+    }
 
 
 def _build_report(
@@ -238,6 +269,7 @@ def _build_report(
         "judge": {
             **aggregate_judgements(judgements),
             "model": judge_model if judge_enabled else None,
+            "samples_opted_out": sum(sample.judge_opt_out for sample in selected_samples),
         },
     }
     if details is not None:
