@@ -3,8 +3,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 
 def _load_qdrant_client_module():
     client_path = (
@@ -22,11 +20,11 @@ def _load_qdrant_client_module():
     return module
 
 
-class TestQdrantClientTests(unittest.TestCase):
+class QdrantClientTests(unittest.TestCase):
     def test_fresh_process_guard_rejects_a_cached_client(self):
         client = _load_qdrant_client_module()
 
-        with patch.object(client, "_client", object()), pytest.raises(
-            ValueError, match="nowym procesie"
+        with patch.object(client, "_client", object()), self.assertRaisesRegex(
+            ValueError, "nowym procesie"
         ):
             client.ensure_qdrant_client_uninitialized()
