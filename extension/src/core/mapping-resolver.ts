@@ -38,9 +38,16 @@ function resolveOne(doc: Document, field: MetadataKey, entry: FieldMapping): Res
   return { field, status: "not_found" };
 }
 
-/** Case/space-insensitive, trailing-colon-insensitive label text match. */
+/** Case-, space-, diacritics- and dash-insensitive label text match. */
 function normalizeLabel(text: string): string {
-  return text.replace(/\s+/g, " ").replace(/[:\s]+$/g, "").trim().toLowerCase();
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // strip combining marks (ą → a, ż → z)
+    .replace(/[—–‑–]/g, "-") // unify dash variants
+    .replace(/\s+/g, " ")
+    .replace(/[:\s]+$/g, "")
+    .trim()
+    .toLowerCase();
 }
 
 function findByLabelText(doc: Document, label: string): HTMLElement | undefined {

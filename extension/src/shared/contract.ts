@@ -1,4 +1,5 @@
 import type { PatientMetadata } from "./metadata";
+import type { MappingSet } from "./config";
 import type { TransferReport } from "./report";
 
 /**
@@ -45,4 +46,12 @@ export type BackgroundRequest = {
   version: number;
   transferId: string;
   metadata: PatientMetadata;
+};
+
+/** Background -> target-page content script. */
+export type FillMessage = {
+  type: "rx:fill";
+  transferId: string;
+  metadata: PatientMetadata;
+  mapping: MappingSet;
 };

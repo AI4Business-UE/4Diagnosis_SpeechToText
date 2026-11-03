@@ -12,6 +12,7 @@ import {
 /** Extension answers within ~5 s; the watchdog covers an uninstalled/dead extension. */
 const TRANSFER_WATCHDOG_MS = 6000;
 
+// Mirrors FIELD_LABELS in extension/src/options/index.ts (separate bundles by design, ADR-0002).
 const FIELD_LABELS: Record<keyof PatientMetadata, string> = {
   organ: "Badany narząd",
   name: "Imię i nazwisko",
@@ -22,7 +23,9 @@ const FIELD_LABELS: Record<keyof PatientMetadata, string> = {
 
 function formatTransferToast(report: TransferReport): ToastMessage {
   const unfilled = report.fields.filter((field) => field.status !== "filled");
-  const unfilledLabels = unfilled.map((field) => FIELD_LABELS[field.field]).join(", ");
+  const unfilledLabels = unfilled
+    .map((field) => (field.detail ? `${FIELD_LABELS[field.field]} (${field.detail})` : FIELD_LABELS[field.field]))
+    .join(", ");
   const total = report.fields.length;
   const filled = total - unfilled.length;
 
@@ -65,16 +68,28 @@ export function useFormTransfer() {
     const handleMessage = (event: MessageEvent) => {
       if (event.source !== window) return;
 
-      const data = event.data as Partial<Extract<
-        import("@/types/transfer").TransferResultMessage,
-        object
-      >> & { channel?: string; type?: string };
+      const data = event.data as {
+        channel?: unknown;
+        type?: unknown;
+        version?: unknown;
+        transferId?: unknown;
+        report?: TransferReport;
+      };
       if (data?.channel !== TRANSFER_CHANNEL || data?.type !== "transfer-result") return;
       if (inFlight.current?.transferId !== data.transferId) return;
 
       window.clearTimeout(inFlight.current.watchdog);
       inFlight.current = null;
       setPending(false);
+
+      // ADR-0002: an unknown contract version is reported, never guessed at.
+      if (data.version !== TRANSFER_CONTRACT_VERSION) {
+        addMessage({
+          type: "error",
+          message: "Nieobsługiwana wersja kontraktu Transfer. Zaktualizuj aplikację lub rozszerzenie.",
+        });
+        return;
+      }
       if (data.report) {
         addMessage(formatTransferToast(data.report));
       }

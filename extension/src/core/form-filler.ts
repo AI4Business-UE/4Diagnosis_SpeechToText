@@ -27,7 +27,8 @@ function selectOption(select: HTMLSelectElement, value: string): void {
     (option) => option.value === value || option.textContent?.trim() === value,
   );
   if (!match) {
-    throw new Error(`Brak opcji "${value}" na stronie docelowej`);
+    // The message reaches the value-free Transfer Report; never embed the value.
+    throw new Error("Brak pasującej opcji na stronie docelowej");
   }
   setNativeValue(select, match.value);
 }

@@ -127,4 +127,58 @@ test.describe("Transfer to Mock Target Page", () => {
     });
     await expect(mockA.locator("#field-organ")).toHaveValue("");
   });
+
+  test("reports a Polish error when the target tab stops answering (5 s timeout)", async () => {
+    const app = await openAppTab(context);
+    const mock = await context.newPage();
+    await mock.goto(MOCK_URL);
+
+    // Freeze the target page's main thread (isolated content scripts stall with it).
+    // Keep the busy loop close to the 5 s transfer timeout so teardown isn't blocked on it;
+    // the "never submits" assertion lives in the fill tests, which can actually read the page.
+    mock
+      .evaluate(() => {
+        const end = Date.now() + 8_000;
+        while (Date.now() < end) {
+          // busy block
+        }
+      })
+      .catch(() => {}); // never resolves; discarded with the context
+
+    await transferButton(app).click();
+
+    await expect(app.getByText(/Strona docelowa nie odpowiada/)).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+
+  test("ignores a transfer requested by a page outside the profile's app URL pattern", async () => {
+    await context.route("http://localhost:3012/*", (route) =>
+      route.fulfill({
+        contentType: "text/html",
+        body: "<html><body>Obca strona</body></html>",
+      }),
+    );
+
+    const target = await context.newPage();
+    await target.goto(MOCK_URL);
+
+    const outsider = await context.newPage();
+    await outsider.goto("http://localhost:3012/evil");
+    await outsider.evaluate(() => {
+      window.postMessage(
+        {
+          channel: "rx-transfer",
+          version: 1,
+          type: "transfer-request",
+          transferId: "outsider-1",
+          metadata: { organ: "Sfałszowane", name: "x", age: "1", pesel: "2", description: "y" },
+        },
+        window.location.origin,
+      );
+    });
+
+    // No request is ever made against the target form and nothing is filled.
+    await expect(target.locator("#field-organ")).toHaveValue("", { timeout: 3_000 });
+  });
 });

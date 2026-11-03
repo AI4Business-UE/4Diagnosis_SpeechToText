@@ -51,9 +51,11 @@ the button and result toasts ship inside `app/`.
 
 Open the extension's *Details → Options* UI:
 
-- **Transfer Profiles:** each is `{ name, urlPattern, Field Mapping }`.
+- **Transfer Profiles:** each is `{ name, urlPattern, appUrlPattern, Field Mapping }`.
   Exactly one profile is active. The built-in **Mock** profile targets
-  `http://localhost:3011/*` for development.
+  `http://localhost:3011/*` for development and accepts requests from the app
+  at `http://localhost:3010/*` (`appUrlPattern` gates which pages may
+  **initiate** a Transfer — a request from any other page is refused).
 - **Per-field mapping:** candidate CSS selectors (one per line, tried in
   order) plus a label-text fallback (diacritics/case-insensitive), which
   usually covers third-party forms whose element IDs are brittle.
@@ -89,7 +91,10 @@ dev server (`localhost:3010`) if not already running.
 
 - A Transfer **never** submits a form, clicks `Zapisz`, or touches buttons on
   the Target Page.
-- Reports never contain transferred values.
+- Reports never contain transferred values (error details are value-free by
+  construction and unit-tested).
+- Only pages matching the active profile's `appUrlPattern` can initiate a
+  Transfer; requests from any other origin are refused.
 - If the Target Page tab is missing, ambiguous, or unresponsive (5 s), the
   app shows a Polish error toast and fills nothing.
 - The real third-party page must be configured manually (Field Mapping);

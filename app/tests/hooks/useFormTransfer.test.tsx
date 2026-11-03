@@ -154,6 +154,49 @@ describe("useFormTransfer", () => {
     expect(await screen.findByText(/Strona docelowa nie jest otwarta/)).toBeTruthy();
   });
 
+  it("includes the per-field failure reason in the partial toast", async () => {
+    const { result } = renderHook(() => useFormTransfer(), { wrapper });
+
+    act(() => {
+      void result.current.transfer(metadata);
+    });
+    const transferId = await lastTransferId();
+    const report = filledReport(transferId);
+    report.overall = "partial";
+    report.fields = report.fields.map((f) =>
+      f.field === "organ"
+        ? { field: f.field, status: "failed" as const, detail: "Brak pasującej opcji na stronie docelowej" }
+        : f,
+    );
+    act(() => postResultMessage(report));
+
+    expect(await screen.findByText(/Brak pasującej opcji na stronie docelowej/)).toBeTruthy();
+  });
+
+  it("rejects a transfer-result from an incompatible contract version", async () => {
+    const { result } = renderHook(() => useFormTransfer(), { wrapper });
+
+    act(() => {
+      void result.current.transfer(metadata);
+    });
+    const transferId = await lastTransferId();
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        source: window,
+        data: {
+          channel: TRANSFER_CHANNEL,
+          version: 99,
+          type: "transfer-result",
+          transferId,
+          report: filledReport(transferId),
+        },
+      }),
+    );
+
+    expect(await screen.findByText(/Nieobsługiwana wersja kontraktu/)).toBeTruthy();
+    expect(result.current.pending).toBe(false);
+  });
+
   it("errors out when the extension never answers (extension not installed)", async () => {
     vi.useFakeTimers();
     const { result } = renderHook(() => useFormTransfer(), { wrapper });

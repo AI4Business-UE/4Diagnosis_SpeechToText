@@ -13,8 +13,10 @@ export type MappingSet = Record<MetadataKey, FieldMapping>;
 /** A Transfer Profile: Target Page URL pattern + Field Mappings (see GLOSSARY.md). */
 export type TransferProfile = {
   name: string;
-  /** Chrome match pattern, e.g. "http://localhost:3011/*". */
+  /** Chrome-style match pattern for the Target Page, e.g. "http://localhost:3011/*". */
   urlPattern: string;
+  /** Match pattern for pages allowed to *initiate* a Transfer (our app), e.g. "http://localhost:3010/*". */
+  appUrlPattern: string;
   mapping: MappingSet;
 };
 
@@ -40,6 +42,7 @@ export const DEFAULT_CONFIG: TransferConfig = {
     {
       name: "Mock",
       urlPattern: "http://localhost:3011/*",
+      appUrlPattern: "http://localhost:3010/*",
       mapping: {
         organ: mapping("Badany narząd", "#field-organ"),
         name: mapping("Imię i nazwisko", "#field-name"),
@@ -53,4 +56,19 @@ export const DEFAULT_CONFIG: TransferConfig = {
 
 export function activeProfile(config: TransferConfig): TransferProfile | undefined {
   return config.profiles.find((profile) => profile.name === config.activeProfileName);
+}
+
+/**
+ * Anchored wildcard match against a Chrome-style pattern: `*` matches any run
+ * of characters; everything else is literal. Used to gate both the requesting
+ * app page and the target tab, so the runtime config is the real gate
+ * (docs/adr/0001).
+ */
+export function matchesUrlPattern(pattern: string, url: string): boolean {
+  const body = pattern.split("*").map(escapeRegExp).join(".*");
+  return new RegExp(`^${body}$`).test(url);
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

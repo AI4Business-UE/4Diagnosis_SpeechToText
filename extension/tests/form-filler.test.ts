@@ -82,4 +82,18 @@ describe("fillControl", () => {
 
     expect(() => fillControl(doc.getElementById("not-a-field") as HTMLElement, "x")).toThrow();
   });
+
+  it("never embeds the transferred value in an error message", () => {
+    const doc = fixture(`<select id="s1"><option value="">--</option></select>`);
+
+    let message = "";
+    try {
+      fillControl(doc.getElementById("s1") as HTMLSelectElement, "Wątroba chora");
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+
+    expect(message).not.toContain("Wątroba");
+    expect(message.length).toBeGreaterThan(0);
+  });
 });

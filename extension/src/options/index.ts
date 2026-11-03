@@ -10,6 +10,7 @@ import { storageGet, storageSet } from "../shared/chrome-api";
 import { METADATA_KEYS, type MetadataKey } from "../shared/metadata";
 import type { TransferReport } from "../shared/report";
 
+// Mirrors FIELD_LABELS in app/src/hooks/useFormTransfer.ts (separate bundles by design, ADR-0002).
 const FIELD_LABELS: Record<MetadataKey, string> = {
   organ: "Badany narząd",
   name: "Imię i nazwisko",
@@ -50,6 +51,7 @@ function renderProfiles(): void {
   select.value = config.activeProfileName;
   $<HTMLInputElement>("profile-name").value = currentProfile().name;
   $<HTMLInputElement>("profile-url").value = currentProfile().urlPattern;
+  $<HTMLInputElement>("profile-app-url").value = currentProfile().appUrlPattern;
 }
 
 function renderFieldEditors(): void {
@@ -60,7 +62,13 @@ function renderFieldEditors(): void {
   for (const field of METADATA_KEYS) {
     const mapping = profile.mapping[field];
     const group = document.createElement("fieldset");
-    group.innerHTML = `<legend>${FIELD_LABELS[field]} <span class="hint">(${field})</span></legend>`;
+    const legend = document.createElement("legend");
+    legend.append(`${FIELD_LABELS[field]} `);
+    const legendHint = document.createElement("span");
+    legendHint.className = "hint";
+    legendHint.textContent = `(${field})`;
+    legend.append(legendHint);
+    group.append(legend);
 
     const selectorsLabel = document.createElement("label");
     selectorsLabel.textContent = "Kandydaci selektorów CSS (po jednym na linię)";
@@ -81,10 +89,11 @@ function renderFieldEditors(): void {
   }
 }
 
-function collectProfileFromForm(): TransferConfig {
+function syncProfileFromForm(): TransferConfig {
   const profile = currentProfile();
   profile.name = $<HTMLInputElement>("profile-name").value.trim() || profile.name;
   profile.urlPattern = $<HTMLInputElement>("profile-url").value.trim();
+  profile.appUrlPattern = $<HTMLInputElement>("profile-app-url").value.trim();
 
   for (const field of METADATA_KEYS) {
     profile.mapping[field] = {
@@ -99,6 +108,12 @@ function collectProfileFromForm(): TransferConfig {
   return config;
 }
 
+const OVERALL_LABELS: Record<TransferReport["overall"], string> = {
+  ok: "Sukces",
+  partial: "Częściowo",
+  error: "Błąd",
+};
+
 function renderHistory(history: TransferReport[]): void {
   const rows = $<HTMLTableElement>("history-rows");
   rows.innerHTML = "";
@@ -107,19 +122,25 @@ function renderHistory(history: TransferReport[]): void {
       .filter((field) => field.status !== "filled")
       .map((field) => FIELD_LABELS[field.field])
       .join(", ");
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${new Date(report.timestamp).toLocaleString("pl-PL")}</td>
-      <td>${report.targetUrl ?? "-"}</td>
-      <td class="status ${report.overall}">${report.overall}</td>
-      <td>${report.detail ?? (missing ? `brak: ${missing}` : "wszystkie pola wypełnione")}</td>
-    `;
-    rows.append(row);
+
+    const row = rows.insertRow();
+    cell(row, new Date(report.timestamp).toLocaleString("pl-PL"));
+    // targetUrl is page-controlled; insert as text, never as HTML.
+    cell(row, report.targetUrl ?? "-");
+    const status = cell(row, OVERALL_LABELS[report.overall]);
+    status.className = `status ${report.overall}`;
+    cell(row, report.detail ?? (missing ? `brak: ${missing}` : "wszystkie pola wypełnione"));
   }
 }
 
+function cell(row: HTMLTableRowElement, text: string): HTMLTableCellElement {
+  const td = row.insertCell();
+  td.textContent = text;
+  return td;
+}
+
 async function save(): Promise<void> {
-  await storageSet({ [CONFIG_STORAGE_KEY]: collectProfileFromForm() });
+  await storageSet({ [CONFIG_STORAGE_KEY]: syncProfileFromForm() });
   const status = $<HTMLSpanElement>("save-status");
   status.textContent = "Zapisano";
   status.className = "status ok";
@@ -144,6 +165,7 @@ $<HTMLButtonElement>("add-profile").addEventListener("click", () => {
   config.profiles.push({
     name,
     urlPattern: "https://example.com/*",
+    appUrlPattern: currentProfile().appUrlPattern,
     mapping: structuredClone(DEFAULT_CONFIG.profiles[0].mapping),
   });
   config.activeProfileName = name;
@@ -165,7 +187,7 @@ $<HTMLButtonElement>("delete-profile").addEventListener("click", () => {
 $<HTMLButtonElement>("save-config").addEventListener("click", () => void save());
 
 $<HTMLButtonElement>("export-json").addEventListener("click", () => {
-  $<HTMLTextAreaElement>("raw-json").value = JSON.stringify(collectProfileFromForm(), null, 2);
+  $<HTMLTextAreaElement>("raw-json").value = JSON.stringify(syncProfileFromForm(), null, 2);
 });
 
 $<HTMLButtonElement>("import-json").addEventListener("click", () => {

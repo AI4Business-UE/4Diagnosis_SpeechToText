@@ -92,6 +92,26 @@ describe("resolveFieldControls", () => {
     expect((name?.element as HTMLInputElement).name).toBe("full_name");
   });
 
+  it("matches label text regardless of Polish diacritics", () => {
+    const doc = fixture(`
+      <label for="opis_mk">Badanie makroskopowe — opis narządu</label>
+      <textarea id="opis_mk"></textarea>
+    `);
+
+    const resolved = resolveFieldControls(doc, {
+      ...mapping,
+      description: {
+        selectors: ["#field-description"],
+        label: "Badanie makroskopowe - opis narzadu",
+      },
+    });
+
+    const description = resolved.find((entry) => entry.field === "description");
+    expect(description?.status).toBe("found");
+    expect(description?.strategy).toBe("label");
+    expect(description?.element?.id).toBe("opis_mk");
+  });
+
   it("reports not_found for fields with neither selector hit nor label match", () => {
     const doc = fixture(`<p>Ta strona nie ma formularza.</p>`);
 

@@ -5,6 +5,7 @@ import {
   HISTORY_STORAGE_KEY,
   DEFAULT_CONFIG,
   activeProfile,
+  matchesUrlPattern,
   type TransferConfig,
 } from "../shared/config";
 import type { FieldResult, TransferReport } from "../shared/report";
@@ -20,49 +21,49 @@ async function loadConfig(): Promise<TransferConfig> {
   return config ?? DEFAULT_CONFIG;
 }
 
-async function handleRequest(request: BackgroundRequest, senderTabId: number): Promise<void> {
+async function handleRequest(
+  request: BackgroundRequest,
+  senderTabId: number,
+  senderUrl: string | undefined,
+): Promise<void> {
   const startedAt = Date.now();
   const transferId = request.transferId;
+  const fail = (detail: string) =>
+    finish(
+      senderTabId,
+      errorReport({
+        transferId,
+        timestamp: new Date().toISOString(),
+        durationMs: Date.now() - startedAt,
+        detail,
+      }),
+    );
 
   if (request.version !== TRANSFER_CONTRACT_VERSION) {
-    await finish(senderTabId, errorReport({
-      transferId,
-      timestamp: new Date().toISOString(),
-      durationMs: Date.now() - startedAt,
-      detail: "Nieobsługiwana wersja kontraktu Transfer",
-    }));
+    await fail("Nieobsługiwana wersja kontraktu Transfer");
     return;
   }
 
   const config = await loadConfig();
   const profile = activeProfile(config);
   if (!profile) {
-    await finish(senderTabId, errorReport({
-      transferId,
-      timestamp: new Date().toISOString(),
-      durationMs: Date.now() - startedAt,
-      detail: "Brak aktywnego profilu Transfer",
-    }));
+    await fail("Brak aktywnego profilu Transfer");
+    return;
+  }
+
+  // Runtime gate (docs/adr/0001): only our app page may initiate a Transfer.
+  if (!senderUrl || !matchesUrlPattern(profile.appUrlPattern, senderUrl)) {
+    await fail("Żądanie Przeniesienia z nieznanej strony");
     return;
   }
 
   const tabs = await queryTabsByUrl(profile.urlPattern);
   if (tabs.length === 0) {
-    await finish(senderTabId, errorReport({
-      transferId,
-      timestamp: new Date().toISOString(),
-      durationMs: Date.now() - startedAt,
-      detail: "Strona docelowa nie jest otwarta",
-    }));
+    await fail("Strona docelowa nie jest otwarta");
     return;
   }
   if (tabs.length > 1) {
-    await finish(senderTabId, errorReport({
-      transferId,
-      timestamp: new Date().toISOString(),
-      durationMs: Date.now() - startedAt,
-      detail: "Otwarta jest wiele kart strony docelowej",
-    }));
+    await fail("Otwarta jest wiele kart strony docelowej");
     return;
   }
 
@@ -76,7 +77,7 @@ async function handleRequest(request: BackgroundRequest, senderTabId: number): P
         metadata: request.metadata,
         mapping: profile.mapping,
       }),
-      timeout(`Strona docelowa nie odpowiada (${TARGET_TIMEOUT_MS / 1000} s)`),
+      timeout("Strona docelowa nie odpowiada"),
     ])) as { results: FieldResult[] };
 
     report = buildReport({
@@ -86,16 +87,14 @@ async function handleRequest(request: BackgroundRequest, senderTabId: number): P
       targetUrl: targetTab.url,
       results: response.results,
     });
-  } catch (error) {
+  } catch {
     report = errorReport({
       transferId,
       timestamp: new Date().toISOString(),
       durationMs: Date.now() - startedAt,
       targetUrl: targetTab.url,
-      detail:
-        error instanceof Error
-          ? error.message
-          : "Strona docelowa nie odpowiada",
+      // Chrome's own rejection strings are English; keep user-facing details Polish.
+      detail: "Strona docelowa nie odpowiada",
     });
   }
 
@@ -126,7 +125,7 @@ function timeout(message: string): Promise<never> {
 
 chrome.runtime.onMessage.addListener((message, sender) => {
   if (message?.type === "rx:transfer-request" && typeof sender.tab?.id === "number") {
-    void handleRequest(message as BackgroundRequest, sender.tab.id);
+    void handleRequest(message as BackgroundRequest, sender.tab.id, sender.tab.url);
   }
   return false;
 });

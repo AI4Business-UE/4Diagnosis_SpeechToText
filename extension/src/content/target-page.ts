@@ -1,15 +1,9 @@
 import { resolveFieldControls } from "../core/mapping-resolver";
 import { fillControl } from "../core/form-filler";
+import type { FillMessage } from "../shared/contract";
 import type { MappingSet } from "../shared/config";
 import type { FieldResult } from "../shared/report";
 import type { PatientMetadata, MetadataKey } from "../shared/metadata";
-
-type FillMessage = {
-  type: "rx:fill";
-  transferId: string;
-  metadata: PatientMetadata;
-  mapping: MappingSet;
-};
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type !== "rx:fill") return false;
