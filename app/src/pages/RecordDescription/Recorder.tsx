@@ -6,6 +6,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 
 import AudioVisualizer from "../../components/AudioVisualizer";
 import useRecordingState from "../../hooks/useRecordingState";
+import { useFormTransfer } from "../../hooks/useFormTransfer";
 import ConnectionControl from "@/components/ui/ConnectionControl";
 import { Link } from "react-router-dom";
 
@@ -21,6 +22,8 @@ export default function Recorder() {
     finalizeTranscription,
     handleFieldUpdate
   } = useRecordingState();
+
+  const { pending: transferPending, transfer } = useFormTransfer();
 
   const time = timer.timerState;
   const patientMetadata = metadata;
@@ -181,7 +184,15 @@ export default function Recorder() {
               }} variant="outline">
                 Wyczyść opis
               </Button>
-              <Button className="bg-blue-500 hover:bg-blue-600">Zapisz</Button>
+              <Button 
+                className="bg-blue-500 hover:bg-blue-600"
+                disabled={transferPending}
+                onClick={() => {
+                  transfer(patientMetadata).catch(() => {});
+                }}
+              >
+                {transferPending ? "Przenoszenie..." : "Przenieś do formularza"}
+              </Button>
             </div>
           </div>
         </Card>

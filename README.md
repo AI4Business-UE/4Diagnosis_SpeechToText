@@ -151,8 +151,23 @@ Główne ustawienia w `backend/src/stt/settings.py`:
 │   │   └── utils/         # Narzędzia audio
 │   ├── requirements.txt
 │   └── pytest.ini
+├── extension/              # Rozszerzenie przeglądarkowe (Manifest V3)
+│   ├── src/                # background, content scripts, options, core
+│   ├── mock/               # Mock Target Page (localhost:3011)
+│   ├── tests/              # unit testy (vitest)
+│   ├── e2e/                # testy Playwright z załadowanym rozszerzeniem
+│   └── README.md           # instalacja "from source" i konfiguracja
 └── README.md
 ```
+
+## 🔌 Rozszerzenie przenoszenia danych (extension/)
+
+Przenosi wartości pól transkrypcji (Dane pacjenta) do formularza na otwartej
+stronie zewnętrznej bez jego wysyłania. Instalacja z repozytorium, konfiguracja
+profilu i mapowania pól oraz lista kontrolna wdrożenia produkcyjnego:
+patrz [`extension/README.md`](extension/README.md). Decyzje projektowe:
+`docs/adr/0001` (tymczasowe szerokie uprawnienia hostów) i
+`docs/adr/0002` (kontrakt app↔extension przez `postMessage`).
 
 ## 🔄 Kluczowe funkcjonalności
 

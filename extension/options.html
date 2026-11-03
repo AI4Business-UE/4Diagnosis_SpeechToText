@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Przeniesienie danych pacjenta — Ustawienia</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; color: #1e293b; }
+      h1 { font-size: 1.4rem; } h2 { font-size: 1.1rem; margin-top: 2rem; }
+      fieldset { border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 1rem; }
+      legend { font-weight: 600; padding: 0 .4rem; }
+      label { display: block; margin: .6rem 0 .2rem; font-weight: 500; font-size: .9rem; }
+      input[type="text"], textarea, select { width: 100%; padding: .45rem; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; }
+      textarea.raw { min-height: 220px; font-family: ui-monospace, monospace; font-size: .85rem; }
+      button { margin-top: 1rem; padding: .5rem 1.1rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; cursor: pointer; }
+      button.primary { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .status { margin-left: .6rem; font-weight: 600; }
+      .status.ok { color: #16a34a; } .status.partial { color: #d97706; } .status.error { color: #dc2626; }
+      table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+      th, td { text-align: left; border-bottom: 1px solid #e2e8f0; padding: .35rem .5rem; }
+      .hint { color: #64748b; font-size: .85rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Ustawienia przenoszenia danych</h1>
+    <p class="hint">
+      Profil Transfer określa adres strony docelowej i mapowanie pól.
+      Raporty Przeniesienia nie zawierają przeniesionych wartości.
+    </p>
+
+    <h2>Profil aktywny</h2>
+    <div class="row">
+      <div>
+        <label for="active-profile-select">Aktywny profil</label>
+        <select id="active-profile-select"></select>
+      </div>
+      <div style="align-self: end; display: flex; gap: .5rem;">
+        <button id="add-profile">Dodaj profil</button>
+        <button id="delete-profile">Usuń profil</button>
+      </div>
+    </div>
+
+    <h2>Bieżący profil</h2>
+    <fieldset>
+      <legend>Profil</legend>
+      <label for="profile-name">Nazwa profilu</label>
+      <input type="text" id="profile-name" />
+      <label for="profile-url">Wzorzec adresu strony docelowej (match pattern)</label>
+      <input type="text" id="profile-url" placeholder="https://system.example.pl/*" />
+    </fieldset>
+
+    <div id="field-editors"></div>
+
+    <button class="primary" id="save-config">Zapisz ustawienia</button>
+    <span id="save-status" class="status"></span>
+
+    <h2>Konfiguracja JSON</h2>
+    <p class="hint">Eksport/import całej konfiguracji (wszystkie profile).</p>
+    <textarea class="raw" id="raw-json" spellcheck="false"></textarea>
+    <button id="export-json">Pobierz z formularza</button>
+    <button id="import-json">Wczytaj z JSON</button>
+
+    <h2>Historia Przeniesień</h2>
+    <p class="hint">Ostatnie 20 raportów. Widoczne są wyłącznie statusy pól — nigdy ich wartości.</p>
+    <table>
+      <thead><tr><th>Czas</th><th>Profil/URL</th><th>Wynik</th><th>Pola</th></tr></thead>
+      <tbody id="history-rows"></tbody>
+    </table>
+    <button id="clear-history">Wyczyść historię</button>
+
+    <script src="dist/options.js"></script>
+  </body>
+</html>
