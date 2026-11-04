@@ -63,7 +63,7 @@ async function handleRequest(
     return;
   }
   if (tabs.length > 1) {
-    await fail("Otwarta jest wiele kart strony docelowej");
+    await fail("Otwarte jest wiele kart strony docelowej");
     return;
   }
 
