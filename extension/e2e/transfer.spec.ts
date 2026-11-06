@@ -3,7 +3,7 @@ import {
   test,
   chromium,
   type BrowserContext,
-  type Page,
+  type Page
 } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -150,6 +150,33 @@ test.describe("Transfer to Mock Target Page", () => {
     await expect(app.getByText(/Strona docelowa nie odpowiada/)).toBeVisible({
       timeout: 15_000,
     });
+  });
+
+  test("ignores additional request when request is in-flight", async () => {
+    const log: string[] = [];
+
+    const app = await openAppTab(context);
+
+    await app.exposeFunction('logCall', (msg: string) => log.push(msg));
+    await app.evaluate(() => {
+        window.addEventListener('message', (event: MessageEvent) => {
+          const data = event.data as Record<string, unknown> | null;
+          if (data && typeof data === 'object' && 'type' in data && data.type === 'transfer-request') { 
+            logCall(`Transfer request received`);
+          }
+        });
+    });
+
+    const mock = await context.newPage();
+    await mock.goto(MOCK_URL);
+
+    await transferButton(app).dblclick();
+
+    await expect.poll(() => log.length, { timeout: 5_000 }).toBe(1);
+
+    await new Promise((r) => setTimeout(r, 2_000));
+
+    expect(log).toEqual([`Transfer request received`]);
   });
 
   test("ignores a transfer requested by a page outside the profile's app URL pattern", async () => {

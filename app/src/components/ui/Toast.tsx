@@ -38,9 +38,11 @@ const resovleToastIcon = (type: ToastMessage["type"]) => {
 
 export default function Toast({ toast }: { toast: Toast }) {
     const cssClasses = resolveToastCss(toast.type);
-    const icon = resovleToastIcon(toast.type);
+    //const icon = resovleToastIcon(toast.type);
 
-    return (<div id={toast.toastId} className={cssClasses}>
-        {icon}<p>{toast.message}</p>
-    </div>);
+    return (
+        <div id={toast.toastId} className={cssClasses}>
+            <p>{toast.message}</p>
+        </div>
+    );
 }
