@@ -56,6 +56,7 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
         {
             "sample_id": "001",
             "status": "incomplete",
+            "reference_text": "Tekst referencyjny",
             "transcript": "Surowy tekst",
             "entities": {"components": [{"name": "nerka"}]},
             "corrected_transcript": "Skorygowany tekst",
@@ -70,6 +71,7 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
         {
             "sample_id": "002",
             "status": "failed",
+            "reference_text": "Tekst referencyjny",
             "transcript": None,
             "entities": None,
             "corrected_transcript": None,
@@ -89,9 +91,10 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
     assert values[0] == (
         "Identyfikator próbki",
         "Status",
+        "Tekst referencyjny",
         "Surowy transkrypt",
-        "Wynik NER (JSON)",
         "Skorygowany transkrypt",
+        "Wynik NER (JSON)",
         "Status sędziego LLM",
         "Wynik sędziego LLM (0–4)",
         "Uzasadnienie sędziego LLM",
@@ -104,6 +107,7 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
     assert values[1] == (
         "001",
         "niekompletna",
+        "Tekst referencyjny",
         "Surowy tekst",
         '{"components": [{"name": "nerka"}]}',
         "Skorygowany tekst",
@@ -117,7 +121,7 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
         '{"components": []}',
     )
     assert values[2] == (
-        "002", "nieudana", None, None, None,
+        "002", "nieudana", "Tekst referencyjny", None, None, None,
         "nie oceniono — błąd pipeline'u", None, None, None, None, None, None,
         '{"components": []}',
     )
@@ -136,9 +140,10 @@ def test_review_workbook_omits_gold_reference_column_when_ner_scoring_is_disable
     assert headers == (
         "Identyfikator próbki",
         "Status",
+        "Tekst referencyjny",
         "Surowy transkrypt",
-        "Wynik NER (JSON)",
         "Skorygowany transkrypt",
+        "Wynik NER (JSON)",
         "Status sędziego LLM",
         "Wynik sędziego LLM (0–4)",
         "Uzasadnienie sędziego LLM",

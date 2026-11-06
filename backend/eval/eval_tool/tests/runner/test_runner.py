@@ -103,6 +103,7 @@ def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
         {
             "sample_id": "001",
             "status": "failed",
+            "reference_text": 'kot ma psa',
             "transcript": None,
             "entities": None,
             "corrected_transcript": None,
@@ -117,6 +118,7 @@ def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
         {
             "sample_id": "002",
             "status": "complete",
+            "reference_text": "kot ma psa",
             "transcript": "kot ma psa",
             "entities": {
                 "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},

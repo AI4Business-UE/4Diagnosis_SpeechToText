@@ -65,6 +65,7 @@ def run_evaluation(
         report["review_rows"] = [
             _review_row(
                 sample.sample_id,
+                reference_text=sample.reference_text,
                 ner_reference=sample.ner_reference,
                 include_ner_reference=score_ner,
                 judge_opt_out_reason=sample.judge_opt_out_reason,
@@ -104,6 +105,7 @@ def run_evaluation(
             review_rows.append(
                 _review_row(
                     sample.sample_id,
+                    reference_text=sample.reference_text,
                     ner_reference=sample.ner_reference,
                     include_ner_reference=score_ner,
                     judge_opt_out_reason=sample.judge_opt_out_reason,
@@ -118,6 +120,7 @@ def run_evaluation(
         entities = pipeline_result.get("entities")
         review_row = _review_row(
             sample.sample_id,
+            reference_text=sample.reference_text,
             judge_opt_out_reason=sample.judge_opt_out_reason,
         )
         review_row.update(
@@ -210,6 +213,7 @@ def run_evaluation(
 def _review_row(
     sample_id: str,
     *,
+    reference_text: str | None = None,
     ner_reference: Mapping[str, Any] | None = None,
     include_ner_reference: bool = False,
     judge_opt_out_reason: str | None = None,
@@ -217,6 +221,7 @@ def _review_row(
     row = {
         "sample_id": sample_id,
         "status": "failed",
+        "reference_text": reference_text,
         "transcript": None,
         "entities": None,
         "corrected_transcript": None,

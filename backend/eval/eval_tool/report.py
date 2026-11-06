@@ -12,9 +12,10 @@ from openpyxl import Workbook
 _REVIEW_HEADERS = (
     "Identyfikator próbki",
     "Status",
+    "Tekst referencyjny",
     "Surowy transkrypt",
-    "Wynik NER (JSON)",
     "Skorygowany transkrypt",
+    "Wynik NER (JSON)",
     "Status sędziego LLM",
     "Wynik sędziego LLM (0–4)",
     "Uzasadnienie sędziego LLM",
@@ -85,6 +86,7 @@ def save_review_workbook(
         values: list[Any] = [
             row.get("sample_id"),
             _REVIEW_STATUS_LABELS.get(row.get("status"), row.get("status")),
+            row.get("reference_text"),
             row.get("transcript"),
             _json_cell(row.get("entities")),
             row.get("corrected_transcript"),
