@@ -6,12 +6,12 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/src:/app
-    env_file:
-      - ./backend/.env
     environment:
       - PYTHONUNBUFFERED=1
       - DOCKERENV=1
       - HF_HUB_DISABLE_PROGRESS_BARS=1
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-null}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-null}
     platform: linux/amd64
     depends_on:
       - qdrant
