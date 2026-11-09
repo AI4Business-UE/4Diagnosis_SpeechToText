@@ -46,7 +46,11 @@ class Component(BaseModel):
     )
     description: Optional[str] = Field(
         default=None,
-        description="Krótki opis dodatkowy z tekstu, np. 'wielotorbielowata', 'zmieniona zapalnie'. Pomijamy szczegóły zmian/guzów."
+        description="Krótki opis, stanowiacy dodatkowy kontekst komponentu z tekstu, "
+        "np. 'wielotorbielowata', 'zmieniona zapalnie', 'skąpa'."
+        "Pomijamy szczegóły odnoszące się bezpośrednio do zmian/guzów."
+        "Gdy jeden komponent (NIE ZMIANA) jest zagnieżdżony w innym, np. występuje 'na przekroju',"
+        "tutaj powinna znaleźć się taka informacja. Dodawaj referencje do komponentu nadrzędnego w komponencie wewnętrznym."
     )
 
 
@@ -74,24 +78,27 @@ ABSOLUTNE ZASADY EKSTRAKCJI:
 4. Wymiary podane jako "średnicy X cm" → diameter=X (bez dim_x/y/z).
 5. "Milimetry" / "mm" → unit="mm". W przeciwnym razie unit="cm".
 6. Słowne liczebniki przelicz na cyfry (np. "jedenaście" → 11).
-7. GUZY i ZMIANY CHOROBOWE są ekstrahowane przez LESION_PROMPT — nie dodawaj ich tutaj jako Component.
+7. GUZY i ZMIANY CHOROBOWE są ekstrahowane osobno — nie dodawaj ich tutaj jako Component.
 8. Nie dodawaj informacji od siebie.
 9. Pole count ustawiaj tylko wtedy, gdy liczba sztuk jest podana wprost.
 10. Jeśli tekst wymienia kilka osobnych fragmentów z różnymi wymiarami, zwróć je jako osobne komponenty z count=null.
 11. Nigdy nie ustawiaj count=1, jeśli liczebnik nie został podany wprost.
 12. Nie traktuj jako komponentów: linii zszywek, tuszy, marginesów, odległości od marginesów.
-13. Określenia jak "okoliczna", "drobny", "zmieniona zapalnie" wpisuj do description.
+13. Określenia jak, na przykład, "okoliczna", "drobny", "skąpa", "zmieniona zapalnie" wpisuj do description.
 14. Każdy komponent musi mieć pole name.
 15. Jeśli w tekście jest "fragment + narząd", wpisz to w całości do name (np. "fragment nerki").
 16. Oznaczenia strony wpisuj do name (np. "nasieniowód lewy").
 
 PRZYKŁADY POPRAWNEGO WNIOSKOWANIA:
-Tekst: "Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną tkanką tłuszczową. Na przekrojach obecny lity guz o wymiarach 10x8x6 cm."
-Odpowiedź: {{"components": [{{"name": "nerka", "count": null, "dim_x": 11.0, "dim_y": 9.0, "dim_z": 7.0, "length": null, "diameter": null, "unit": "cm", "description": null}}, {{"name": "moczowód", "count": null, "dim_x": null, "dim_y": null, "dim_z": null, "length": 1.5, "diameter": null, "unit": "cm", "description": null}}, {{"name": "tkanka tłuszczowa", "count": null, "dim_x": null, "dim_y": null, "dim_z": null, "length": null, "diameter": null, "unit": null, "description": "okoliczna"}}]}}
-(guz NIE jest komponentem — należy do LESION_PROMPT)
-
 Tekst: "Cztery bioptaty o długości od 0,5 cm do 1,8 cm."
 Odpowiedź: {{"components": [{{"name": "bioptat", "count": 4, "dim_x": null, "dim_y": null, "dim_z": null, "length": null, "diameter": null, "unit": "cm", "description": "długość od 0,5 do 1,8 cm"}}]}}
+
+Tekst: "Nienaruszony pęcherzyk kosmówkowy o średnicy 12 milimetrów, na przekroju szypuła naczyniowa z zarodkiem typu guzkowego."
+Odpowiedź: {{"components": [{{"name": "pęcherzyk kosmówkowy", "diameter": 12.0, "unit": "mm", "description": "nienaruszony"}}, {{"name": "szypuła naczyniowa", "description": "na przekroju pęcherzyka kosmówkowego, z zarodkiem typu guzkowego"}}]}}
+
+Tekst: "Nerka o wymiarach 11x9x7 cm z moczowodem długości 1,5 cm oraz okoliczną, skąpą tkanką tłuszczową. Na przekrojach obecny lity guz o wymiarach 10x8x6 cm."
+Odpowiedź: {{"components": [{{"name": "nerka", "count": null, "dim_x": 11.0, "dim_y": 9.0, "dim_z": 7.0, "length": null, "diameter": null, "unit": "cm", "description": null}}, {{"name": "moczowód", "count": null, "dim_x": null, "dim_y": null, "dim_z": null, "length": 1.5, "diameter": null, "unit": "cm", "description": null}}, {{"name": "tkanka tłuszczowa", "count": null, "dim_x": null, "dim_y": null, "dim_z": null, "length": null, "diameter": null, "unit": null, "description": "okoliczna, skąpa"}}]}}
+(guz NIE jest komponentem — należy do LESION_PROMPT)
 
 Odpowiedz WYŁĄCZNIE poprawnym JSONem zgodnym z tym schematem:
 {json.dumps(_schema, indent=2, ensure_ascii=False)}

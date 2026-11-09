@@ -64,6 +64,7 @@ ABSOLUTNE ZASADY EKSTRAKCJI:
 5. STANDARYZACJA JEDNOSTEK: volume_ml w mililitrach. Litry przelicz na ml (0,2 l → 200). "cc" = ml.
 6. ODPORNOŚĆ NA SZUM ASR: Ignoruj brak interpunkcji i błędy ortograficzne.
 7. IGNOROWANIE DAWEK: W polu fixation ignoruj szczegółowe proporcje utrwalaczy.
+8. POPRAWIANIE SIĘ PRZEZ LEKARZA: Lekarz dyktujący może poprawiać swoją wypowiedź, np. "płyn klarowny, nie jednak mętny" → clarity="klarowny".
 
 PRZYKŁADY POPRAWNEGO WNIOSKOWANIA:
 Tekst: "Zaaspirowano 1,2 litra płynu z jamy otrzewnowej. Materiał gęsty, krwisty. Nie stwierdzono zmętnienia. Zabezpieczono w formalinie."

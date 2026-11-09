@@ -49,11 +49,11 @@ class PipelineConfig:
     ner_strategy: str = "chained"
 
     # model przekazywany do OpenRouter (lub OpenAI)
-    ner_llm_model: str = "openai/gpt-4o"
+    ner_llm_model: str = "openai/gpt-6-luna"
 
     # ── Answerer ────────────────────────────────────────────────────
     answerer_strategy: str = "no-fill"
-    answerer_llm_model: str = "openai/gpt-4o"
+    answerer_llm_model: str = "openai/gpt-6-luna"
 
     # ── RAG ────────────────────────────────────────────────────
     macro_descs_collection = "macro_descriptions"

@@ -27,11 +27,11 @@ class Lesion(BaseModel):
     )
     features: List[str] = Field(
         default_factory=list, description="Cechy dodatkowe zmiany",
-        examples=["martwica", "wylewy_krwawe", "zwapnienia", "owrzodzenie"]
+        examples=["martwica", "wylewy krwawe", "zwapnienia", "owrzodzenie"]
     )
     infiltration: Optional[str] = Field(None, description="Stopień naciekania tkanek",
-                                        examples=["brak", "do_miazszu", "nacieka_tkanke_tluszczowa", "nacieka_sciane", "poza_narzad"])
-    location_description: Optional[str] = Field(None, description="Dokładna lokalizacja zmiany")
+                                        examples=["brak", "do miąższu", "nacieka tkankę tłuszczową", "nacieka ściane", "poza narząd"])
+    location_description: Optional[str] = Field(None, description="Dokładna lokalizacja zmiany, np. 'na przekroju <komponent>'")
     organ: Optional[str] = Field(None, description="Narząd w mianowniku, małymi literami")
     shape: Optional[str] = Field(
         None, description="Kształt zmiany",
@@ -41,7 +41,7 @@ class Lesion(BaseModel):
         None, description="Granice zmiany",
         examples=["ostre", "zatarte", "nieregularne", "regularne"]
     )
-    additional_notes: Optional[str] = Field(None, description="Dodatkowe uwagi, w tym konsystencja/tekstura")
+    additional_notes: Optional[str] = Field(None, description="Dodatkowe uwagi lub kontekst (np. przekroje TEJ zmiany), w tym konsystencja/tekstura")
     component_index: Optional[int] = Field(
         None,
         description=(
@@ -75,15 +75,12 @@ ABSOLUTNE ZASADY EKSTRAKCJI:
 8. Rozpoznawaj synonimy: "martwica" = "nekroza", "wylewy_krwawe" = "krwawienie".
 9. Jeśli lekarz się poprawia, bierz poprawioną wartość.
 10. W polu organ podaj nazwę w mianowniku, małymi literami.
-11. Granice (borders): "gładki"/"dobrze odgraniczony" → "ostre"; "nieregularny" → "nieregularne"; "rozmyty"/"zatarty" → "zatarte".
-12. Infiltration: "ograniczony do miąższu" → "do_miazszu"; "naciekający tk. tłuszczową" → "nacieka_tkanke_tluszczowa"; "naciekający pełną grubość ściany" → "nacieka_sciane"; "naciekający poza narząd" → "poza_narzad"; brak wzmianki → null.
-13. Shape: "okrągły" → "okrągła"; "owalny" → "owalna"; "guzkowaty"/"bulwiasty" → "lobularna"; "gwiazdkowaty" → "gwiaździsta"; "nieregularny" → "nieregularna".
-14. Structure: TYLKO "lity"/"torbielowaty"/"lito-torbielowaty" lub null. Konsystencja/tekstura (miękki, galaretowaty) → additional_notes.
-15. Odporność na szum ASR: ignoruj brak interpunkcji i błędy ortograficzne.
+11. Structure: TYLKO "lity"/"torbielowaty"/"lito-torbielowaty" lub null. Konsystencja/tekstura (miękki, galaretowaty) → additional_notes.
+12. Odporność na szum ASR: ignoruj brak interpunkcji i błędy ortograficzne.
 
 PRZYKŁADY:
 Tekst: "Nerka o wymiarach 11x9x7 cm. Na przekrojach w obrębie miąższu nerki obecny lity guz o wymiarach 10x8x6 cm barwy beżowej z wylewami krwawymi i centralną martwicą."
-Odpowiedź: {{"lesions": [{{"type": "guz", "dim_x": 10.0, "dim_y": 8.0, "dim_z": 6.0, "diameter": null, "unit": "cm", "color": "beżowej", "structure": "lity", "features": ["martwica", "wylewy_krwawe"], "infiltration": null, "location_description": "w obrębie miąższu nerki", "organ": "nerka", "shape": null, "borders": null, "additional_notes": null}}]}}
+Odpowiedź: {{"lesions": [{{"type": "guz", "dim_x": 10.0, "dim_y": 8.0, "dim_z": 6.0, "diameter": null, "unit": "cm", "color": "beżowej", "structure": "lity", "features": ["martwica", "wylewy krwawe"], "infiltration": null, "location_description": "w obrębie miąższu nerki", "organ": "nerka", "shape": null, "borders": null, "additional_notes": null}}]}}
 
 Tekst: "Bioptat nerki o łącznej długości 1,5 cm."
 Odpowiedź: {{"lesions": []}}
