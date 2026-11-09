@@ -2,7 +2,7 @@ import { renderHook, act, screen, waitFor, cleanup } from "@testing-library/reac
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ToastProvider } from "@/contexts/ToastContext";
-import ToastContainer from "@/components/ui/ToastContainer";
+import ToastContainer from "@/ui/components/ToastContainer";
 import { useFormTransfer } from "@/hooks/useFormTransfer";
 import type { PatientMetadata } from "@/types/metadata";
 import {

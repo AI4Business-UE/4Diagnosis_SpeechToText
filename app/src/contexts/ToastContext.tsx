@@ -34,10 +34,10 @@ export function ToastProvider({ children }: React.PropsWithChildren) {
 
         setTimeout(() => {
            const toast = document.getElementById(toastId);
-           if (!toast) return;
-
-           toast.style.animation = 'fade-out 0.3s ease-in-out';
-           toast.style.animationFillMode = 'forwards';
+           if (toast) {
+                toast.style.animation = 'fade-out 0.3s ease-in-out';
+                toast.style.animationFillMode = 'forwards';
+           }
            setTimeout(() => {
                 filterFromMessageArray(toastId);
            }, 1000);
