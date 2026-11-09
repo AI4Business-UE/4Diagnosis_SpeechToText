@@ -6,6 +6,15 @@ from qdrant_client import QdrantClient
 
 _client = None
 
+
+def ensure_qdrant_client_uninitialized() -> None:
+    """Fail closed when an evaluator requires an isolated fresh-process client."""
+    if _client is not None:
+        raise ValueError(
+            "Klient Qdrant jest już zainicjalizowany. Uruchom ewaluator w nowym procesie."
+        )
+
+
 class QdrantClientMode(enum.Enum):
     IN_MEMORY = 'in_memory'
     CONNECTION = 'connection'
