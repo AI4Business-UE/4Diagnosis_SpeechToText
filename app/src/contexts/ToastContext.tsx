@@ -41,7 +41,7 @@ export function ToastProvider({ children }: React.PropsWithChildren) {
            setTimeout(() => {
                 filterFromMessageArray(toastId);
            }, 1000);
-        }, 2000);
+        }, 5000);
     }, [filterFromMessageArray]);
     
     useEffect(() => {

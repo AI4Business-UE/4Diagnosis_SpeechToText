@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>System Dokumentacji — Nowe badanie (Mock)</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; }
+      label { display: block; margin-top: 1rem; font-weight: 600; }
+      input, textarea, select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; }
+      button { margin-top: 1.5rem; padding: 0.5rem 1.5rem; }
+      #submit-marker { color: #b00; font-weight: 700; margin-top: 1rem; display: none; }
+    </style>
+  </head>
+  <body>
+    <h1>Rejestracja badania</h1>
+    <!-- Mock Target Page: plain-HTML third-party-style form with Polish labels. -->
+    <form id="examination-form" action="/save" method="post">
+      <label for="field-organ">Badany narząd</label>
+      <input id="field-organ" name="organ" type="text" />
+
+      <label for="field-name">Imię i nazwisko</label>
+      <input id="field-name" name="patient_name" type="text" />
+
+      <label for="field-age">Wiek</label>
+      <input id="field-age" name="age" type="number" min="0" />
+
+      <label for="field-pesel">PESEL</label>
+      <input id="field-pesel" name="pesel" type="text" maxlength="11" />
+
+      <label for="field-region">Region</label>
+      <select id="field-region" name="region">
+        <option value="">-- wybierz --</option>
+        <option value="mazowieckie">Mazowieckie</option>
+        <option value="malopolskie">Małopolskie</option>
+      </select>
+
+      <label for="field-description">Opis badania</label>
+      <textarea id="field-description" name="description" rows="6"></textarea>
+
+      <button type="submit" id="zapisz-button">Zapisz</button>
+    </form>
+    <p id="submit-marker">FORM-WAS-SUBMITTED</p>
+
+    <script>
+      // Prove in e2e that a Transfer never submits the target form.
+      document.getElementById("examination-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        document.getElementById("submit-marker").style.display = "block";
+      });
+    </script>
+  </body>
+</html>

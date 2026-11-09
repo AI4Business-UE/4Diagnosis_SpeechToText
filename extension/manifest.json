@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Przeniesienie danych pacjenta",
+  "version": "1.0.0",
+  "description":
+    "Przenosi wartości pól transkrypcji do formularza na stronie docelowej bez jego wysyłania.",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["dist/content-app.js", "dist/content-target.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

@@ -40,3 +40,6 @@ venv
 qdrant_data/*
 
 .vscode/*
+# playwright artifacts
+test-results/
+playwright-report/
