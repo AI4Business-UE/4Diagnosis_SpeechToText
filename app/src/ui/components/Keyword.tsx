@@ -1,7 +1,7 @@
 import { Check, Pencil, Trash, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/ui/components/button";
 
 export function Keyword({
   text,

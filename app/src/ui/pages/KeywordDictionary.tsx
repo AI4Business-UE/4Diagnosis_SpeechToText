@@ -2,11 +2,11 @@ import { ArrowLeft, Plus, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, type FormEvent } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/ui/components/button";
+import { Card } from "@/ui/components/card";
 import useKeywordCatalog, { type KeywordEntry } from "@/hooks/useKeywordCatalog";
 import useKeywordSearch from "@/hooks/useKeywordSearch";
-import { Keyword } from "@/components/Keyword";
+import { Keyword } from "../components/Keyword";
 
 export default function KeywordDictionary() {
   const { keywords, error, isLoading, create, update, remove } = useKeywordCatalog();

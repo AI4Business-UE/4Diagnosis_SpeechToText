@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/ui/components/button";
+import { Card } from "@/ui/components/card";
 import { Mic, Play, Square, Book } from "lucide-react";
-import SpinnerLoader from "@/components/ui/SpinnerLoader";
+import SpinnerLoader from "@/ui/components/SpinnerLoader";
 import TextareaAutosize from 'react-textarea-autosize';
 
-import AudioVisualizer from "../../components/AudioVisualizer";
+import AudioVisualizer from "../components/AudioVisualizer";
 import useRecordingState from "../../hooks/useRecordingState";
 import { useFormTransfer } from "../../hooks/useFormTransfer";
-import ConnectionControl from "@/components/ui/ConnectionControl";
+import ConnectionControl from "@/ui/components/ConnectionControl";
 import { Link } from "react-router-dom";
 
 export default function Recorder() { 
