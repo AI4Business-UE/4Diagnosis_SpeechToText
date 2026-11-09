@@ -60,7 +60,6 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
             "transcript": "Surowy tekst",
             "entities": {"components": [{"name": "nerka"}]},
             "corrected_transcript": "Skorygowany tekst",
-            "ner_reference": {"components": []},
             "judge_status": "judged",
             "judge_score": 3,
             "judge_rationale": "Małe pominięcie.",
@@ -75,13 +74,12 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
             "transcript": None,
             "entities": None,
             "corrected_transcript": None,
-            "ner_reference": {"components": []},
             "judge_status": "not_run",
             "judge_opt_out_reason": None,
         },
     ]
 
-    saved_path = save_review_workbook(rows, output, include_ner_reference=True)
+    saved_path = save_review_workbook(rows, output)
 
     workbook = load_workbook(saved_path, read_only=True, data_only=True)
     try:
@@ -102,15 +100,19 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
         "Dodatki sędziego LLM",
         "Sprzeczności sędziego LLM",
         "Powód pominięcia sędziego",
-        "Referencja Gold NER (JSON)",
+        "Imię pacjenta zgodne",
+        "Nazwisko pacjenta zgodne",
+        "Wiek zgodny",
+        "PESEL zgodny",
+        "Wynik metadanych pacjenta (0–1)",
     )
     assert values[1] == (
         "001",
         "niekompletna",
         "Tekst referencyjny",
         "Surowy tekst",
-        '{"components": [{"name": "nerka"}]}',
         "Skorygowany tekst",
+        '{"components": [{"name": "nerka"}]}',
         "oceniono",
         3,
         "Małe pominięcie.",
@@ -118,40 +120,58 @@ def test_review_workbook_writes_polish_columns_and_one_row_per_sample(tmp_path):
         None,
         "prawa strona",
         None,
-        '{"components": []}',
+        None,
+        None,
+        None,
+        None,
+        None,
     )
     assert values[2] == (
         "002", "nieudana", "Tekst referencyjny", None, None, None,
         "nie oceniono — błąd pipeline'u", None, None, None, None, None, None,
-        '{"components": []}',
+        None, None, None, None, None,
     )
 
 
-def test_review_workbook_omits_gold_reference_column_when_ner_scoring_is_disabled(tmp_path):
+def test_review_workbook_writes_patient_metadata_result_columns_per_sample(tmp_path):
     output = tmp_path / "review.xlsx"
+    rows = [
+        {
+            "sample_id": "001",
+            "status": "complete",
+            "patient_first_name_result": 1,
+            "patient_last_name_result": 0,
+            "patient_age_result": 1,
+            "patient_pesel_result": None,
+            "patient_metadata_score": 1.0,
+        },
+        {
+            "sample_id": "002",
+            "status": "complete",
+            "patient_first_name_result": None,
+            "patient_last_name_result": None,
+            "patient_age_result": None,
+            "patient_pesel_result": None,
+            "patient_metadata_score": None,
+        },
+    ]
 
-    save_review_workbook([], output)
+    save_review_workbook(rows, output)
 
     workbook = load_workbook(output, read_only=True, data_only=True)
     try:
-        headers = next(workbook.active.values)
+        values = list(workbook.active.values)
     finally:
         workbook.close()
-    assert headers == (
-        "Identyfikator próbki",
-        "Status",
-        "Tekst referencyjny",
-        "Surowy transkrypt",
-        "Skorygowany transkrypt",
-        "Wynik NER (JSON)",
-        "Status sędziego LLM",
-        "Wynik sędziego LLM (0–4)",
-        "Uzasadnienie sędziego LLM",
-        "Pominięcia sędziego LLM",
-        "Dodatki sędziego LLM",
-        "Sprzeczności sędziego LLM",
-        "Powód pominięcia sędziego",
+    assert values[0][-5:] == (
+        "Imię pacjenta zgodne",
+        "Nazwisko pacjenta zgodne",
+        "Wiek zgodny",
+        "PESEL zgodny",
+        "Wynik metadanych pacjenta (0–1)",
     )
+    assert values[1][-5:] == (1, 0, 1, None, 1.0)
+    assert values[2][-5:] == (None, None, None, None, None)
 
 
 def test_review_workbook_distinguishes_all_judge_statuses_and_exports_opt_out_reason(tmp_path):

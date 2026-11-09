@@ -8,8 +8,7 @@ from typing import Any, Callable
 
 from dotenv import load_dotenv
 
-from .dataset import (initialize_reference_template, load_dataset,
-                      validate_ner_references)
+from .dataset import load_dataset
 from .report import (default_report_path, default_review_workbook_path,
                      save_report, save_review_workbook)
 from .runner import run_evaluation
@@ -18,25 +17,28 @@ from .runtime import BACKEND_DIR, EvaluationRuntime, prepare_runtime
 EVAL_DIR = BACKEND_DIR / "eval"
 DATA_DIR = EVAL_DIR / "data" / "golden_dataset"
 
+_UNRECOGNIZED_PREFIX = "unrecognized arguments: "
+
+
+class _PolishArgumentParser(argparse.ArgumentParser):
+    """Surface argparse failures in Polish, consistent with the rest of the CLI."""
+
+    def error(self, message: str) -> None:
+        if message.startswith(_UNRECOGNIZED_PREFIX):
+            message = (
+                f"Nieznane argumenty: {message.removeprefix(_UNRECOGNIZED_PREFIX)}. "
+                "Ocena referencji Gold NER została usunięta; wynik metadanych pacjenta "
+                "jest liczony automatycznie."
+            )
+        super().error(message)
+
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = _PolishArgumentParser(
         description="Uruchamia lokalną ewaluację end-to-end transkrypcji.",
     )
     parser.add_argument("--metadata", type=Path, default=DATA_DIR / "samples_metadata.xlsx")
     parser.add_argument("--audio-dir", type=Path, default=DATA_DIR)
-    parser.add_argument("--ner-references", type=Path, default=DATA_DIR / "ner_references.json")
-    reference_action = parser.add_mutually_exclusive_group()
-    reference_action.add_argument(
-        "--init-ner-references",
-        action="store_true",
-        help="Utwórz lokalny szablon adnotacji NER i zakończ.",
-    )
-    reference_action.add_argument(
-        "--validate-ner-references",
-        action="store_true",
-        help="Sprawdź lokalne referencje NER bez uruchamiania pipeline'u.",
-    )
     parser.add_argument("--samples", type=_parse_sample_ids, help="Lista identyfikatorów, np. 001,004,020; domyślnie wszystkie.")
     parser.add_argument("--stt-model", choices=("whisper_local", "whisper_hosted", "gpt-transcribe"))
     parser.add_argument(
@@ -46,7 +48,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ner-strategy", choices=("chained", "split"))
     parser.add_argument("--judge-model", default=os.getenv("EVAL_JUDGE_MODEL"))
     parser.add_argument("--no-judge", action="store_true", help="Pomiń ocenę LLM corrected_transcript.")
-    parser.add_argument("--score-ner", action="store_true", help="Sprawdź referencje Gold NER i oceń wynik NER.")
     parser.add_argument("--include-details", action="store_true", help="Zapisz lokalnie teksty kliniczne i uzasadnienia oceny.")
     parser.add_argument("--output", type=Path, help="Ścieżka nowego pliku raportu JSON.")
     parser.add_argument(
@@ -61,7 +62,6 @@ def main(
     argv: list[str] | None = None,
     *,
     dataset_loader: Callable[..., Any] | None = None,
-    reference_validator: Callable[..., int] | None = None,
     runtime_factory: Callable[[argparse.Namespace], EvaluationRuntime] | None = None,
     evaluator: Callable[..., dict[str, Any]] | None = None,
     report_writer: Callable[..., Path] | None = None,
@@ -75,26 +75,6 @@ def main(
     args = parser.parse_args(argv)
     output = output or print
     error_output = error_output or (lambda message: print(message, file=sys.stderr))
-
-    if args.init_ner_references:
-        try:
-            path = initialize_reference_template(args.metadata, args.ner_references)
-        except Exception as error:
-            error_output(f"Nie udało się utworzyć szablonu NER ({type(error).__name__}).")
-            return 1
-        output(f"Utworzono lokalny szablon NER: {path}")
-        output("Uzupełnij adnotacje i ustaw reviewed=true dla każdego sprawdzonego rekordu.")
-        return 0
-
-    if args.validate_ner_references:
-        try:
-            validator = reference_validator or validate_ner_references
-            count = validator(args.metadata, args.ner_references, sample_ids=args.samples)
-        except Exception as error:
-            error_output(_safe_error(error))
-            return 1
-        output(f"Sprawdzono referencje NER dla {count} próbek.")
-        return 0
 
     if not args.allow_external_data:
         parser.error(
@@ -117,9 +97,7 @@ def main(
         samples = loader(
             args.metadata,
             args.audio_dir,
-            args.ner_references,
             sample_ids=args.samples,
-            score_ner=args.score_ner,
         )
         runtime = (runtime_factory or prepare_runtime)(args)
         report = (evaluator or run_evaluation)(
@@ -127,7 +105,6 @@ def main(
             pipeline_factory=runtime.pipeline_factory,
             judge_model=args.judge_model,
             judge_enabled=judge_enabled,
-            score_ner=args.score_ner,
             include_details=args.include_details,
             resolved_config=runtime.resolved_config,
         )
@@ -140,19 +117,24 @@ def main(
         saved_workbook_path = (workbook_writer or save_review_workbook)(
             report.get("review_rows", []),
             default_review_workbook_path(EVAL_DIR),
-            include_ner_reference=args.score_ner,
         )
     except Exception as error:
         error_output(_safe_error(error))
         return 1
 
+    metadata_summary = report.get("patient_metadata") or {}
+    metadata_segment = ""
+    if metadata_summary.get("samples"):
+        metadata_segment = (
+            f" | metadane pacjenta: {_display_metric(metadata_summary.get('mean_score'))}"
+            f" ({metadata_summary['samples']} próbek)"
+        )
     output(
         f"Ewaluacja: {'kompletna' if report['status'] == 'complete' else 'niekompletna'} | próbki: "
         f"{report['pipeline_samples_completed']}/{report['samples_requested']} | "
         f"WER: {_display_metric(report['transcript'].get('wer'))} | "
         f"CER: {_display_metric(report['transcript'].get('cer'))} | "
-        f"NER exact: {_display_metric(report['ner'].get('exact_record_rate'))} | "
-        f"sędzia: {_display_metric(report['judge'].get('mean_score'))}"
+        f"sędzia: {_display_metric(report['judge'].get('mean_score'))}{metadata_segment}"
     )
     output(f"Raport JSON: {saved_path}")
     output(f"Arkusz przeglądu: {saved_workbook_path}")

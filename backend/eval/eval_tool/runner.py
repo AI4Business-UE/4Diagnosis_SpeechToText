@@ -6,15 +6,22 @@ from typing import Any
 
 from .dataset import EvaluationSample
 from .judge import aggregate_judgements, evaluate_fidelity
-from .ner_scoring import aggregate_ner_scores, score_ner as score_ner_result
+from .patient_metadata_scoring import (aggregate_patient_metadata_scores,
+                                       score_patient_metadata)
 from .transcript_scoring import aggregate_transcript_scores, score_transcript
+
+_PATIENT_ROW_KEYS = {
+    "first_name": "patient_first_name_result",
+    "last_name": "patient_last_name_result",
+    "age": "patient_age_result",
+    "pesel": "patient_pesel_result",
+}
 
 _STAGE_LABELS = {
     "pipeline_setup": "inicjalizacji pipeline'u",
     "pipeline": "pełnego pipeline'u",
     "cleanup": "czyszczenia audio",
     "transcript_scoring": "oceny transkrypcji",
-    "ner_scoring": "oceny NER",
     "judge": "oceny sędziego LLM",
 }
 
@@ -26,7 +33,6 @@ def run_evaluation(
     judge: Callable[[str, str, str], Mapping[str, Any]] | None = None,
     judge_model: str | None = None,
     judge_enabled: bool = True,
-    score_ner: bool = False,
     include_details: bool = False,
     resolved_config: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -49,34 +55,35 @@ def run_evaluation(
             if include_details
             else None
         )
+        patient_metadata_scores: list[dict[str, Any]] = []
+        failed_rows = []
+        for sample in selected_samples:
+            review_row = _review_row(
+                sample.sample_id,
+                reference_text=sample.reference_text,
+                judge_opt_out_reason=sample.judge_opt_out_reason,
+            )
+            _apply_patient_metadata(review_row, sample, None, patient_metadata_scores)
+            failed_rows.append(review_row)
         report = _build_report(
             selected_samples,
             started_at,
             0,
             errors,
             [],
-            [],
+            patient_metadata_scores,
             [],
             judge_enabled,
             judge_model,
             resolved_config,
             details,
         )
-        report["review_rows"] = [
-            _review_row(
-                sample.sample_id,
-                reference_text=sample.reference_text,
-                ner_reference=sample.ner_reference,
-                include_ner_reference=score_ner,
-                judge_opt_out_reason=sample.judge_opt_out_reason,
-            )
-            for sample in selected_samples
-        ]
+        report["review_rows"] = failed_rows
         return report
 
-    errors: list[dict[str, str | None]] = []
+    errors = []
     transcript_scores: list[dict[str, Any]] = []
-    ner_scores: list[dict[str, Any]] = []
+    patient_metadata_scores = []
     judgements: list[Mapping[str, Any]] = []
     details: list[dict[str, Any]] = []
     review_rows: list[dict[str, Any]] = []
@@ -102,15 +109,13 @@ def run_evaluation(
                 errors.append(_error(sample.sample_id, "cleanup", error))
 
         if pipeline_result is None:
-            review_rows.append(
-                _review_row(
-                    sample.sample_id,
-                    reference_text=sample.reference_text,
-                    ner_reference=sample.ner_reference,
-                    include_ner_reference=score_ner,
-                    judge_opt_out_reason=sample.judge_opt_out_reason,
-                )
+            review_row = _review_row(
+                sample.sample_id,
+                reference_text=sample.reference_text,
+                judge_opt_out_reason=sample.judge_opt_out_reason,
             )
+            _apply_patient_metadata(review_row, sample, None, patient_metadata_scores)
+            review_rows.append(review_row)
             if include_details:
                 details.append(detail)
             continue
@@ -131,9 +136,8 @@ def run_evaluation(
                 "corrected_transcript": corrected_transcript,
             }
         )
-        if score_ner:
-            review_row["ner_reference"] = sample.ner_reference
         review_rows.append(review_row)
+        _apply_patient_metadata(review_row, sample, entities, patient_metadata_scores)
 
         try:
             if not isinstance(transcript, str):
@@ -143,18 +147,6 @@ def run_evaluation(
             detail["transcript_score"] = text_score
         except Exception as error:
             errors.append(_error(sample.sample_id, "transcript_scoring", error))
-
-        if score_ner:
-            try:
-                if not isinstance(sample.ner_reference, Mapping):
-                    raise ValueError("Gold NER reference is missing")
-                if not isinstance(entities, Mapping):
-                    raise ValueError("entities is not an object")
-                ner_score = score_ner_result(sample.ner_reference, entities)
-                ner_scores.append(ner_score)
-                detail["ner_score"] = ner_score
-            except Exception as error:
-                errors.append(_error(sample.sample_id, "ner_scoring", error))
 
         if judge_enabled:
             if sample.judge_opt_out:
@@ -188,7 +180,6 @@ def run_evaluation(
                     "entities": entities,
                     "retrieved_templates": pipeline_result.get("retrieved_templates"),
                     "preprocessing": pipeline_result.get("preprocessing"),
-                    "ner_reference": sample.ner_reference,
                 }
             )
             details.append(detail)
@@ -199,7 +190,7 @@ def run_evaluation(
         pipeline_samples_completed,
         errors,
         transcript_scores,
-        ner_scores,
+        patient_metadata_scores,
         judgements,
         judge_enabled,
         judge_model,
@@ -214,11 +205,9 @@ def _review_row(
     sample_id: str,
     *,
     reference_text: str | None = None,
-    ner_reference: Mapping[str, Any] | None = None,
-    include_ner_reference: bool = False,
     judge_opt_out_reason: str | None = None,
 ) -> dict[str, Any]:
-    row = {
+    return {
         "sample_id": sample_id,
         "status": "failed",
         "reference_text": reference_text,
@@ -232,10 +221,39 @@ def _review_row(
         "judge_additions": None,
         "judge_contradictions": None,
         "judge_opt_out_reason": judge_opt_out_reason,
+        "patient_first_name_result": None,
+        "patient_last_name_result": None,
+        "patient_age_result": None,
+        "patient_pesel_result": None,
+        "patient_metadata_score": None,
     }
-    if include_ner_reference:
-        row["ner_reference"] = ner_reference
-    return row
+
+
+def _apply_patient_metadata(
+    review_row: dict[str, Any],
+    sample: EvaluationSample,
+    entities: Any,
+    patient_metadata_scores: list[dict[str, Any]],
+) -> None:
+    """Grade the raw NER patient extraction against the workbook metadata reference."""
+    reference = {
+        "first_name": sample.patient_first_name,
+        "last_name": sample.patient_last_name,
+        "age": sample.patient_age,
+        "pesel": sample.patient_pesel,
+    }
+    if all(value is None for value in reference.values()):
+        return
+    extracted = entities.get("patient") if isinstance(entities, Mapping) else None
+    if not isinstance(extracted, Mapping):
+        extracted = None
+    result = score_patient_metadata(reference, extracted)
+    if result is None:
+        return
+    for field, row_key in _PATIENT_ROW_KEYS.items():
+        review_row[row_key] = result["fields"].get(field)
+    review_row["patient_metadata_score"] = result["score"]
+    patient_metadata_scores.append(result)
 
 
 def _review_judgement(judgement: Mapping[str, Any]) -> dict[str, Any]:
@@ -254,7 +272,7 @@ def _build_report(
     pipeline_samples_completed: int,
     errors: list[dict[str, str | None]],
     transcript_scores: list[dict[str, Any]],
-    ner_scores: list[dict[str, Any]],
+    patient_metadata_scores: list[dict[str, Any]],
     judgements: list[Mapping[str, Any]],
     judge_enabled: bool,
     judge_model: str | None,
@@ -270,7 +288,7 @@ def _build_report(
         "errors": errors,
         "pipeline_config": dict(resolved_config or {}),
         "transcript": aggregate_transcript_scores(transcript_scores),
-        "ner": aggregate_ner_scores(ner_scores),
+        "patient_metadata": aggregate_patient_metadata_scores(patient_metadata_scores),
         "judge": {
             **aggregate_judgements(judgements),
             "model": judge_model if judge_enabled else None,

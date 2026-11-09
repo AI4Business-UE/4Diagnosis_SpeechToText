@@ -21,9 +21,13 @@ The text recognized from a recording before editorial correction.
 **Corrected transcript**:
 A revised transcription intended to preserve the recording's information while correcting recognition and formatting errors.
 
-**Gold NER reference**:
-The reviewed expected annotation of patient, component, lesion, and fluid-sample information for a recording.
-_Avoid_: Expected output
+**Patient metadata reference**:
+The patient information recorded alongside a sample, used to assess how well patient data was extracted from its recording.
+_Avoid_: Gold NER reference, Expected output
+
+**Patient metadata score**:
+The share of a sample's Patient metadata reference entries that were extracted correctly, graded per entry and averaged over samples that have any.
+_Avoid_: Metadata accuracy
 
 **LLM judge**:
 A language model that assesses how faithfully a corrected transcript preserves the reference transcript.

@@ -9,12 +9,6 @@ def _sample(sample_id):
         sample_id=sample_id,
         audio_path=Path(f"{sample_id}.wav"),
         reference_text="kot ma psa",
-        ner_reference={
-            "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},
-            "components": [],
-            "lesions": [],
-            "fluid_samples": [],
-        },
     )
 
 
@@ -24,15 +18,28 @@ def _sample_with_judge_opt_out(sample_id, reason=None):
         sample_id=sample.sample_id,
         audio_path=sample.audio_path,
         reference_text=sample.reference_text,
-        ner_reference=sample.ner_reference,
         judge_opt_out=True,
         judge_opt_out_reason=reason,
     )
 
 
+def _sample_with_patient_metadata(sample_id):
+    sample = _sample(sample_id)
+    return EvaluationSample(
+        sample_id=sample.sample_id,
+        audio_path=sample.audio_path,
+        reference_text=sample.reference_text,
+        patient_first_name="Irena",
+        patient_last_name="Szymańska",
+        patient_age=66,
+        patient_pesel="58080899900",
+    )
+
+
 class FakePipeline:
-    def __init__(self, failures=None):
+    def __init__(self, failures=None, patients=None):
         self.failures = failures or set()
+        self.patients = patients or {}
         self.cleaned = []
 
     def run(self, audio_path):
@@ -43,7 +50,9 @@ class FakePipeline:
             "transcript": "kot ma psa",
             "corrected_transcript": "kot ma psa",
             "entities": {
-                "patient": {"first_name": None, "last_name": None, "pesel": None, "age": None},
+                "patient": self.patients.get(
+                    sample_id, {"first_name": None, "last_name": None, "pesel": None, "age": None}
+                ),
                 "components": [],
                 "lesions": [],
                 "fluid_samples": [],
@@ -75,35 +84,20 @@ def test_evaluation_continues_after_pipeline_failure_and_captures_review_outputs
     assert report["review_rows"][1]["transcript"] == "kot ma psa"
 
 
-def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
+def test_evaluation_retains_review_outputs_without_details():
     pipeline = FakePipeline(failures={"001"})
-    failed_sample = _sample("001")
-    successful_sample = _sample("002")
-    failed_sample = EvaluationSample(
-        sample_id=failed_sample.sample_id,
-        audio_path=failed_sample.audio_path,
-        reference_text=failed_sample.reference_text,
-        ner_reference=None,
-    )
-    successful_sample = EvaluationSample(
-        sample_id=successful_sample.sample_id,
-        audio_path=successful_sample.audio_path,
-        reference_text=successful_sample.reference_text,
-        ner_reference=None,
-    )
 
     report = run_evaluation(
-        [failed_sample, successful_sample],
+        [_sample("001"), _sample("002")],
         pipeline_factory=lambda: pipeline,
         judge_enabled=False,
     )
 
-    assert report["ner"]["records"] == 0
     assert report["review_rows"] == [
         {
             "sample_id": "001",
             "status": "failed",
-            "reference_text": 'kot ma psa',
+            "reference_text": "kot ma psa",
             "transcript": None,
             "entities": None,
             "corrected_transcript": None,
@@ -114,6 +108,11 @@ def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
             "judge_additions": None,
             "judge_contradictions": None,
             "judge_opt_out_reason": None,
+            "patient_first_name_result": None,
+            "patient_last_name_result": None,
+            "patient_age_result": None,
+            "patient_pesel_result": None,
+            "patient_metadata_score": None,
         },
         {
             "sample_id": "002",
@@ -134,42 +133,13 @@ def test_evaluation_retains_review_outputs_without_details_or_ner_scoring():
             "judge_additions": None,
             "judge_contradictions": None,
             "judge_opt_out_reason": None,
+            "patient_first_name_result": None,
+            "patient_last_name_result": None,
+            "patient_age_result": None,
+            "patient_pesel_result": None,
+            "patient_metadata_score": None,
         },
     ]
-
-
-def test_ner_scoring_is_opt_in_and_keeps_gold_reference_for_review():
-    report = run_evaluation(
-        [_sample("001")],
-        pipeline_factory=FakePipeline,
-        judge_enabled=False,
-        score_ner=True,
-    )
-
-    assert report["ner"]["records"] == 1
-    assert report["ner"]["exact_record_rate"] == 1
-    assert report["review_rows"][0]["ner_reference"] == _sample("001").ner_reference
-
-
-def test_ner_scoring_failure_keeps_pipeline_outputs_for_review():
-    class InvalidEntitiesPipeline(FakePipeline):
-        def run(self, audio_path):
-            result = super().run(audio_path)
-            result["entities"] = {"unexpected": True}
-            return result
-
-    report = run_evaluation(
-        [_sample("001")],
-        pipeline_factory=InvalidEntitiesPipeline,
-        judge_enabled=False,
-        score_ner=True,
-    )
-
-    assert report["status"] == "incomplete"
-    assert report["errors"][0]["stage"] == "ner_scoring"
-    assert report["review_rows"][0]["status"] == "incomplete"
-    assert report["review_rows"][0]["transcript"] == "kot ma psa"
-    assert report["review_rows"][0]["entities"] == {"unexpected": True}
 
 
 def test_evaluation_runs_judge_and_includes_sensitive_details_only_on_request():
@@ -199,7 +169,6 @@ def test_evaluation_runs_judge_and_includes_sensitive_details_only_on_request():
     assert report["details"][0]["reference_text"] == "kot ma psa"
     assert report["details"][0]["judge"]["rationale"] == "Faithful."
     assert report["details"][0]["preprocessing"]["status"] == "ok"
-    assert report["details"][0]["ner_reference"] == _sample("001").ner_reference
 
 
 def test_judge_opt_out_keeps_pipeline_results_but_excludes_sample_from_judge_aggregate():
@@ -272,7 +241,6 @@ def test_pipeline_factory_failure_returns_an_incomplete_report():
         [_sample("001"), _sample("002")],
         pipeline_factory=failing_factory,
         judge_enabled=False,
-        score_ner=True,
         include_details=True,
     )
 
@@ -286,7 +254,123 @@ def test_pipeline_factory_failure_returns_an_incomplete_report():
     assert report["transcript"]["wer"] is None
     assert [detail["status"] for detail in report["details"]] == ["failed", "failed"]
     assert [row["status"] for row in report["review_rows"]] == ["failed", "failed"]
-    assert [row["ner_reference"] for row in report["review_rows"]] == [
-        _sample("001").ner_reference,
-        _sample("002").ner_reference,
-    ]
+
+
+def test_patient_metadata_is_graded_against_workbook_reference_deterministically():
+    pipeline = FakePipeline(
+        patients={"001": {"first_name": "IRENA", "last_name": "Nowak", "age": 66, "pesel": None}}
+    )
+
+    report = run_evaluation(
+        [_sample_with_patient_metadata("001")],
+        pipeline_factory=lambda: pipeline,
+        judge_enabled=False,
+    )
+
+    assert report["patient_metadata"] == {
+        "samples": 1,
+        "mean_score": 0.5,
+        "fields": {
+            "first_name": {"correct": 1, "graded": 1},
+            "last_name": {"correct": 0, "graded": 1},
+            "age": {"correct": 1, "graded": 1},
+            "pesel": {"correct": 0, "graded": 1},
+        },
+    }
+    row = report["review_rows"][0]
+    assert row["patient_first_name_result"] == 1
+    assert row["patient_last_name_result"] == 0
+    assert row["patient_age_result"] == 1
+    assert row["patient_pesel_result"] == 0
+    assert row["patient_metadata_score"] == 0.5
+
+
+def test_samples_without_patient_metadata_leave_row_cells_empty_and_skipped_from_mean():
+    pipeline = FakePipeline(
+        patients={"001": {"first_name": "Irena", "last_name": "Szymańska", "age": 66, "pesel": "58080899900"}}
+    )
+
+    report = run_evaluation(
+        [_sample("001"), _sample_with_patient_metadata("002")],
+        pipeline_factory=lambda: pipeline,
+        judge_enabled=False,
+    )
+
+    assert report["patient_metadata"]["samples"] == 1
+    assert report["patient_metadata"]["mean_score"] == 0.0
+    assert report["review_rows"][0]["patient_metadata_score"] is None
+    assert report["review_rows"][0]["patient_first_name_result"] is None
+    # sample 002 has a reference but the pipeline extracted nothing for it
+    assert report["review_rows"][1]["patient_first_name_result"] == 0
+    assert report["review_rows"][1]["patient_metadata_score"] == 0.0
+
+
+def test_failed_pipeline_scores_patient_metadata_reference_fields_as_zero():
+    pipeline = FakePipeline(failures={"001"})
+
+    report = run_evaluation(
+        [_sample_with_patient_metadata("001")],
+        pipeline_factory=lambda: pipeline,
+        judge_enabled=False,
+    )
+
+    assert report["patient_metadata"] == {
+        "samples": 1,
+        "mean_score": 0.0,
+        "fields": {
+            "first_name": {"correct": 0, "graded": 1},
+            "last_name": {"correct": 0, "graded": 1},
+            "age": {"correct": 0, "graded": 1},
+            "pesel": {"correct": 0, "graded": 1},
+        },
+    }
+    row = report["review_rows"][0]
+    assert row["patient_metadata_score"] == 0.0
+
+
+def test_only_reference_fields_present_in_the_workbook_are_graded_per_sample():
+    sample = EvaluationSample(
+        sample_id="001",
+        audio_path=Path("001.wav"),
+        reference_text="kot ma psa",
+        patient_first_name="Irena",
+    )
+    pipeline = FakePipeline(patients={"001": {"first_name": "Irena", "age": 33}})
+
+    report = run_evaluation([sample], pipeline_factory=lambda: pipeline, judge_enabled=False)
+
+    row = report["review_rows"][0]
+    assert row["patient_first_name_result"] == 1
+    assert row["patient_last_name_result"] is None
+    assert row["patient_age_result"] is None
+    assert row["patient_pesel_result"] is None
+    assert row["patient_metadata_score"] == 1.0
+    assert report["patient_metadata"]["samples"] == 1
+
+
+def test_run_without_any_patient_metadata_reports_no_graded_samples():
+    report = run_evaluation(
+        [_sample("001")],
+        pipeline_factory=FakePipeline,
+        judge_enabled=False,
+    )
+
+    assert report["patient_metadata"] == {"samples": 0, "mean_score": None, "fields": {}}
+
+
+def test_malformed_patient_extraction_does_not_abort_the_run():
+    class MalformedPatientPipeline(FakePipeline):
+        def run(self, audio_path):
+            result = super().run(audio_path)
+            result["entities"]["patient"] = ["Irena"]
+            return result
+
+    report = run_evaluation(
+        [_sample_with_patient_metadata("001"), _sample_with_patient_metadata("002")],
+        pipeline_factory=MalformedPatientPipeline,
+        judge_enabled=False,
+    )
+
+    assert report["status"] == "complete"
+    assert report["patient_metadata"]["samples"] == 2
+    assert report["patient_metadata"]["mean_score"] == 0.0

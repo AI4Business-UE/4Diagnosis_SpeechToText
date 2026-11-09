@@ -23,6 +23,11 @@ _REVIEW_HEADERS = (
     "Dodatki sędziego LLM",
     "Sprzeczności sędziego LLM",
     "Powód pominięcia sędziego",
+    "Imię pacjenta zgodne",
+    "Nazwisko pacjenta zgodne",
+    "Wiek zgodny",
+    "PESEL zgodny",
+    "Wynik metadanych pacjenta (0–1)",
 )
 _REVIEW_STATUS_LABELS = {
     "complete": "kompletna",
@@ -69,15 +74,13 @@ def save_report(
 def save_review_workbook(
     review_rows: list[dict[str, Any]],
     output_path: str | Path,
-    *,
-    include_ner_reference: bool = False,
 ) -> Path:
     """Save per-sample clinical outputs in a local, human-review workbook."""
     path = Path(output_path)
     if path.exists():
         raise FileExistsError(f"Arkusz przeglądu już istnieje; nie nadpisano pliku: {path}")
 
-    headers = _REVIEW_HEADERS + (("Referencja Gold NER (JSON)",) if include_ner_reference else ())
+    headers = _REVIEW_HEADERS
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Przegląd NER"
@@ -97,9 +100,12 @@ def save_review_workbook(
             _line_cell(row.get("judge_additions")),
             _line_cell(row.get("judge_contradictions")),
             row.get("judge_opt_out_reason"),
+            row.get("patient_first_name_result"),
+            row.get("patient_last_name_result"),
+            row.get("patient_age_result"),
+            row.get("patient_pesel_result"),
+            row.get("patient_metadata_score"),
         ]
-        if include_ner_reference:
-            values.append(_json_cell(row.get("ner_reference")))
         sheet.append(values)
 
     path.parent.mkdir(parents=True, exist_ok=True)

@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-import json
-import math
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from openpyxl import load_workbook
 
-from .reference_schema import (NER_ENTITY_FIELDS, NER_FIELD_TYPES,
-                               NER_MEASUREMENT_FIELDS)
-
 _REQUIRED_COLUMNS = ("id", "format", "nazwa pliku", "tekst referencyjny")
 _JUDGE_ENABLED_COLUMN = "oceniaj sędzią LLM"
 _JUDGE_OPT_OUT_REASON_COLUMN = "powód pominięcia sędziego"
+_FIRST_NAME_COLUMN = "imię pacjenta"
+_LAST_NAME_COLUMN = "nazwisko pacjenta"
+_AGE_COLUMN = "wiek"
+_PESEL_COLUMN = "PESEL"
+_PESEL_PATTERN = re.compile(r"[0-9]{11}")
+_AGE_PATTERN = re.compile(r"[0-9]+")
 
 
 @dataclass(frozen=True)
@@ -21,27 +23,22 @@ class EvaluationSample:
     sample_id: str
     audio_path: Path
     reference_text: str
-    ner_reference: dict[str, Any] | None
     judge_opt_out: bool = False
     judge_opt_out_reason: str | None = None
+    patient_first_name: str | None = None
+    patient_last_name: str | None = None
+    patient_age: int | None = None
+    patient_pesel: str | None = None
 
 
 def load_dataset(
     metadata_path: str | Path,
     audio_dir: str | Path,
-    ner_references_path: str | Path,
     sample_ids: list[str] | None = None,
-    *,
-    score_ner: bool = False,
 ) -> list[EvaluationSample]:
-    """Load selected recordings and optionally require reviewed NER references."""
+    """Load selected recordings with their reference text and patient metadata."""
     metadata = _read_metadata(Path(metadata_path))
     selected_ids = _select_ids(metadata, sample_ids)
-    references = (
-        _validated_references(metadata, selected_ids, Path(ner_references_path))
-        if score_ner
-        else {}
-    )
     audio_root = Path(audio_dir)
 
     samples: list[EvaluationSample] = []
@@ -55,47 +52,16 @@ def load_dataset(
                 sample_id=sample_id,
                 audio_path=audio_path,
                 reference_text=row["reference_text"],
-                ner_reference=references.get(sample_id),
                 judge_opt_out=row["judge_opt_out"],
                 judge_opt_out_reason=row["judge_opt_out_reason"],
+                patient_first_name=row["patient_first_name"],
+                patient_last_name=row["patient_last_name"],
+                patient_age=row["patient_age"],
+                patient_pesel=row["patient_pesel"],
             )
         )
 
     return samples
-
-
-def validate_ner_references(
-    metadata_path: str | Path,
-    ner_references_path: str | Path,
-    sample_ids: list[str] | None = None,
-) -> int:
-    """Validate reviewed NER coverage without requiring audio or contacting services."""
-    metadata = _read_metadata(Path(metadata_path))
-    selected_ids = _select_ids(metadata, sample_ids)
-    _validated_references(metadata, selected_ids, Path(ner_references_path))
-    return len(selected_ids)
-
-
-def initialize_reference_template(
-    metadata_path: str | Path,
-    output_path: str | Path,
-) -> Path:
-    """Create a local, unreviewed reference skeleton without copying clinical text."""
-    output = Path(output_path)
-    if output.exists():
-        raise FileExistsError(f"Plik referencji NER już istnieje; nie nadpisano: {output}")
-
-    metadata = _read_metadata(Path(metadata_path))
-    template = {
-        "version": 1,
-        "samples": {
-            sample_id: {"reviewed": False, "entities": None}
-            for sample_id in sorted(metadata)
-        },
-    }
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(template, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return output
 
 
 def _read_metadata(path: Path) -> dict[str, dict[str, Any]]:
@@ -158,141 +124,16 @@ def _read_metadata(path: Path) -> dict[str, dict[str, Any]]:
                 "reference_text": reference_text.strip(),
                 "judge_opt_out": judge_opt_out,
                 "judge_opt_out_reason": normalized_reason or None,
+                "patient_first_name": _text_cell(row, indexes, _FIRST_NAME_COLUMN),
+                "patient_last_name": _text_cell(row, indexes, _LAST_NAME_COLUMN),
+                "patient_age": _age_cell(row, indexes, _AGE_COLUMN, sample_id),
+                "patient_pesel": _pesel_cell(row, indexes, _PESEL_COLUMN, sample_id),
             }
         if not metadata:
             raise ValueError(f"Arkusz metadanych nie zawiera próbek: {path}")
         return metadata
     finally:
         workbook.close()
-
-
-def _read_ner_references(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        raise ValueError(
-            f"Nie znaleziono pliku referencji NER: {path}. "
-            "Utwórz lokalny szablon poleceniem eval CLI przed uruchomieniem."
-        )
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as error:
-        raise ValueError(f"Plik referencji NER nie zawiera poprawnego JSON: {path}") from error
-    if not isinstance(data, dict) or data.get("version") != 1 or not isinstance(data.get("samples"), dict):
-        raise ValueError("Plik referencji NER musi zawierać version=1 oraz obiekt samples")
-
-    normalized: dict[str, Any] = {}
-    for raw_id, entry in data["samples"].items():
-        sample_id = _normalize_sample_id(raw_id)
-        if sample_id in normalized:
-            raise ValueError(f"Powtórzony znormalizowany identyfikator próbki '{sample_id}' w referencjach NER")
-        normalized[sample_id] = entry
-    return normalized
-
-
-def _validated_references(
-    metadata: dict[str, dict[str, str]],
-    selected_ids: list[str],
-    reference_path: Path,
-) -> dict[str, dict[str, Any]]:
-    references = _read_ner_references(reference_path)
-    unknown_ids = sorted(references.keys() - metadata.keys())
-    if unknown_ids:
-        raise ValueError(f"Nieznane identyfikatory w referencjach NER: {', '.join(unknown_ids)}")
-    missing_ids = [sample_id for sample_id in selected_ids if sample_id not in references]
-    if missing_ids:
-        raise ValueError(
-            f"Brak sprawdzonych referencji NER dla próbek: {', '.join(missing_ids)}. "
-            "Utwórz lokalny szablon poleceniem eval CLI i uzupełnij go przed uruchomieniem."
-        )
-    return {
-        sample_id: _validate_reference(sample_id, references[sample_id])
-        for sample_id in selected_ids
-    }
-
-
-def _validate_reference(sample_id: str, entry: Any) -> dict[str, Any]:
-    if not isinstance(entry, dict) or entry.get("reviewed") is not True:
-        raise ValueError(f"Referencja NER dla próbki {sample_id} nie jest oznaczona jako sprawdzona")
-    entities = entry.get("entities")
-    if not isinstance(entities, dict):
-        raise ValueError(f"Referencja NER dla próbki {sample_id} nie zawiera obiektu entities")
-    missing = set(NER_ENTITY_FIELDS) - entities.keys()
-    if missing:
-        raise ValueError(
-            f"Referencja NER dla próbki {sample_id} nie zawiera kategorii: "
-            f"{', '.join(sorted(missing))}"
-        )
-    extra_categories = entities.keys() - NER_ENTITY_FIELDS.keys()
-    if extra_categories:
-        raise ValueError(
-            f"Referencja NER dla próbki {sample_id} zawiera nieznane kategorie: "
-            f"{', '.join(sorted(extra_categories))}"
-        )
-    if not isinstance(entities["patient"], dict):
-        raise ValueError(f"Kategoria patient w referencji próbki {sample_id} musi być obiektem")
-    if not entities["patient"]:
-        raise ValueError(
-            f"Kategoria patient w referencji próbki {sample_id} jest pusta; "
-            "dla znanych brakujących atrybutów użyj jawnych wartości null"
-        )
-    for category in ("components", "lesions", "fluid_samples"):
-        if not isinstance(entities[category], list):
-            raise ValueError(f"Kategoria {category} w referencji próbki {sample_id} musi być tablicą")
-    for category, allowed_fields in NER_ENTITY_FIELDS.items():
-        values = [entities[category]] if category == "patient" else entities[category]
-        for index, value in enumerate(values):
-            if not isinstance(value, dict):
-                raise ValueError(f"Wartość {category}[{index}] w referencji próbki {sample_id} musi być obiektem")
-            unknown = set(value) - allowed_fields
-            if unknown:
-                raise ValueError(
-                    f"Wartość {category}[{index}] w referencji próbki {sample_id} zawiera nieznane pola: "
-                    f"{', '.join(sorted(unknown))}"
-                )
-            if not value:
-                raise ValueError(f"Wartość {category}[{index}] w referencji próbki {sample_id} jest pusta")
-            if category != "patient" and not any(field_value is not None for field_value in value.values()):
-                raise ValueError(
-                    f"Wartość {category}[{index}] w referencji próbki {sample_id} "
-                    "nie ma znanego atrybutu; dla braku encji użyj pustej tablicy kategorii"
-                )
-            for field, field_value in value.items():
-                _validate_field_value(sample_id, category, index, field, field_value)
-            if category in {"components", "lesions"}:
-                has_measurement = any(
-                    value.get(field) is not None
-                    for field in NER_MEASUREMENT_FIELDS
-                )
-                if has_measurement and value.get("unit") not in {"cm", "mm"}:
-                    raise ValueError(
-                        f"Wartość {category}[{index}] w referencji próbki {sample_id} "
-                        "musi zawierać jednostkę cm lub mm przy wymiarach"
-                    )
-    return entities
-
-
-def _validate_field_value(sample_id: str, category: str, index: int, field: str, value: Any) -> None:
-    if value is None:
-        return
-    expected_type = NER_FIELD_TYPES[category][field]
-    valid = isinstance(value, expected_type) and not (
-        isinstance(value, bool) and expected_type != bool
-    )
-    if not valid:
-        raise ValueError(
-            f"Pole {category}[{index}].{field} w referencji próbki {sample_id} ma nieprawidłowy typ"
-        )
-    if isinstance(value, float) and not math.isfinite(value):
-        raise ValueError(
-            f"Pole {category}[{index}].{field} w referencji próbki {sample_id} musi być skończoną liczbą"
-        )
-    if field == "unit" and value not in {"cm", "mm"}:
-        raise ValueError(f"Jednostka w referencji próbki {sample_id} musi być cm lub mm")
-    if field == "clarity" and value not in {"klarowny", "mętny"}:
-        raise ValueError(f"Pole clarity w referencji próbki {sample_id} ma nieprawidłową wartość")
-    if field == "component_index" and value < 0:
-        raise ValueError(f"Pole component_index w referencji próbki {sample_id} nie może być ujemne")
-    if field == "features" and any(not isinstance(item, str) for item in value):
-        raise ValueError(f"Pole features w referencji próbki {sample_id} musi zawierać teksty")
 
 
 def _select_ids(metadata: dict[str, Any], requested: list[str] | None) -> list[str]:
@@ -338,3 +179,59 @@ def _normalize_sample_id(value: Any) -> str:
 
 def _cell(row: tuple[Any, ...], index: int) -> Any:
     return row[index] if index < len(row) else None
+
+
+def _optional_cell(row: tuple[Any, ...], indexes: dict[str, int], column: str) -> Any:
+    if column not in indexes:
+        return None
+    return _cell(row, indexes[column])
+
+
+def _text_cell(row: tuple[Any, ...], indexes: dict[str, int], column: str) -> str | None:
+    value = _optional_cell(row, indexes, column)
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _age_cell(row: tuple[Any, ...], indexes: dict[str, int], column: str, sample_id: str) -> int | None:
+    invalid = ValueError(f"Kolumna '{column}' dla próbki {sample_id} musi być liczbą całkowitą")
+    value = _optional_cell(row, indexes, column)
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise invalid
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        if not _AGE_PATTERN.fullmatch(text):
+            raise invalid
+        return int(text)
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, int):
+        return value
+    raise invalid
+
+
+def _pesel_cell(row: tuple[Any, ...], indexes: dict[str, int], column: str, sample_id: str) -> str | None:
+    invalid = ValueError(f"Kolumna '{column}' dla próbki {sample_id} musi zawierać 11 cyfr")
+    value = _optional_cell(row, indexes, column)
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise invalid
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    if isinstance(value, int):
+        # Excel numeric cells drop leading zeros; restore them up to the 11-digit length.
+        digits = str(value).zfill(11)
+    else:
+        digits = str(value).strip()
+        if not digits:
+            return None
+    if not _PESEL_PATTERN.fullmatch(digits):
+        raise invalid
+    return digits
