@@ -19,7 +19,7 @@ Pełna ścieżka używa STT, NER, answerera oraz sędziego LLM. Zatwierdź użyc
 EVAL_JUDGE_MODEL=openai/gpt-4o python eval/run.py --allow-external-data
 ```
 
-Wymagane są również istniejąca lokalna baza Django z tabelą `Keyword` oraz `OPENROUTER_API_KEY` lub `OPENAI_API_KEY`. Sędzia jest domyślnie włączony; jego model można wskazać przez `EVAL_JUDGE_MODEL` albo `--judge-model`. Aby pominąć wyłącznie ocenę sędziego, użyj `--no-judge` — pozostałe etapy nadal mogą wysyłać dane do usług zewnętrznych.
+Wymagane są również istniejąca lokalna baza Django z tabelą `Keyword` oraz skonfigurowany Host LLM: `LLM_HOST` (domyślnie `openrouter`) z kluczem API tego Hosta (`OPENROUTER_API_KEY` albo `OPENAI_API_KEY`). Sędzia jest domyślnie włączony; jego model można wskazać przez `EVAL_JUDGE_MODEL` albo `--judge-model`. Aby pominąć wyłącznie ocenę sędziego, użyj `--no-judge` — pozostałe etapy nadal mogą wysyłać dane do usług zewnętrznych.
 
 Domyślnie runner przetwarza wszystkie 80 rekordów, używa konfiguracji `PipelineConfig` i izolowanego Qdrant in-memory z lokalnymi makro-szablonami. Przykładowe opcje:
 

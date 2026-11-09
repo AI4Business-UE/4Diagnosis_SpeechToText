@@ -1,35 +1,20 @@
-import os
+"""Ścieżka kompatybilna dla surowego klienta.
 
-from dotenv import load_dotenv
-from openai import OpenAI
+Brama LLM (wybór Hosta, walidacja kluczy, kształtowanie żądań) mieszka w
+`app_stt.pipeline.utils.llm.gateway`. Ten moduł zachowuje wyłącznie stare
+ścieżki importu używane leniwie przez narzędzie eval — nowy kod produkcyjny
+powinien importować wprost z `gateway`.
+"""
+
+from .gateway import (  # noqa: F401  (re-exporty kompatybilne)
+    LLMGateway,
+    active_host,
+    get_gateway,
+    is_configured,
+    reset_gateway,
+)
 
 
-load_dotenv()
-
-_client: OpenAI | None = None
-
-
-def get_llm_client() -> OpenAI:
-    """
-    Build LLM client — tries keys in order:
-      1. OPENROUTER_API_KEY  → OpenRouter (openrouter.ai)
-      2. OPENAI_API_KEY      → OpenAI directly
-    Raises RuntimeError if neither is set.
-    """
-    global _client
-    if _client is not None:
-        return _client
-
-    key = os.getenv("OPENROUTER_API_KEY")
-    if key:
-        _client = OpenAI(api_key=key, base_url="https://openrouter.ai/api/v1")
-        return _client
-
-    key = os.getenv("OPENAI_API_KEY")
-    if key:
-        _client = OpenAI(api_key=key)
-        return _client
-
-    raise RuntimeError(
-        "Brak klucza API. Ustaw OPENROUTER_API_KEY lub OPENAI_API_KEY w pliku .env. "
-    )
+def get_llm_client() -> LLMGateway:
+    """Zastąpione przez bramę — zwraca singletową instalację `LLMGateway`."""
+    return get_gateway()

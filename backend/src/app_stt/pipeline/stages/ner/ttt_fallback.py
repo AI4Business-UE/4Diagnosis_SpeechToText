@@ -1,5 +1,6 @@
 """
-TTT fallback strategy — używana gdy nie ma żadnego klucza API (OPENROUTER ani OPENAI).
+TTT fallback strategy — używana, gdy aktywny Host LLM (LLM_HOST) nie ma
+skonfigurowanego klucza API.
 Wywołuje stary serwis correct_full_transcription() z app_stt.services.transcriber
 i mapuje jego prosty wynik na ExtractionResult.
 
@@ -17,7 +18,7 @@ from .entities.component import Component
 
 class TTTFallbackStrategy(NERStrategy):
     """
-    Fallback gdy brak OPENROUTER_API_KEY i OPENAI_API_KEY.
+    Fallback gdy Host LLM nie jest skonfigurowany (brak klucza API dla LLM_HOST).
     Używa starego serwisu TTT (Bielik / PLLuM / OpenRouter / OpenAI)
     skonfigurowanego przez TTT_MODEL w app_stt/config.py.
     """
@@ -30,7 +31,8 @@ class TTTFallbackStrategy(NERStrategy):
         except Exception as exc:
             warnings.warn(
                 f"[TTTFallback] Nie udało się wywołać TTT: {exc}. "
-                "Zwracam pusty wynik — ustaw OPENROUTER_API_KEY lub OPENAI_API_KEY "
+                "Zwracam pusty wynik — ustaw klucz API aktywnego Hosta "
+                "(LLM_HOST + OPENROUTER_API_KEY lub OPENAI_API_KEY), "
                 "żeby korzystać z pełnego NER.",
                 stacklevel=2,
             )

@@ -1,7 +1,7 @@
 import logging
 
 from .base import Answerer
-from app_stt.pipeline.utils.llm.client import get_llm_client
+from app_stt.pipeline.utils.llm.gateway import get_gateway
 
 
 logger = logging.getLogger(__name__)
@@ -49,18 +49,18 @@ class NoFillAnswerer(Answerer):
 
 
     def correct_transcription(self, transcript, templates, ner_extraction):
-        client = get_llm_client()
+        gateway = get_gateway()
         prompt = PROMPT % (ner_extraction.model_dump(), templates)
 
         logger.info("ANSWERER: Wysyłanie requesta do poprawienia transkrypcji...")
 
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[
+        response = gateway.chat(
+            self.model,
+            [
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": transcript},
             ],
-            temperature=0.0
+            temperature=0.0,
         )
 
         logger.info("ANSWERER: Otrzymano poprawioną transkrypcję.")

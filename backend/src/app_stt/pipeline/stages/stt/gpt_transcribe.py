@@ -1,10 +1,5 @@
-import base64
-from pathlib import Path
-
-from openai.types.audio.transcription import Transcription
-
 from .transcriber_base import TranscriberBase
-from app_stt.pipeline.utils.llm.client import get_llm_client
+from app_stt.pipeline.utils.llm.gateway import get_gateway
 from app_stt.models import Keyword
 
 
@@ -15,30 +10,26 @@ PATHOLOGY_PROMPT = (
 
 
 class GPTTranscribe(TranscriberBase):
-    def transcribe(self, audio_path):
-        client = get_llm_client()
-        with open(audio_path, "rb") as audio_file:
-            audio_data = base64.b64encode(audio_file.read()).decode("ascii")
+    """Transkrypcja patomorfologiczna przez bramę LLM.
 
-        result = client.post(
-            "/audio/transcriptions",
-            cast_to=Transcription,
-            body={
-                "model": "openai/gpt-transcribe",
-                "input_audio": {
-                    "data": audio_data,
-                    "format": Path(audio_path).suffix.lstrip(".").lower(),
-                },
-                "provider": {
-                    "options": {
-                        "openai": {
-                            "keywords": list(Keyword.objects.values_list("text", flat=True)),
-                            "languages": ["pl"],
-                            "prompt": PATHOLOGY_PROMPT,
-                        }
-                    }
-                },
-            },
+    Etap deklaruje wyłącznie politykę domenową — słowa kluczowe z Keyword
+    Catalog, język polski i prompt badania; kształt żądania właściwy
+    aktywnemu Hostowi (OpenRouter / OpenAI) należy do bramy.
+    """
+
+    def __init__(self, model_ref: str, gateway=None):
+        self._model_ref = model_ref
+        self._gateway = gateway
+
+    def transcribe(self, audio_path):
+        gateway = self._gateway if self._gateway is not None else get_gateway()
+
+        result = gateway.transcribe(
+            audio_path,
+            self._model_ref,
+            keywords=list(Keyword.objects.values_list("text", flat=True)),
+            languages=["pl"],
+            prompt=PATHOLOGY_PROMPT,
         )
 
         return result.text

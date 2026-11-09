@@ -10,8 +10,11 @@ services:
       - PYTHONUNBUFFERED=1
       - DOCKERENV=1
       - HF_HUB_DISABLE_PROGRESS_BARS=1
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-null}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-null}
+      # Host LLM wybierany jawnie (domyślnie openrouter); klucze bez wartości
+      # domyślnej — nieustawiony klucz pozostaje nieustawiony, a nie "null".
+      - LLM_HOST=${LLM_HOST:-openrouter}
+      - OPENROUTER_API_KEY
+      - OPENAI_API_KEY
     platform: linux/amd64
     depends_on:
       - qdrant
