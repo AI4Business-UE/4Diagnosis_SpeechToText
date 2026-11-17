@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/ui/components/button";
+import { Card } from "@/ui/components/card";
 import { Mic, Play, Square, Book } from "lucide-react";
-import SpinnerLoader from "@/components/ui/SpinnerLoader";
+import SpinnerLoader from "@/ui/components/SpinnerLoader";
 import TextareaAutosize from 'react-textarea-autosize';
 
-import AudioVisualizer from "../../components/AudioVisualizer";
+import AudioVisualizer from "../components/AudioVisualizer";
 import useRecordingState from "../../hooks/useRecordingState";
 import { useFormTransfer } from "../../hooks/useFormTransfer";
-import ConnectionControl from "@/components/ui/ConnectionControl";
+import ConnectionControl from "@/ui/components/ConnectionControl";
 import { Link } from "react-router-dom";
 
 export default function Recorder() { 
@@ -30,20 +30,18 @@ export default function Recorder() {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 min-h-screen w-full">
-      <div className="absolute top-10 right-6 sm:right-10">
-        <Link to="/keywords" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-6 text-sm font-medium shadow-sm hover:bg-slate-50">
-          <Book />
-          Słownik
-        </Link>
-      </div>
-      <div className="mb-6 p-4 bg-white/90 rounded-lg shadow-md">
-        <div className="flex items-center gap-3">
+      <div className="mb-6 grid w-full max-w-6xl grid-rows-2 md:grid-rows-1 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 p-4 bg-white/90 rounded-lg shadow-md">
+        <div className="md:col-start-2 row-start-1 justify-self-center flex gap-3 items-center">
           <ConnectionControl 
             connectionState={connectionState} 
             onConnect={handleConnect}
             onDisconnect={handleDisconnect}
           />
         </div>
+        <Link to="/keywords" className="md:col-start-3 row-start-2 md:row-start-1 justify-self-center md:justify-self-end inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-6 text-sm font-medium shadow-sm hover:bg-slate-50">
+          <Book size={18} />
+          Słownik
+        </Link>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">

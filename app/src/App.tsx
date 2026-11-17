@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes, BrowserRouter } from "react-router-dom";
-import RecordDescriptionPage from "@/pages/RecordDescription";
-import KeywordCatalogPage from "@/components/KeywordDictionary";
+import RecordDescriptionPage from "./ui/pages/Recorder";
+import KeywordCatalogPage from "./ui/pages/KeywordDictionary";
 
 export default function App() {
   return (

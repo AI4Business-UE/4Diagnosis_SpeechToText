@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import useVisualizer from "../hooks/useVisualizer";
+import useVisualizer from "../../hooks/useVisualizer";
 
 export default function AudioVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

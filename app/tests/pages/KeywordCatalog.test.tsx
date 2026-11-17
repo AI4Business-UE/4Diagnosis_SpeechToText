@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
-import KeywordDictionary from "@/components/KeywordDictionary";
+import KeywordDictionary from "../../src/ui/pages/KeywordDictionary";
 
 type Keyword = { id: number; text: string };
 

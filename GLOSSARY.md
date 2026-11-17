@@ -9,8 +9,8 @@ A domain-specific word or short phrase that may be spoken during a pathology exa
 _Avoid_: Prompt, instruction
 
 **Keyword Catalog**:
-The shared collection of keywords used to support every pathology transcription.
-_Avoid_: Per-recording vocabulary
+The shared collection of keywords used to support every pathology transcription. Surfaces in the Polish UI as *Słownik*.
+_Avoid_: Per-recording vocabulary, Dictionary (in English prose)
 
 **Patient Metadata**:
 The five facts describing one examination recording: examined organ, patient full name, age, PESEL and examination description.

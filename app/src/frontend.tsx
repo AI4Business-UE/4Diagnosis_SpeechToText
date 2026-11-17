@@ -10,7 +10,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css"; // Import global styles
 import { ToastProvider } from "./contexts/ToastContext";
-import ToastContainer from "./components/ui/ToastContainer";
+import ToastContainer from "./ui/components/ToastContainer";
 
 
 const elem = document.getElementById("root")!;

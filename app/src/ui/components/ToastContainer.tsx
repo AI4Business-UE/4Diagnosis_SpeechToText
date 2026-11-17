@@ -5,8 +5,8 @@ export default function ToastContainer() {
     const { toasts } = useToast();
 
     return (<div 
-        className="fixed flex flex-col gap-2 top-6 md:bottom-6 md:top-auto mb-5 
-            right-[50%] translate-[50%] rounded-full max-w-96"
+        className="fixed bottom-6 left-1/2 z-50 flex max-h-[70vh] w-full max-w-md -translate-x-1/2 
+            flex-col items-center justify-end gap-2 overflow-hidden px-4 md:max-w-2xl"
     >
         {toasts.map(toast => <Toast key={toast.toastId} toast={toast} />)}
     </div>);
