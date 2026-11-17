@@ -36,7 +36,7 @@ def _env(**values):
                 os.environ[key] = value
 
 
-class LLMGatewayModelRefTests(SimpleTestCase):
+class _ModelRefChecks:
     def test_openrouter_passes_model_reference_through_untouched(self):
         gw = LLMGateway(client=None, host="openrouter")
         self.assertEqual(gw.resolve_model_ref("openai/gpt-6-luna"), "openai/gpt-6-luna")
@@ -73,11 +73,11 @@ def _mock_client(respond):
     )
 
 
-class LLMGatewayOpenRouterTranscribeTests(SimpleTestCase):
+class _OpenRouterTranscribeChecks:
     """Kontrakt wire Hosta OpenRouter: JSON + base64 input_audio + envelope
     provider.options (zachowany behawioralnie 1:1 ze stanem przed refaktorem)."""
 
-    def transcribe(self, keywords, requests):
+    def _transcribe_openrouter(self, keywords, requests):
         def respond(request):
             requests.append(request)
             return httpx.Response(200, json={"text": "Wynik transkrypcji"})
@@ -100,7 +100,7 @@ class LLMGatewayOpenRouterTranscribeTests(SimpleTestCase):
 
     def test_sends_reference_and_base64_audio_as_json_body(self):
         requests = []
-        result, audio = self.transcribe(["Żółciak", "Torbiel"], requests)
+        result, audio = self._transcribe_openrouter(["Żółciak", "Torbiel"], requests)
 
         self.assertEqual(result.text, "Wynik transkrypcji")
         self.assertEqual(len(requests), 1)
@@ -115,7 +115,7 @@ class LLMGatewayOpenRouterTranscribeTests(SimpleTestCase):
 
     def test_wraps_domain_policy_in_provider_options_for_the_reference_vendor(self):
         requests = []
-        self.transcribe(["Żółciak", "Torbiel"], requests)
+        self._transcribe_openrouter(["Żółciak", "Torbiel"], requests)
 
         body = json.loads(requests[0].content)
         options = body["provider"]["options"]["openai"]
@@ -125,7 +125,7 @@ class LLMGatewayOpenRouterTranscribeTests(SimpleTestCase):
 
     def test_sends_empty_keyword_list_when_catalog_is_empty(self):
         requests = []
-        self.transcribe([], requests)
+        self._transcribe_openrouter([], requests)
 
         body = json.loads(requests[0].content)
         self.assertEqual(body["provider"]["options"]["openai"]["keywords"], [])
@@ -178,12 +178,12 @@ def _multipart_fields(request) -> dict[str, object]:
     }
 
 
-class LLMGatewayOpenAITranscribeTests(SimpleTestCase):
+class _OpenAITranscribeChecks:
     """Kontrakt wire Hosta OpenAI: multipart z natywnym id modelu po zdjęciu
     prefiksu `openai/`, płaskie pola keywords/languages/prompt, bez pola
     `provider`."""
 
-    def transcribe(self, requests, **call_kwargs):
+    def _transcribe_openai(self, requests, **call_kwargs):
         def respond(request):
             requests.append(request)
             return httpx.Response(200, json={"text": "Wynik transkrypcji"})
@@ -209,7 +209,7 @@ class LLMGatewayOpenAITranscribeTests(SimpleTestCase):
 
     def test_sends_multipart_with_prefix_stripped_native_model_id(self):
         requests = []
-        result, _audio = self.transcribe(requests)
+        result, _audio = self._transcribe_openai(requests)
 
         self.assertEqual(result.text, "Wynik transkrypcji")
         self.assertEqual(len(requests), 1)
@@ -221,7 +221,7 @@ class LLMGatewayOpenAITranscribeTests(SimpleTestCase):
 
     def test_sends_domain_policy_as_flat_fields_without_provider_envelope(self):
         requests = []
-        self.transcribe(requests)
+        self._transcribe_openai(requests)
 
         fields = _multipart_fields(requests[0])
         self.assertEqual(fields["keywords"], ["Żółciak", "Torbiel"])
@@ -232,7 +232,7 @@ class LLMGatewayOpenAITranscribeTests(SimpleTestCase):
 
     def test_sends_temperature_as_native_field_when_given(self):
         requests = []
-        self.transcribe(requests, temperature=0, keywords=None, prompt=None)
+        self._transcribe_openai(requests, temperature=0, keywords=None, prompt=None)
 
         fields = _multipart_fields(requests[0])
         self.assertEqual(fields["temperature"], "0")
@@ -259,7 +259,7 @@ def _chat_completion_response():
     )
 
 
-class LLMGatewayChatTests(SimpleTestCase):
+class _ChatChecks:
     MESSAGES = [
         {"role": "system", "content": "Prompt"},
         {"role": "user", "content": "Transkrypt"},
@@ -313,10 +313,7 @@ class LLMGatewayChatTests(SimpleTestCase):
         self.assertEqual(requests, [])
 
 
-class LLMGatewayHostResolutionTests(SimpleTestCase):
-    def tearDown(self):
-        reset_gateway()
-
+class _HostResolutionChecks:
     def test_active_host_defaults_to_openrouter_when_llm_host_unset(self):
         with _env(LLM_HOST=None):
             self.assertEqual(active_host(), "openrouter")
@@ -337,10 +334,7 @@ class LLMGatewayHostResolutionTests(SimpleTestCase):
         self.assertIn("openai-direct", str(ctx.exception))
 
 
-class LLMGatewayKeyValidationTests(SimpleTestCase):
-    def tearDown(self):
-        reset_gateway()
-
+class _KeyValidationChecks:
     def test_get_gateway_raises_polish_error_when_openrouter_key_missing(self):
         with _env(LLM_HOST=None, OPENROUTER_API_KEY=None):
             with self.assertRaises(ValueError) as ctx:
@@ -379,3 +373,16 @@ class LLMGatewayKeyValidationTests(SimpleTestCase):
             with self.assertRaises(ValueError) as ctx:
                 is_configured()
         self.assertIn("Nieznana wartość LLM_HOST", str(ctx.exception))
+
+
+class LLMGatewayTests(
+    _ModelRefChecks,
+    _OpenRouterTranscribeChecks,
+    _OpenAITranscribeChecks,
+    _ChatChecks,
+    _HostResolutionChecks,
+    _KeyValidationChecks,
+    SimpleTestCase,
+):
+    def tearDown(self):
+        reset_gateway()

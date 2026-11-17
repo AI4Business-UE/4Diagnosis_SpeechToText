@@ -12,7 +12,7 @@ from .stages.ner.chained import ChainedNERStrategy
 from .stages.rag.rag_retriever import RAGRetriever
 from .stages.rag.qdrant import QdrantRetriever
 from .stages.answerer import Answerer, NoFillAnswerer
-from .utils.llm.gateway import is_configured
+from .utils.llm.gateway import get_gateway, is_configured
 
 
 logger = logging.getLogger(__name__)
@@ -143,10 +143,12 @@ class Pipeline:
                 no_repeat_ngram_size=self.config.whisper_local_no_repeat_ngram_size
             )
         if model == "whisper_hosted":
+            get_gateway()
             return WhisperHosted(
                 model_ref=self.config.transcription_model
             )
         if model == "gpt-transcribe":
+            get_gateway()
             return GPTTranscribe(model_ref=self.config.transcription_model)
         
         raise ValueError(
@@ -163,6 +165,7 @@ class Pipeline:
             from .stages.ner.ttt_fallback import TTTFallbackStrategy
             return TTTFallbackStrategy()
 
+        get_gateway()
         strategy = self.config.ner_strategy
         if strategy == "chained":
             return ChainedNERStrategy(self.config.ner_llm_model)
