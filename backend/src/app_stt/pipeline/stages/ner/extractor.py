@@ -1,10 +1,9 @@
-import os
 import json
 import time
 
 from pydantic import ValidationError
 
-from app_stt.pipeline.utils.llm.client import get_llm_client
+from app_stt.pipeline.utils.llm.gateway import get_gateway
 
 
 def _strip_empty_and_none(data):
@@ -32,12 +31,12 @@ def extract(transcript: str, prompt: str, schema, model: str = "openai/gpt-4o"):
     validation_errors : list
         Pydantic validation errors (empty if validation passed).
     """
-    client = get_llm_client()
+    gateway = get_gateway()
     start = time.perf_counter()
 
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
+    response = gateway.chat(
+        model,
+        [
             {"role": "system", "content": prompt},
             {"role": "user", "content": transcript},
         ],

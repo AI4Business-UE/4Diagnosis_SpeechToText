@@ -8,7 +8,7 @@ import pytest
 from eval_tool import runtime
 
 
-def _install_runtime_dependencies(monkeypatch, events, guard_error=None):
+def _install_runtime_dependencies(monkeypatch, events, guard_error=None, host=None):
     django = types.ModuleType("django")
     django.setup = lambda: events.append("django.setup")
     monkeypatch.setitem(sys.modules, "django", django)
@@ -18,11 +18,19 @@ def _install_runtime_dependencies(monkeypatch, events, guard_error=None):
         "app_stt.pipeline",
         "app_stt.pipeline.stages",
         "app_stt.pipeline.stages.rag",
+        "app_stt.pipeline.utils",
+        "app_stt.pipeline.utils.llm",
     )
     for name in package_names:
         package = types.ModuleType(name)
         package.__path__ = []
         monkeypatch.setitem(sys.modules, name, package)
+
+    host = {"configured": True, "host": "openrouter"} if host is None else host
+    llm_client = types.ModuleType("app_stt.pipeline.utils.llm.client")
+    llm_client.is_configured = lambda: host["configured"]
+    llm_client.active_host = lambda: host["host"]
+    monkeypatch.setitem(sys.modules, llm_client.__name__, llm_client)
 
     config_module = types.ModuleType("app_stt.pipeline.config")
 
@@ -33,6 +41,7 @@ def _install_runtime_dependencies(monkeypatch, events, guard_error=None):
     class PipelineConfig:
         qdrant_client_mode: ClientMode
         stt_model: str = "whisper_local"
+        transcription_model: str = "openai/gpt-transcribe"
         whisper_model: str = "base"
         ner_strategy: str = "chained"
 
@@ -65,15 +74,15 @@ def _install_runtime_dependencies(monkeypatch, events, guard_error=None):
     monkeypatch.setitem(sys.modules, qdrant_module.__name__, qdrant_module)
 
 
-def _args():
-    return SimpleNamespace(stt_model=None, whisper_model=None, ner_strategy=None)
+def _args(**overrides):
+    values = {"stt_model": None, "whisper_model": None, "ner_strategy": None}
+    values.update(overrides)
+    return SimpleNamespace(**values)
 
 
 def test_runtime_defers_qdrant_indexing_until_pipeline_factory(monkeypatch):
     events = []
     _install_runtime_dependencies(monkeypatch, events)
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
 
     prepared = runtime.prepare_runtime(_args())
 
@@ -85,8 +94,6 @@ def test_runtime_defers_qdrant_indexing_until_pipeline_factory(monkeypatch):
 def test_runtime_does_not_index_or_construct_pipeline_with_cached_qdrant(monkeypatch):
     events = []
     _install_runtime_dependencies(monkeypatch, events, ValueError("cached client"))
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
 
     prepared = runtime.prepare_runtime(_args())
 
@@ -94,3 +101,40 @@ def test_runtime_does_not_index_or_construct_pipeline_with_cached_qdrant(monkeyp
         prepared.pipeline_factory()
 
     assert events == ["django.setup", "guard"]
+
+
+def test_runtime_raises_polish_error_when_active_host_is_not_configured(monkeypatch):
+    events = []
+    host = {"configured": False, "host": "openai"}
+    _install_runtime_dependencies(monkeypatch, events, host=host)
+
+    with pytest.raises(ValueError, match="Host LLM nie jest skonfigurowany"):
+        runtime.prepare_runtime(_args())
+
+
+def test_runtime_records_explicit_host_instead_of_inferred_provider(monkeypatch):
+    events = []
+    host = {"configured": True, "host": "openai"}
+    _install_runtime_dependencies(monkeypatch, events, host=host)
+
+    prepared = runtime.prepare_runtime(_args())
+
+    assert prepared.resolved_config["llm_host"] == "openai"
+    assert "llm_api_provider" not in prepared.resolved_config
+
+
+@pytest.mark.parametrize(
+    ("stt_model", "expected_model_id"),
+    [
+        ("gpt-transcribe", "openai/gpt-transcribe"),
+        ("whisper_hosted", "openai/gpt-transcribe"),
+        ("whisper_local", "openai/whisper-base"),
+    ],
+)
+def test_runtime_records_stt_model_id_from_config(monkeypatch, stt_model, expected_model_id):
+    events = []
+    _install_runtime_dependencies(monkeypatch, events)
+
+    prepared = runtime.prepare_runtime(_args(stt_model=stt_model))
+
+    assert prepared.resolved_config["stt_model_id"] == expected_model_id

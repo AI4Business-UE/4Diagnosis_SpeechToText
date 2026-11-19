@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import logging
 from pathlib import Path
 
@@ -13,6 +12,7 @@ from .stages.ner.chained import ChainedNERStrategy
 from .stages.rag.rag_retriever import RAGRetriever
 from .stages.rag.qdrant import QdrantRetriever
 from .stages.answerer import Answerer, NoFillAnswerer
+from .utils.llm.gateway import get_gateway, is_configured
 
 
 logger = logging.getLogger(__name__)
@@ -143,26 +143,29 @@ class Pipeline:
                 no_repeat_ngram_size=self.config.whisper_local_no_repeat_ngram_size
             )
         if model == "whisper_hosted":
+            get_gateway()
             return WhisperHosted(
-                model_id=self.config.whisper_hf_id
+                model_ref=self.config.transcription_model
             )
         if model == "gpt-transcribe":
-            return GPTTranscribe()
+            get_gateway()
+            return GPTTranscribe(model_ref=self.config.transcription_model)
         
         raise ValueError(
-            f"Unknown STT model '{model}'. "
-            "Supported: 'whisper_local', 'whisper_hosted. "
+            f"Nieznany model STT '{model}'. "
+            "Obsługiwane: 'whisper_local', 'whisper_hosted', 'gpt-transcribe'. "
         )
 
     def _build_ner(self) -> NERStrategy:
-        if not os.getenv("OPENROUTER_API_KEY") and not os.getenv("OPENAI_API_KEY"):
+        if not is_configured():
             print(
-                "[Pipeline] Brak klucza API (OPENROUTER_API_KEY / OPENAI_API_KEY). "
+                "[Pipeline] Host LLM jest niekonfigurowany (brak klucza API dla LLM_HOST). "
                 "Używam TTT fallback — stary serwis korekty tekstu."
             )
             from .stages.ner.ttt_fallback import TTTFallbackStrategy
             return TTTFallbackStrategy()
 
+        get_gateway()
         strategy = self.config.ner_strategy
         if strategy == "chained":
             return ChainedNERStrategy(self.config.ner_llm_model)

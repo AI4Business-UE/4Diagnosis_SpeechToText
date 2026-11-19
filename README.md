@@ -29,17 +29,26 @@ cd 4Diagnosis_SpeechRecorder
 ```
 
 #### 2. Stworzenie pliku z kluczami środowiskowymi
-Utwórz plik `.env` w katalogu `backend` z następującą zawartością:
+Utwórz plik `.env` w katalogu `backend`. Host modelu (kto serwuje żądania do
+modeli) wybierasz jawnie zmienną `LLM_HOST` — `openrouter` (domyślnie) albo
+`openai`. Klucz API musi odpowiadać wybranemu Hostowi:
 
 ```bash
+# OpenRouter (domyślny Host)
+LLM_HOST='openrouter'
 OPENROUTER_API_KEY='twoj_klucz_openrouter'
 ```
 
 lub:
 
 ```bash
+# OpenAI (bezpośrednio)
+LLM_HOST='openai'
 OPENAI_API_KEY='twoj_klucz_openai'
 ```
+
+Na Hoście OpenAI działają wyłącznie modele z referencją `openai/*` (np.
+`openai/gpt-transcribe`); pozostałe referencje wymagają Hosta OpenRouter.
 
 #### 3. Frontend (React + Bun)
 

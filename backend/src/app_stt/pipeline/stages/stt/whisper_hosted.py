@@ -1,19 +1,26 @@
 from .transcriber_base import TranscriberBase
-from app_stt.pipeline.utils.llm.client import get_llm_client
+from app_stt.pipeline.utils.llm.gateway import get_gateway
 
 
 class WhisperHosted(TranscriberBase):
-    def __init__(self, model_id: str):
-        self._model_id = model_id
-    
+    """Transkrypcja modelem Hosta (OpenRouter / OpenAI) przez bramę LLM.
+
+    `model_ref` jest kanoniczną referencją Modelu (`vendor/model`) — to brama
+    rozstrzyga, jak Host ją serwuje. Etap nie zna Hosta.
+    """
+
+    def __init__(self, model_ref: str, gateway=None):
+        self._model_ref = model_ref
+        self._gateway = gateway
+
     def transcribe(self, audio_path):
-        client = get_llm_client()
-        with open(audio_path, 'rb') as f:
-            result = client.audio.transcriptions.create(
-                model=self._model_id,
-                language=self.LANGUAGE,
-                temperature=0,
-                file=f
-            )
-            
+        gateway = self._gateway if self._gateway is not None else get_gateway()
+
+        result = gateway.transcribe(
+            audio_path,
+            self._model_ref,
+            languages=[self.LANGUAGE],
+            temperature=0,
+        )
+
         return result.text

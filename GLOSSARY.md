@@ -60,3 +60,11 @@ A language model that assesses how faithfully a corrected transcript preserves t
 
 **Judge opt-out**:
 A sample-level choice to exclude a recording from LLM judge assessment while retaining it in pipeline evaluation.
+
+**Host**:
+The service that serves our model requests — OpenRouter or OpenAI. Exactly one is active per deployment.
+_Avoid_: Provider, backend, LLM API provider
+
+**Model reference**:
+The canonical `vendor/model` identifier used everywhere in the app (e.g. `openai/gpt-transcribe`); the vendor names the model's maker, while the Host independently determines how the reference is interpreted and sent.
+_Avoid_: Model ID, provider/model string

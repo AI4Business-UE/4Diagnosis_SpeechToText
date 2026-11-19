@@ -35,17 +35,23 @@ def evaluate_fidelity(
     *,
     client: Any | None = None,
 ) -> dict[str, Any]:
-    """Ask a configured LLM to judge corrected-text fidelity against the reference."""
+    """Ask a configured LLM to judge corrected-text fidelity against the reference.
+
+    The judge Model reference is resolved through the LLM gateway (Host-aware);
+    a raw client can still be injected for fast offline tests.
+    """
     if not model.strip():
         raise ValueError("A judge model must be explicitly configured")
+    from app_stt.pipeline.utils.llm.client import LLMGateway, active_host, get_gateway
+
     if client is None:
-        from app_stt.pipeline.utils.llm.client import get_llm_client
+        gateway = get_gateway()
+    else:
+        gateway = LLMGateway(client=client, host=active_host())
 
-        client = get_llm_client()
-
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
+    response = gateway.chat(
+        model,
+        [
             {"role": "system", "content": _SYSTEM_PROMPT},
             {
                 "role": "user",

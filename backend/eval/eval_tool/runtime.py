@@ -34,6 +34,7 @@ def prepare_runtime(args: Any) -> EvaluationRuntime:
     from app_stt.pipeline.pipeline import Pipeline
     from app_stt.pipeline.stages.rag.qdrant import (
         QdrantClientMode, ensure_qdrant_client_uninitialized, index_database)
+    from app_stt.pipeline.utils.llm.client import active_host, is_configured
 
     config_values: dict[str, Any] = {"qdrant_client_mode": QdrantClientMode.IN_MEMORY}
     for argument, field in (
@@ -50,8 +51,11 @@ def prepare_runtime(args: Any) -> EvaluationRuntime:
     except KeyError as error:
         raise ValueError(f"Nieznany model Whisper: {config.whisper_model}") from error
 
-    if not (os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")):
-        raise ValueError("Brak klucza OPENROUTER_API_KEY lub OPENAI_API_KEY.")
+    if not is_configured():
+        raise ValueError(
+            "Host LLM nie jest skonfigurowany — ustaw klucz API aktywnego Hosta "
+            "(LLM_HOST, domyślnie 'openrouter')."
+        )
 
     resolved_config = {
         field.name: _json_config_value(getattr(config, field.name))
@@ -59,9 +63,11 @@ def prepare_runtime(args: Any) -> EvaluationRuntime:
     }
     resolved_config["whisper_hf_id"] = whisper_hf_id
     resolved_config["stt_model_id"] = (
-        "openai/gpt-transcribe" if config.stt_model == "gpt-transcribe" else whisper_hf_id
+        config.transcription_model
+        if config.stt_model in ("gpt-transcribe", "whisper_hosted")
+        else whisper_hf_id
     )
-    resolved_config["llm_api_provider"] = "openrouter" if os.getenv("OPENROUTER_API_KEY") else "openai"
+    resolved_config["llm_host"] = active_host()
 
     def pipeline_factory() -> Any:
         ensure_qdrant_client_uninitialized()

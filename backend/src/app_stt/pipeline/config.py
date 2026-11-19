@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 
-WHISPER_MODELS: dict[str, str] = {
+# Hugging Face ids wyłącznie dla etapu whisper_local — lokalne pobranie modelu,
+# bez Hosta LLM (OpenRouter/OpenAI).
+WHISPER_LOCAL_MODELS: dict[str, str] = {
     "whisper-small": "openai/whisper-small",
     "whisper-medium": "openai/whisper-medium",
     "whisper-medical-pl": "msxksm/whisper-medium-medical-pl",
@@ -25,7 +27,11 @@ class PipelineConfig:
     # whisper_local | whisper_hosted | gpt-transcribe
     stt_model: str = "gpt-transcribe"
 
-    # HuggingFace model ID for local/hosted whisper
+    # Referencja Modelu (vendor/model) dla etapów API (gpt-transcribe,
+    # whisper_hosted) — aktywny Host (LLM_HOST) serwuje ją przez bramę LLM.
+    transcription_model: str = "openai/gpt-transcribe"
+
+    # HuggingFace model ID for the local whisper stage (whisper_local)
     # choices: whisper-small, whisper-medium, whisper-medical-pl, whisper-large-v3, whisper-large-v3-turbo
     whisper_model: str = "whisper-large-v3"
     
@@ -37,18 +43,18 @@ class PipelineConfig:
     # Hugging Face default value = True
     whisper_local_condition_on_prev_tokens: bool = False
 
-    WHISPER_MODELS: ClassVar[dict[str, str]] = WHISPER_MODELS
+    WHISPER_LOCAL_MODELS: ClassVar[dict[str, str]] = WHISPER_LOCAL_MODELS
 
     @property
     def whisper_hf_id(self) -> str:
-        return WHISPER_MODELS[self.whisper_model]
+        return WHISPER_LOCAL_MODELS[self.whisper_model]
 
     # ── NER ──────────────────────────────────────────────────────────────────
     # chained: Patient → Component → Lesion (z kontekstem komponentów) → FluidSample
     # split:   wszystkie cztery ekstrakcje niezależnie na surowym transkrypcie
     ner_strategy: str = "chained"
 
-    # model przekazywany do OpenRouter (lub OpenAI)
+    # Referencja Modelu (vendor/model) przekazywana przez bramę LLM do aktywnego Hosta
     ner_llm_model: str = "openai/gpt-6-luna"
 
     # ── Answerer ────────────────────────────────────────────────────
